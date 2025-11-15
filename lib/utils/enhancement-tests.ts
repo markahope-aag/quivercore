@@ -2,7 +2,7 @@
 // This file provides test cases and validation functions for advanced enhancements
 
 import { generateEnhancedPrompt } from './prompt-generation'
-import { generateAllAdvancedEnhancements } from './enhancementGenerators'
+import { EnhancementGenerators } from '@/src/utils/enhancementGenerators'
 import type { BasePromptConfig, VSEnhancement } from '@/lib/types/prompt-builder'
 import type { AdvancedEnhancements } from '@/src/types/index'
 import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/src/constants/enhancements'
@@ -65,8 +65,9 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
       roleEnhancement: {
         enabled: true,
-        type: 'expert',
-        expertise: 'AI and Machine Learning',
+        expertiseLevel: 'expert',
+        domainSpecialty: 'AI and Machine Learning',
+        authorityLevel: 'advisory',
       },
     },
     expectedOutput: {
@@ -84,8 +85,11 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
       roleEnhancement: {
         enabled: true,
-        type: 'persona',
-        customRole: 'Tech journalist with 10 years of experience',
+        expertiseLevel: 'expert',
+        domainSpecialty: 'Tech journalism',
+        authorityLevel: 'advisory',
+        experienceYears: 10,
+        contextSetting: 'Tech journalist with 10 years of experience',
       },
     },
     expectedOutput: {
@@ -101,11 +105,11 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
     vsEnhancement: BASE_VS_ENHANCEMENT,
     advancedEnhancements: {
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
-      formatController: {
+      formatControl: {
         enabled: true,
-        type: 'structured',
-        structuredFormat: 'json',
-        includeExamples: true,
+        structure: 'json',
+        styleGuide: 'technical',
+        lengthSpec: { type: 'word-count' },
       },
     },
     expectedOutput: {
@@ -113,21 +117,23 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
     },
   },
 
-  // Format Controller - Markdown
+  // Format Control - Markdown
   {
-    name: 'Format Controller - Markdown',
-    description: 'Test format controller with Markdown output',
+    name: 'Format Control - Markdown',
+    description: 'Test format control with Markdown output',
     baseConfig: BASE_TEST_CONFIG,
     vsEnhancement: BASE_VS_ENHANCEMENT,
     advancedEnhancements: {
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
-      formatController: {
+      formatControl: {
         enabled: true,
-        type: 'markdown',
+        structure: 'paragraphs',
+        styleGuide: 'formal',
+        lengthSpec: { type: 'word-count' },
       },
     },
     expectedOutput: {
-      contains: ['Markdown', 'syntax', 'headers'],
+      contains: ['format', 'paragraphs'],
     },
   },
 
@@ -140,13 +146,11 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
     advancedEnhancements: {
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
       smartConstraints: {
-        ...DEFAULT_ADVANCED_ENHANCEMENTS.smartConstraints,
-        length: {
-          enabled: true,
-          min: 500,
-          max: 1000,
-          unit: 'words',
-        },
+        enabled: true,
+        positiveConstraints: ['Minimum 500 words', 'Maximum 1000 words'],
+        negativeConstraints: [],
+        boundaryConditions: ['Word count between 500-1000'],
+        qualityGates: [],
       },
     },
     expectedOutput: {
@@ -163,11 +167,11 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
     advancedEnhancements: {
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
       smartConstraints: {
-        ...DEFAULT_ADVANCED_ENHANCEMENTS.smartConstraints,
-        tone: {
-          enabled: true,
-          tones: ['professional', 'engaging', 'informative'],
-        },
+        enabled: true,
+        positiveConstraints: ['professional tone', 'engaging style', 'informative content'],
+        negativeConstraints: [],
+        boundaryConditions: [],
+        qualityGates: [],
       },
     },
     expectedOutput: {
@@ -184,11 +188,11 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
     advancedEnhancements: {
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
       smartConstraints: {
-        ...DEFAULT_ADVANCED_ENHANCEMENTS.smartConstraints,
-        audience: {
-          enabled: true,
-          target: 'Technical professionals with basic AI knowledge',
-        },
+        enabled: true,
+        positiveConstraints: ['Target audience: Technical professionals with basic AI knowledge'],
+        negativeConstraints: [],
+        boundaryConditions: [],
+        qualityGates: [],
       },
     },
     expectedOutput: {
@@ -196,22 +200,25 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
     },
   },
 
-  // Reasoning Scaffold - Analysis
+  // Reasoning Scaffolds - Analysis
   {
-    name: 'Reasoning Scaffold - Analysis',
-    description: 'Test reasoning scaffold with analysis framework',
+    name: 'Reasoning Scaffolds - Analysis',
+    description: 'Test reasoning scaffolds with analysis framework',
     baseConfig: BASE_TEST_CONFIG,
     vsEnhancement: BASE_VS_ENHANCEMENT,
     advancedEnhancements: {
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
-      reasoningScaffold: {
+      reasoningScaffolds: {
         enabled: true,
-        type: 'analysis',
-        showWorking: true,
+        showWork: true,
+        stepByStep: true,
+        exploreAlternatives: false,
+        confidenceScoring: false,
+        reasoningStyle: 'analytical',
       },
     },
     expectedOutput: {
-      contains: ['analytical framework', 'key components', 'step-by-step'],
+      contains: ['analytical', 'step-by-step', 'reasoning'],
     },
   },
 
@@ -223,10 +230,13 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
     vsEnhancement: BASE_VS_ENHANCEMENT,
     advancedEnhancements: {
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
-      reasoningScaffold: {
+      reasoningScaffolds: {
         enabled: true,
-        type: 'decision',
-        showWorking: true,
+        showWork: true,
+        stepByStep: true,
+        exploreAlternatives: true,
+        confidenceScoring: true,
+        reasoningStyle: 'logical',
       },
     },
     expectedOutput: {
@@ -243,9 +253,11 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
     advancedEnhancements: {
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
       conversationFlow: {
-        type: 'iterative',
-        context: 'This is part of a series of blog posts',
-        allowClarification: false,
+        enabled: true,
+        contextPreservation: true,
+        followUpTemplates: ['This is part of a series of blog posts'],
+        clarificationProtocols: false,
+        iterationImprovement: true,
       },
     },
     expectedOutput: {
@@ -262,8 +274,11 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
     advancedEnhancements: {
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
       conversationFlow: {
-        type: 'clarifying',
-        allowClarification: true,
+        enabled: true,
+        contextPreservation: true,
+        followUpTemplates: [],
+        clarificationProtocols: true,
+        iterationImprovement: false,
       },
     },
     expectedOutput: {
@@ -284,12 +299,15 @@ export const COMBINATION_TESTS: EnhancementTestConfig[] = [
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
       roleEnhancement: {
         enabled: true,
-        type: 'expert',
-        expertise: 'Content Marketing',
+        expertiseLevel: 'expert',
+        domainSpecialty: 'Content Marketing',
+        authorityLevel: 'advisory',
       },
-      formatController: {
+      formatControl: {
         enabled: true,
-        type: 'markdown',
+        structure: 'paragraphs',
+        styleGuide: 'conversational',
+        lengthSpec: { type: 'word-count' },
       },
     },
     expectedOutput: {
@@ -306,22 +324,19 @@ export const COMBINATION_TESTS: EnhancementTestConfig[] = [
     advancedEnhancements: {
       ...DEFAULT_ADVANCED_ENHANCEMENTS,
       smartConstraints: {
-        ...DEFAULT_ADVANCED_ENHANCEMENTS.smartConstraints,
-        length: {
-          enabled: true,
-          min: 300,
-          max: 500,
-          unit: 'words',
-        },
-        tone: {
-          enabled: true,
-          tones: ['professional'],
-        },
-      },
-      reasoningScaffold: {
         enabled: true,
-        type: 'analysis',
-        showWorking: true,
+        positiveConstraints: ['professional tone'],
+        negativeConstraints: [],
+        boundaryConditions: ['Word count between 300-500'],
+        qualityGates: [],
+      },
+      reasoningScaffolds: {
+        enabled: true,
+        showWork: true,
+        stepByStep: true,
+        exploreAlternatives: false,
+        confidenceScoring: false,
+        reasoningStyle: 'analytical',
       },
     },
     expectedOutput: {
@@ -338,51 +353,37 @@ export const COMBINATION_TESTS: EnhancementTestConfig[] = [
     advancedEnhancements: {
       roleEnhancement: {
         enabled: true,
-        type: 'expert',
-        expertise: 'AI Technology',
+        expertiseLevel: 'expert',
+        domainSpecialty: 'AI Technology',
+        authorityLevel: 'advisory',
       },
-      formatController: {
+      formatControl: {
         enabled: true,
-        type: 'structured',
-        structuredFormat: 'json',
+        structure: 'json',
+        styleGuide: 'technical',
+        lengthSpec: { type: 'word-count', min: 400, max: 600 },
       },
       smartConstraints: {
-        length: {
-          enabled: true,
-          min: 400,
-          max: 600,
-          unit: 'words',
-        },
-        tone: {
-          enabled: true,
-          tones: ['informative', 'engaging'],
-        },
-        audience: {
-          enabled: true,
-          target: 'General audience',
-        },
-        exclusions: {
-          enabled: false,
-          items: [],
-        },
-        requirements: {
-          enabled: false,
-          items: [],
-        },
-        complexity: {
-          enabled: false,
-          level: 'moderate',
-        },
-      },
-      reasoningScaffold: {
         enabled: true,
-        type: 'critical_thinking',
-        showWorking: true,
+        positiveConstraints: ['informative', 'engaging'],
+        negativeConstraints: [],
+        boundaryConditions: ['Word count between 400-600', 'General audience'],
+        qualityGates: [],
+      },
+      reasoningScaffolds: {
+        enabled: true,
+        showWork: true,
+        stepByStep: true,
+        exploreAlternatives: true,
+        confidenceScoring: true,
+        reasoningStyle: 'analytical',
       },
       conversationFlow: {
-        type: 'multi_step',
-        context: 'Educational content',
-        allowClarification: false,
+        enabled: true,
+        contextPreservation: true,
+        followUpTemplates: ['Educational content'],
+        clarificationProtocols: false,
+        iterationImprovement: true,
       },
     },
     expectedOutput: {
@@ -448,12 +449,28 @@ export function validateTestResult(
   }
 
   // Validate that enhancements are actually included
-  const enhancementText = generateAllAdvancedEnhancements(config.advancedEnhancements)
+  const sections: string[] = []
+  if (config.advancedEnhancements.roleEnhancement?.enabled) {
+    sections.push(EnhancementGenerators.generateRoleEnhancement(config.advancedEnhancements.roleEnhancement))
+  }
+  if (config.advancedEnhancements.formatControl?.enabled) {
+    sections.push(EnhancementGenerators.generateFormatControl(config.advancedEnhancements.formatControl))
+  }
+  if (config.advancedEnhancements.smartConstraints?.enabled) {
+    sections.push(EnhancementGenerators.generateSmartConstraints(config.advancedEnhancements.smartConstraints))
+  }
+  if (config.advancedEnhancements.reasoningScaffolds?.enabled) {
+    sections.push(EnhancementGenerators.generateReasoningScaffolds(config.advancedEnhancements.reasoningScaffolds))
+  }
+  if (config.advancedEnhancements.conversationFlow?.enabled) {
+    sections.push(EnhancementGenerators.generateConversationFlow(config.advancedEnhancements.conversationFlow))
+  }
+  const enhancementText = sections.filter((s: string) => s.trim()).join('\n\n')
   if (enhancementText && !result.finalPrompt.includes(enhancementText)) {
     // Check if at least some parts are included (for partial matches)
     const hasSomeEnhancements = enhancementText
       .split('\n\n')
-      .some((section) => section.trim() && result.finalPrompt.includes(section.trim()))
+      .some((section: string) => section.trim() && result.finalPrompt.includes(section.trim()))
     
     if (!hasSomeEnhancements) {
       warnings.push('Advanced enhancement instructions may not be fully integrated')
@@ -612,7 +629,23 @@ export function testCompleteFlow(
     steps.push({ step: 'Validate base prompt', success: true, message: 'Base prompt is valid' })
 
     // Step 2: Generate enhancements
-    const enhancementText = generateAllAdvancedEnhancements(enhancements)
+    const sections: string[] = []
+    if (enhancements.roleEnhancement?.enabled) {
+      sections.push(EnhancementGenerators.generateRoleEnhancement(enhancements.roleEnhancement))
+    }
+    if (enhancements.formatControl?.enabled) {
+      sections.push(EnhancementGenerators.generateFormatControl(enhancements.formatControl))
+    }
+    if (enhancements.smartConstraints?.enabled) {
+      sections.push(EnhancementGenerators.generateSmartConstraints(enhancements.smartConstraints))
+    }
+    if (enhancements.reasoningScaffolds?.enabled) {
+      sections.push(EnhancementGenerators.generateReasoningScaffolds(enhancements.reasoningScaffolds))
+    }
+    if (enhancements.conversationFlow?.enabled) {
+      sections.push(EnhancementGenerators.generateConversationFlow(enhancements.conversationFlow))
+    }
+    const enhancementText = sections.filter((s: string) => s.trim()).join('\n\n')
     if (enhancementText) {
       steps.push({
         step: 'Generate advanced enhancements',

@@ -8,7 +8,7 @@ import {
   INDIVIDUAL_ENHANCEMENT_TESTS,
   COMBINATION_TESTS,
 } from './enhancement-tests'
-import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/lib/constants/enhancements'
+import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/src/constants/enhancements'
 
 describe('Enhancement Tests', () => {
   describe('Individual Enhancement Tests', () => {
@@ -23,7 +23,7 @@ describe('Enhancement Tests', () => {
         (t) => t.name === 'Role Enhancement - Expert'
       )
       expect(expertTest).toBeDefined()
-      expect(expertTest?.advancedEnhancements.roleEnhancement.type).toBe('expert')
+      expect(expertTest?.advancedEnhancements.roleEnhancement?.expertiseLevel).toBe('expert')
     })
 
     it('should have test for format controller - JSON', () => {
@@ -31,7 +31,7 @@ describe('Enhancement Tests', () => {
         (t) => t.name === 'Format Controller - JSON'
       )
       expect(jsonTest).toBeDefined()
-      expect(jsonTest?.advancedEnhancements.formatController.type).toBe('structured')
+      expect(jsonTest?.advancedEnhancements.formatControl?.structure).toBe('json')
     })
   })
 

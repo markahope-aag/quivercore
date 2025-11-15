@@ -49,8 +49,9 @@ describe('Prompt Generation', () => {
         ...DEFAULT_ADVANCED_ENHANCEMENTS,
         roleEnhancement: {
           enabled: true,
-          type: 'expert',
-          expertise: 'AI Technology',
+          expertiseLevel: 'expert',
+          domainSpecialty: 'AI Technology',
+          authorityLevel: 'advisory',
         },
       }
 
@@ -63,9 +64,11 @@ describe('Prompt Generation', () => {
     it('should include format controller in prompt', () => {
       const enhancements: AdvancedEnhancements = {
         ...DEFAULT_ADVANCED_ENHANCEMENTS,
-        formatController: {
+        formatControl: {
           enabled: true,
-          type: 'markdown',
+          structure: 'paragraphs',
+          styleGuide: 'formal',
+          lengthSpec: { type: 'word-count' },
         },
       }
 
@@ -78,13 +81,11 @@ describe('Prompt Generation', () => {
       const enhancements: AdvancedEnhancements = {
         ...DEFAULT_ADVANCED_ENHANCEMENTS,
         smartConstraints: {
-          ...DEFAULT_ADVANCED_ENHANCEMENTS.smartConstraints,
-          length: {
-            enabled: true,
-            min: 500,
-            max: 1000,
-            unit: 'words',
-          },
+          enabled: true,
+          positiveConstraints: ['Minimum 500 words', 'Maximum 1000 words'],
+          negativeConstraints: [],
+          boundaryConditions: ['Word count between 500-1000'],
+          qualityGates: [],
         },
       }
 
@@ -99,50 +100,37 @@ describe('Prompt Generation', () => {
       const enhancements: AdvancedEnhancements = {
         roleEnhancement: {
           enabled: true,
-          type: 'expert',
-          expertise: 'Content Writing',
+          expertiseLevel: 'expert',
+          domainSpecialty: 'Content Writing',
+          authorityLevel: 'advisory',
         },
-        formatController: {
+        formatControl: {
           enabled: true,
-          type: 'structured',
-          structuredFormat: 'json',
+          structure: 'json',
+          styleGuide: 'technical',
+          lengthSpec: { type: 'word-count', min: 300, max: 500 },
         },
         smartConstraints: {
-          length: {
-            enabled: true,
-            min: 300,
-            max: 500,
-            unit: 'words',
-          },
-          tone: {
-            enabled: true,
-            tones: ['professional'],
-          },
-          audience: {
-            enabled: false,
-            target: '',
-          },
-          exclusions: {
-            enabled: false,
-            items: [],
-          },
-          requirements: {
-            enabled: false,
-            items: [],
-          },
-          complexity: {
-            enabled: false,
-            level: 'moderate',
-          },
-        },
-        reasoningScaffold: {
           enabled: true,
-          type: 'analysis',
-          showWorking: true,
+          positiveConstraints: ['professional tone'],
+          negativeConstraints: [],
+          boundaryConditions: ['Word count between 300-500'],
+          qualityGates: [],
+        },
+        reasoningScaffolds: {
+          enabled: true,
+          showWork: true,
+          stepByStep: true,
+          exploreAlternatives: false,
+          confidenceScoring: false,
+          reasoningStyle: 'analytical',
         },
         conversationFlow: {
-          type: 'single',
-          allowClarification: false,
+          enabled: true,
+          contextPreservation: true,
+          followUpTemplates: [],
+          clarificationProtocols: false,
+          iterationImprovement: false,
         },
       }
 
@@ -154,7 +142,7 @@ describe('Prompt Generation', () => {
       expect(result.finalPrompt).toContain('300')
       expect(result.finalPrompt).toContain('500')
       expect(result.finalPrompt).toContain('professional')
-      expect(result.finalPrompt).toContain('analytical framework')
+      expect(result.finalPrompt).toContain('analytical')
     })
   })
 
