@@ -227,9 +227,9 @@ export async function processWebhookEvent(
       // Handle payment failure - update subscription status
       const failedInvoice = event.data.object as Stripe.Invoice
       const failedSubscriptionId =
-        typeof failedInvoice.subscription === 'string'
-          ? failedInvoice.subscription
-          : (failedInvoice.subscription as Stripe.Subscription)?.id
+        typeof (failedInvoice as any).subscription === 'string'
+          ? (failedInvoice as any).subscription
+          : (failedInvoice as any).subscription?.id
       
       if (failedSubscriptionId) {
         const supabase = await createClient()
