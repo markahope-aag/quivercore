@@ -42,9 +42,9 @@ export enum FrameworkType {
 }
 
 export enum VSDistributionType {
-  BROAD_SPECTRUM = 'broad',
-  RARITY_HUNT = 'rarity',
-  BALANCED_CATEGORIES = 'balanced',
+  BROAD_SPECTRUM = 'broad_spectrum',
+  RARITY_HUNT = 'rarity_hunt',
+  BALANCED_CATEGORIES = 'balanced_categories',
 }
 
 export enum ReasoningStructure {
