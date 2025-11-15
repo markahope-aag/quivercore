@@ -1,4 +1,11 @@
-// Claude API client for prompt execution
+/**
+ * Claude API client for prompt execution
+ * 
+ * Provides functions for executing prompts with the Anthropic Claude API,
+ * including retry logic, rate limiting, and error handling.
+ * 
+ * @module lib/utils/api-client
+ */
 
 import Anthropic from '@anthropic-ai/sdk'
 import { logger } from './logger'
@@ -41,11 +48,34 @@ class RateLimiter {
 
 const rateLimiter = new RateLimiter()
 
+/**
+ * Executes a prompt using the Anthropic Claude API with retry logic.
+ * 
+ * @param promptText - The user's prompt text to send to Claude
+ * @param systemPrompt - Optional system prompt for context and instructions
+ * @param config - API configuration including API key, model, and max tokens
+ * @returns Promise resolving to the API response with text content, model used, and token usage
+ * @throws {Error} If API key is missing, rate limit exceeded, or API call fails
+ * 
+ * @example
+ * ```typescript
+ * const result = await executePrompt(
+ *   'Write a blog post about AI',
+ *   'You are a professional writer',
+ *   {
+ *     apiKey: 'sk-ant-...',
+ *     model: 'claude-3-sonnet-20240229',
+ *     maxTokens: 4096
+ *   }
+ * )
+ * console.log(result.response) // The generated text
+ * ```
+ */
 export async function executePrompt(
   promptText: string,
   systemPrompt: string,
   config: ClaudeAPIConfig
-): Promise<{ response: string; model: string; tokensUsed?: Anthropic.Message.Usage }> {
+): Promise<{ response: string; model: string; tokensUsed?: { input_tokens: number; output_tokens: number } }> {
   // Check rate limit
   await rateLimiter.checkLimit()
 
@@ -133,9 +163,32 @@ export async function executePrompt(
     }
 
     throw error
-  }
+  })
 }
 
+/**
+ * Streams a prompt response from the Anthropic Claude API.
+ * 
+ * Yields text chunks as they are generated, allowing for real-time display
+ * of the AI's response.
+ * 
+ * @param promptText - The user's prompt text to send to Claude
+ * @param systemPrompt - Optional system prompt for context and instructions
+ * @param config - API configuration including API key, model, and max tokens
+ * @yields {string} Text chunks as they are generated
+ * @throws {Error} If API key is missing, rate limit exceeded, or API call fails
+ * 
+ * @example
+ * ```typescript
+ * for await (const chunk of streamResponse(
+ *   'Write a story',
+ *   'You are a creative writer',
+ *   { apiKey: 'sk-ant-...', model: 'claude-3-sonnet-20240229' }
+ * )) {
+ *   console.log(chunk) // Display each chunk as it arrives
+ * }
+ * ```
+ */
 export async function* streamResponse(
   promptText: string,
   systemPrompt: string,

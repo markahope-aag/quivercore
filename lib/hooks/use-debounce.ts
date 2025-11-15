@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react'
-
 /**
  * Custom hook for debouncing a value
  * 
+ * Delays updating a value until after a specified delay period has passed
+ * since the last change. Useful for reducing API calls or expensive operations
+ * triggered by user input.
+ * 
  * @param value - The value to debounce
- * @param delay - Delay in milliseconds (default: 300)
- * @returns The debounced value
+ * @param delay - Delay in milliseconds before updating the debounced value (default: 300)
+ * @returns The debounced value that updates after the delay period
  * 
  * @example
  * ```typescript

@@ -1,4 +1,11 @@
-// Utility functions for generating enhanced prompts
+/**
+ * Utility functions for generating enhanced prompts
+ * 
+ * Provides functions for combining base prompts with various enhancement techniques
+ * including VS (Verbalized Sampling), advanced enhancements, and framework templates.
+ * 
+ * @module lib/utils/prompt-generation
+ */
 
 import type {
   BasePromptConfig,
@@ -10,6 +17,28 @@ import { generateFrameworkPrompt } from './framework-templates'
 import type { AdvancedEnhancements } from '@/src/types/index'
 import { EnhancementGenerators } from '@/src/utils/enhancementGenerators'
 
+/**
+ * Generates an enhanced prompt by combining base prompt, VS enhancement, and advanced enhancements.
+ * 
+ * @param baseConfig - Base prompt configuration including domain, framework, and base prompt text
+ * @param vsEnhancement - VS (Verbalized Sampling) enhancement configuration
+ * @param advancedEnhancements - Optional advanced enhancements (role, format, constraints, etc.)
+ * @returns Generated prompt with final prompt text, system prompt, and metadata
+ * 
+ * @example
+ * ```typescript
+ * const result = generateEnhancedPrompt(
+ *   {
+ *     domain: 'Writing & Content',
+ *     framework: 'Role-Based',
+ *     basePrompt: 'Write a blog post',
+ *     frameworkConfig: { role: 'Professional writer' }
+ *   },
+ *   { enabled: true, distributionType: 'broad-spectrum' },
+ *   { roleEnhancement: { enabled: true, expertiseLevel: 'expert' } }
+ * )
+ * ```
+ */
 export function generateEnhancedPrompt(
   baseConfig: BasePromptConfig,
   vsEnhancement: VSEnhancement,
@@ -118,6 +147,22 @@ function generateDefaultSystemPrompt(domain: string): string {
 }
 
 
+/**
+ * Validates a prompt configuration and returns any validation errors.
+ * 
+ * @param baseConfig - Base prompt configuration to validate
+ * @returns Object mapping field names to error messages (empty if valid)
+ * 
+ * @example
+ * ```typescript
+ * const errors = validatePromptConfig({
+ *   basePrompt: '',
+ *   framework: 'Few-Shot',
+ *   frameworkConfig: { fewShotExamples: [] }
+ * })
+ * // Returns: { basePrompt: 'Base prompt is required', examples: 'Few-Shot framework requires at least one example' }
+ * ```
+ */
 export function validatePromptConfig(baseConfig: BasePromptConfig): Record<string, string> {
   const errors: Record<string, string> = {}
 
@@ -136,6 +181,22 @@ export function validatePromptConfig(baseConfig: BasePromptConfig): Record<strin
   return errors
 }
 
+/**
+ * Exports a prompt configuration to JSON string for saving/sharing.
+ * 
+ * @param config - Prompt configuration object to export
+ * @returns JSON string representation of the configuration
+ * 
+ * @example
+ * ```typescript
+ * const json = exportPromptConfig({
+ *   baseConfig: { ... },
+ *   vsEnhancement: { ... },
+ *   generatedPrompt: { ... }
+ * })
+ * localStorage.setItem('savedPrompt', json)
+ * ```
+ */
 export function exportPromptConfig(config: {
   baseConfig: BasePromptConfig
   vsEnhancement: VSEnhancement
@@ -144,6 +205,21 @@ export function exportPromptConfig(config: {
   return JSON.stringify(config, null, 2)
 }
 
+/**
+ * Imports a prompt configuration from a JSON string.
+ * 
+ * @param jsonString - JSON string representation of the configuration
+ * @returns Parsed configuration object or null if invalid
+ * 
+ * @example
+ * ```typescript
+ * const json = localStorage.getItem('savedPrompt')
+ * const config = importPromptConfig(json)
+ * if (config) {
+ *   // Use the imported configuration
+ * }
+ * ```
+ */
 export function importPromptConfig(jsonString: string): {
   baseConfig: BasePromptConfig
   vsEnhancement: VSEnhancement

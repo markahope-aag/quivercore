@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { PromptList } from '@/components/prompts/prompt-list'
 import { PromptFilters } from '@/components/prompts/prompt-filters'
 import { PaginationControls } from '@/components/prompts/pagination-controls'
+import { PromptListSkeleton } from '@/components/prompts/prompt-list-skeleton'
 import { Suspense } from 'react'
 import { logger } from '@/lib/utils/logger'
 import { sanitizeInput } from '@/lib/utils/sanitize'
@@ -118,7 +119,7 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
         <PromptFilters />
       </Suspense>
       
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<PromptListSkeleton viewMode={(params.view as 'grid' | 'list') || 'grid'} />}>
         <PromptList 
           initialPrompts={prompts || []} 
           viewMode={(params.view as 'grid' | 'list') || 'grid'}

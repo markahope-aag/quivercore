@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { PromptDetail } from '@/components/prompts/prompt-detail'
+import { PromptDetailSkeleton } from '@/components/prompts/prompt-detail-skeleton'
+import { Suspense } from 'react'
 
 interface PromptDetailPageProps {
   params: Promise<{ id: string }>
@@ -27,6 +29,10 @@ export default async function PromptDetailPage({ params }: PromptDetailPageProps
     redirect('/prompts')
   }
 
-  return <PromptDetail prompt={prompt} />
+  return (
+    <Suspense fallback={<PromptDetailSkeleton />}>
+      <PromptDetail prompt={prompt} />
+    </Suspense>
+  )
 }
 

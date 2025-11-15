@@ -1,6 +1,10 @@
 /**
  * Retry utility with exponential backoff
- * Handles transient failures for API calls
+ * 
+ * Provides retry logic for handling transient failures in API calls.
+ * Implements exponential backoff with configurable retry attempts and delays.
+ * 
+ * @module lib/utils/retry
  */
 
 interface RetryOptions {
