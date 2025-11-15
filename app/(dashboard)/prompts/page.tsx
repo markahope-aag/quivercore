@@ -70,7 +70,7 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
         p.title.toLowerCase().includes(queryLower) ||
         p.content.toLowerCase().includes(queryLower) ||
         p.description?.toLowerCase().includes(queryLower) ||
-        p.tags?.some((t) => t.toLowerCase().includes(queryLower))
+        p.tags?.some((t: string) => t.toLowerCase().includes(queryLower))
     )
   }
 
