@@ -6,6 +6,7 @@ import type {
   VSEnhancement,
   ExecutionResult,
 } from '@/lib/types/prompt-builder'
+import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/lib/constants/enhancements'
 
 export interface UserSettings {
   defaultDomain?: string
@@ -22,10 +23,13 @@ export interface UsageMetrics {
   lastExecutionDate?: string
 }
 
+import type { AdvancedEnhancements } from '@/lib/utils/enhancementGenerators'
+
 export interface DraftConfiguration {
   id: string
   baseConfig: BasePromptConfig
   vsEnhancement: VSEnhancement
+  advancedEnhancements?: AdvancedEnhancements // Optional for backward compatibility
   savedAt: string
 }
 
@@ -58,7 +62,18 @@ export function saveTemplate(template: PromptTemplate): void {
 export function getTemplates(): PromptTemplate[] {
   try {
     const data = localStorage.getItem(STORAGE_KEYS.TEMPLATES)
-    return data ? JSON.parse(data) : []
+    const templates = data ? JSON.parse(data) : []
+    
+    // Ensure backward compatibility: add default advancedEnhancements to old templates
+    return templates.map((template: PromptTemplate) => {
+      if (!template.advancedEnhancements) {
+        return {
+          ...template,
+          advancedEnhancements: DEFAULT_ADVANCED_ENHANCEMENTS,
+        }
+      }
+      return template
+    })
   } catch (error) {
     console.error('Failed to load templates:', error)
     return []
@@ -99,12 +114,17 @@ export function searchTemplates(query: string): PromptTemplate[] {
 }
 
 // Draft Management
-export function saveDraft(baseConfig: BasePromptConfig, vsEnhancement: VSEnhancement): void {
+export function saveDraft(
+  baseConfig: BasePromptConfig,
+  vsEnhancement: VSEnhancement,
+  advancedEnhancements?: AdvancedEnhancements
+): void {
   try {
     const draft: DraftConfiguration = {
       id: crypto.randomUUID(),
       baseConfig,
       vsEnhancement,
+      advancedEnhancements,
       savedAt: new Date().toISOString(),
     }
 

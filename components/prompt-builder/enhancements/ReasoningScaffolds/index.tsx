@@ -5,7 +5,10 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tooltip } from '@/components/ui/tooltip'
 import { REASONING_SCAFFOLD_TYPES } from '@/lib/constants/enhancements'
+import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
+import { EnhancementExamples } from '../EnhancementExamples'
 import type { ReasoningScaffold as ReasoningScaffoldType } from '@/lib/utils/enhancementGenerators'
 
 interface ReasoningScaffoldsProps {
@@ -18,11 +21,12 @@ export function ReasoningScaffolds({ config, onChange }: ReasoningScaffoldsProps
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Reasoning Scaffolds</CardTitle>
-            <CardDescription>
-              Provide a structured thinking framework for the AI
-            </CardDescription>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <CardTitle>Reasoning Scaffolds</CardTitle>
+              <Tooltip content={ENHANCEMENT_HELP.reasoningScaffold.tooltip} />
+            </div>
+            <CardDescription>{ENHANCEMENT_HELP.reasoningScaffold.description}</CardDescription>
           </div>
           <Switch
             checked={config.enabled}
@@ -79,6 +83,12 @@ export function ReasoningScaffolds({ config, onChange }: ReasoningScaffoldsProps
               </div>
             </>
           )}
+
+          <EnhancementExamples
+            before={ENHANCEMENT_HELP.reasoningScaffold.examples.before}
+            after={ENHANCEMENT_HELP.reasoningScaffold.examples.after}
+            title="Example: Reasoning Scaffold"
+          />
         </CardContent>
       )}
     </Card>

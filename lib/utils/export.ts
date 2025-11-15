@@ -126,11 +126,11 @@ export function exportTemplate(template: PromptTemplate): void {
 }
 
 // Import template
-export function importTemplate(jsonString: string): PromptTemplate | null {
+export async function importTemplate(jsonString: string): Promise<PromptTemplate | null> {
   try {
     const template = JSON.parse(jsonString)
 
-    // Validate template structure
+    // Validate template structure (advancedEnhancements is optional for backward compatibility)
     if (
       !template.name ||
       !template.config ||
@@ -139,6 +139,13 @@ export function importTemplate(jsonString: string): PromptTemplate | null {
       !template.createdAt
     ) {
       throw new Error('Invalid template structure')
+    }
+
+    // Ensure advancedEnhancements exists (for backward compatibility with old templates)
+    if (!template.advancedEnhancements) {
+      // Import default advanced enhancements if missing
+      const { DEFAULT_ADVANCED_ENHANCEMENTS } = await import('@/lib/constants/enhancements')
+      template.advancedEnhancements = DEFAULT_ADVANCED_ENHANCEMENTS
     }
 
     return template as PromptTemplate

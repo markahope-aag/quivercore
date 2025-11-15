@@ -6,7 +6,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Tooltip } from '@/components/ui/tooltip'
 import { FORMAT_CONTROLLER_TYPES } from '@/lib/constants/enhancements'
+import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
+import { EnhancementExamples } from '../EnhancementExamples'
 import type { FormatController as FormatControllerType } from '@/lib/utils/enhancementGenerators'
 
 interface FormatControllerProps {
@@ -19,11 +22,12 @@ export function FormatController({ config, onChange }: FormatControllerProps) {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Format Controller</CardTitle>
-            <CardDescription>
-              Specify output format requirements and structure
-            </CardDescription>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <CardTitle>Format Controller</CardTitle>
+              <Tooltip content={ENHANCEMENT_HELP.formatController.tooltip} />
+            </div>
+            <CardDescription>{ENHANCEMENT_HELP.formatController.description}</CardDescription>
           </div>
           <Switch
             checked={config.enabled}
@@ -113,6 +117,12 @@ export function FormatController({ config, onChange }: FormatControllerProps) {
               />
             </div>
           )}
+
+          <EnhancementExamples
+            before={ENHANCEMENT_HELP.formatController.examples.before}
+            after={ENHANCEMENT_HELP.formatController.examples.after}
+            title="Example: Format Controller"
+          />
         </CardContent>
       )}
     </Card>

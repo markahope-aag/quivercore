@@ -7,10 +7,12 @@ import type {
 } from '@/lib/types/prompt-builder'
 import { generateVSInstructions, getVSFormat } from './vs-enhancement'
 import { generateFrameworkPrompt } from './framework-templates'
+import { generateAllAdvancedEnhancements, type AdvancedEnhancements } from './enhancementGenerators'
 
 export function generateEnhancedPrompt(
   baseConfig: BasePromptConfig,
-  vsEnhancement: VSEnhancement
+  vsEnhancement: VSEnhancement,
+  advancedEnhancements?: AdvancedEnhancements
 ): GeneratedPrompt {
   // Generate VS enhancement instructions
   const vsInstructions = vsEnhancement.enabled ? generateVSInstructions(vsEnhancement) : ''
@@ -22,15 +24,32 @@ export function generateEnhancedPrompt(
     vsEnhancementText = `${vsInstructions}\n\nFormat each response as:\n${format}`
   }
 
+  // Generate advanced enhancements if provided
+  const advancedEnhancementText = advancedEnhancements
+    ? generateAllAdvancedEnhancements(advancedEnhancements)
+    : ''
+
+  // Combine VS enhancement and advanced enhancements
+  let enhancementText = ''
+  if (vsEnhancementText && advancedEnhancementText) {
+    enhancementText = `${vsEnhancementText}\n\n${advancedEnhancementText}`
+  } else if (vsEnhancementText) {
+    enhancementText = vsEnhancementText
+  } else if (advancedEnhancementText) {
+    enhancementText = advancedEnhancementText
+  }
+
   // Generate the final prompt using framework template
   const finalPrompt = baseConfig.framework
     ? generateFrameworkPrompt(
         baseConfig.framework,
         baseConfig.frameworkConfig,
         baseConfig.basePrompt,
-        vsEnhancementText
+        enhancementText
       )
-    : `${baseConfig.basePrompt}\n\n${vsEnhancementText}`
+    : enhancementText
+      ? `${baseConfig.basePrompt}\n\n${enhancementText}`
+      : baseConfig.basePrompt
 
   // Add target outcome if provided
   let enhancedPrompt = finalPrompt

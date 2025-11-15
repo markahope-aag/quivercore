@@ -6,7 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tooltip } from '@/components/ui/tooltip'
 import { ROLE_ENHANCEMENT_TYPES } from '@/lib/constants/enhancements'
+import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
+import { EnhancementExamples } from '../EnhancementExamples'
 import type { RoleEnhancement as RoleEnhancementType } from '@/lib/utils/enhancementGenerators'
 
 interface RoleEnhancementProps {
@@ -19,11 +22,12 @@ export function RoleEnhancement({ config, onChange }: RoleEnhancementProps) {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Role Enhancement</CardTitle>
-            <CardDescription>
-              Assign a specific role, persona, or perspective to the AI
-            </CardDescription>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <CardTitle>Role Enhancement</CardTitle>
+              <Tooltip content={ENHANCEMENT_HELP.roleEnhancement.tooltip} />
+            </div>
+            <CardDescription>{ENHANCEMENT_HELP.roleEnhancement.description}</CardDescription>
           </div>
           <Switch
             checked={config.enabled}
@@ -91,6 +95,12 @@ export function RoleEnhancement({ config, onChange }: RoleEnhancementProps) {
               />
             </div>
           )}
+
+          <EnhancementExamples
+            before={ENHANCEMENT_HELP.roleEnhancement.examples.before}
+            after={ENHANCEMENT_HELP.roleEnhancement.examples.after}
+            title="Example: Role Enhancement"
+          />
         </CardContent>
       )}
     </Card>

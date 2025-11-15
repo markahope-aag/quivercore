@@ -5,7 +5,10 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Tooltip } from '@/components/ui/tooltip'
 import { CONVERSATION_FLOW_TYPES } from '@/lib/constants/enhancements'
+import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
+import { EnhancementExamples } from '../EnhancementExamples'
 import type { ConversationFlow as ConversationFlowType } from '@/lib/utils/enhancementGenerators'
 
 interface ConversationFlowProps {
@@ -17,10 +20,11 @@ export function ConversationFlow({ config, onChange }: ConversationFlowProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Conversation Flow</CardTitle>
-        <CardDescription>
-          Configure how the AI should structure its interaction
-        </CardDescription>
+        <div className="flex items-center gap-2">
+          <CardTitle>Conversation Flow</CardTitle>
+          <Tooltip content={ENHANCEMENT_HELP.conversationFlow.tooltip} />
+        </div>
+        <CardDescription>{ENHANCEMENT_HELP.conversationFlow.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-3">
@@ -68,6 +72,12 @@ export function ConversationFlow({ config, onChange }: ConversationFlowProps) {
             />
           </div>
         )}
+
+        <EnhancementExamples
+          before={ENHANCEMENT_HELP.conversationFlow.examples.before}
+          after={ENHANCEMENT_HELP.conversationFlow.examples.after}
+          title="Example: Conversation Flow"
+        />
       </CardContent>
     </Card>
   )

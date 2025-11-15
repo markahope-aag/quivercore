@@ -5,6 +5,106 @@ import { usePromptBuilder } from '@/contexts/PromptBuilderContext'
 import { exportPrompt, copyToClipboard, exportVSResponsesAsCSV } from '@/lib/utils/export'
 import { parseVSResponse } from '@/lib/utils/api-client'
 import type { ExportFormat } from '@/lib/utils/export'
+import type { AdvancedEnhancements } from '@/lib/utils/enhancementGenerators'
+import { EnhancementTestRunner } from '../EnhancementTestRunner'
+
+// Helper function to get list of enabled advanced enhancements
+function getEnabledAdvancedEnhancements(enhancements: AdvancedEnhancements): string[] {
+  const enabled: string[] = []
+
+  if (enhancements.roleEnhancement.enabled && enhancements.roleEnhancement.type !== 'none') {
+    enabled.push('Role Enhancement')
+  }
+
+  if (enhancements.formatController.enabled && enhancements.formatController.type !== 'none') {
+    enabled.push('Format Controller')
+  }
+
+  if (
+    enhancements.smartConstraints.length.enabled ||
+    enhancements.smartConstraints.tone.enabled ||
+    enhancements.smartConstraints.audience.enabled ||
+    enhancements.smartConstraints.exclusions.enabled ||
+    enhancements.smartConstraints.requirements.enabled ||
+    enhancements.smartConstraints.complexity.enabled
+  ) {
+    enabled.push('Smart Constraints')
+  }
+
+  if (enhancements.reasoningScaffold.enabled && enhancements.reasoningScaffold.type !== 'none') {
+    enabled.push('Reasoning Scaffold')
+  }
+
+  if (enhancements.conversationFlow.type !== 'single') {
+    enabled.push('Conversation Flow')
+  }
+
+  return enabled
+}
+
+// Helper function to format advanced enhancement details
+function formatAdvancedEnhancementDetails(enhancements: AdvancedEnhancements): string {
+  const details: string[] = []
+
+  // Role Enhancement
+  if (enhancements.roleEnhancement.enabled && enhancements.roleEnhancement.type !== 'none') {
+    if (enhancements.roleEnhancement.type === 'expert' && enhancements.roleEnhancement.expertise) {
+      details.push(`Role: Expert in ${enhancements.roleEnhancement.expertise}`)
+    } else if (enhancements.roleEnhancement.type === 'persona' && enhancements.roleEnhancement.customRole) {
+      details.push(`Role: ${enhancements.roleEnhancement.customRole}`)
+    } else if (enhancements.roleEnhancement.type === 'perspective' && enhancements.roleEnhancement.perspective) {
+      details.push(`Perspective: ${enhancements.roleEnhancement.perspective}`)
+    }
+  }
+
+  // Format Controller
+  if (enhancements.formatController.enabled && enhancements.formatController.type !== 'none') {
+    const formatType = enhancements.formatController.type
+      .replace('_', ' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase())
+    details.push(`Format: ${formatType}`)
+  }
+
+  // Smart Constraints
+  const constraintParts: string[] = []
+  if (enhancements.smartConstraints.length.enabled) {
+    const { min, max, unit } = enhancements.smartConstraints.length
+    if (min > 0 && max > 0) {
+      constraintParts.push(`${min}-${max} ${unit}`)
+    } else if (min > 0) {
+      constraintParts.push(`min ${min} ${unit}`)
+    } else if (max > 0) {
+      constraintParts.push(`max ${max} ${unit}`)
+    }
+  }
+  if (enhancements.smartConstraints.tone.enabled && enhancements.smartConstraints.tone.tones.length > 0) {
+    constraintParts.push(`tone: ${enhancements.smartConstraints.tone.tones.join(', ')}`)
+  }
+  if (enhancements.smartConstraints.audience.enabled && enhancements.smartConstraints.audience.target) {
+    constraintParts.push(`audience: ${enhancements.smartConstraints.audience.target}`)
+  }
+  if (constraintParts.length > 0) {
+    details.push(`Constraints: ${constraintParts.join(', ')}`)
+  }
+
+  // Reasoning Scaffold
+  if (enhancements.reasoningScaffold.enabled && enhancements.reasoningScaffold.type !== 'none') {
+    const reasoningType = enhancements.reasoningScaffold.type
+      .replace('_', ' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase())
+    details.push(`Reasoning: ${reasoningType}`)
+  }
+
+  // Conversation Flow
+  if (enhancements.conversationFlow.type !== 'single') {
+    const flowType = enhancements.conversationFlow.type
+      .replace('_', ' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase())
+    details.push(`Flow: ${flowType}`)
+  }
+
+  return details.join(' • ') || 'None'
+}
 
 export function PreviewExecuteStep() {
   const { state, generatePrompt, executePrompt, saveTemplate, setError } = usePromptBuilder()
@@ -15,10 +115,13 @@ export function PreviewExecuteStep() {
   const [templateTags, setTemplateTags] = useState('')
   const [copied, setCopied] = useState(false)
 
+  const enabledAdvancedEnhancements = getEnabledAdvancedEnhancements(state.advancedEnhancements)
+  const advancedEnhancementDetails = formatAdvancedEnhancementDetails(state.advancedEnhancements)
+
   // Generate prompt on mount and when config changes
   useEffect(() => {
     generatePrompt()
-  }, [state.baseConfig, state.vsEnhancement])
+  }, [state.baseConfig, state.vsEnhancement, state.advancedEnhancements, generatePrompt])
 
   const handleExecute = async () => {
     if (!apiKey.trim()) {
@@ -89,6 +192,7 @@ export function PreviewExecuteStep() {
 
   const latestResult = state.executionResults[0]
   const parsedVS = latestResult && state.vsEnhancement.enabled ? parseVSResponse(latestResult.response) : null
+  const [showTests, setShowTests] = useState(false)
 
   return (
     <div className="space-y-6">
@@ -98,6 +202,29 @@ export function PreviewExecuteStep() {
           Review your generated prompt, execute it with Claude, and export or save as a template.
         </p>
       </div>
+
+      {/* Test Runner Toggle */}
+      <div className="flex items-center justify-between rounded-md border border-gray-300 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800">
+        <div>
+          <h3 className="text-sm font-medium text-gray-900 dark:text-white">Enhancement Testing</h3>
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            Validate your advanced enhancements and test prompt quality
+          </p>
+        </div>
+        <button
+          onClick={() => setShowTests(!showTests)}
+          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+        >
+          {showTests ? 'Hide Tests' : 'Show Tests'}
+        </button>
+      </div>
+
+      {/* Test Runner */}
+      {showTests && (
+        <div className="rounded-md border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20">
+          <EnhancementTestRunner />
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
@@ -199,13 +326,46 @@ export function PreviewExecuteStep() {
 
       {/* User Prompt Preview */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white">User Prompt</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">User Prompt</h3>
+          {enabledAdvancedEnhancements.length > 0 && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Includes {enabledAdvancedEnhancements.length} advanced enhancement
+              {enabledAdvancedEnhancements.length !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
         <div className="mt-2 rounded-md bg-gray-900 p-4">
           <pre className="overflow-x-auto whitespace-pre-wrap text-sm text-gray-100">
             <code>{state.generatedPrompt.finalPrompt}</code>
           </pre>
         </div>
+        {enabledAdvancedEnhancements.length > 0 && (
+          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            The prompt above includes instructions from your enabled advanced enhancements (role, format, constraints, reasoning, and conversation flow).
+          </p>
+        )}
       </div>
+
+      {/* Advanced Enhancements Settings */}
+      {enabledAdvancedEnhancements.length > 0 && (
+        <div className="rounded-md border border-blue-300 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-900/20">
+          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300">Advanced Enhancements</h4>
+          <div className="mt-2 space-y-2">
+            <div className="flex flex-wrap gap-2">
+              {enabledAdvancedEnhancements.map((enhancement) => (
+                <span
+                  key={enhancement}
+                  className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-800/50 dark:text-blue-200"
+                >
+                  {enhancement}
+                </span>
+              ))}
+            </div>
+            <p className="text-xs text-blue-700 dark:text-blue-300">{advancedEnhancementDetails}</p>
+          </div>
+        </div>
+      )}
 
       {/* Metadata */}
       <div className="rounded-md border border-gray-300 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800">
@@ -223,6 +383,12 @@ export function PreviewExecuteStep() {
             <dt className="font-medium text-gray-500 dark:text-gray-400">VS Enabled:</dt>
             <dd className="text-gray-900 dark:text-white">
               {state.generatedPrompt.metadata.vsEnabled ? 'Yes' : 'No'}
+            </dd>
+          </div>
+          <div>
+            <dt className="font-medium text-gray-500 dark:text-gray-400">Advanced Enhancements:</dt>
+            <dd className="text-gray-900 dark:text-white">
+              {enabledAdvancedEnhancements.length > 0 ? enabledAdvancedEnhancements.join(', ') : 'None'}
             </dd>
           </div>
           <div>

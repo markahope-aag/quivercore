@@ -11,6 +11,7 @@ import type {
   ExecutionResult,
   PromptTemplate,
 } from '@/lib/types/prompt-builder'
+import type { AdvancedEnhancements } from '@/lib/utils/enhancementGenerators'
 import { DEFAULT_BASE_CONFIG, DEFAULT_VS_ENHANCEMENT } from '@/lib/constants/prompt-builder'
 import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/lib/constants/enhancements'
 import { generateEnhancedPrompt } from '@/lib/utils/prompt-generation'
@@ -83,6 +84,7 @@ function promptBuilderReducer(
         ...state,
         baseConfig: action.payload.config,
         vsEnhancement: action.payload.vsEnhancement,
+        advancedEnhancements: action.payload.advancedEnhancements || state.advancedEnhancements,
         currentStep: 'base',
       }
 
@@ -119,7 +121,7 @@ interface PromptBuilderContextType {
   setStep: (step: BuilderStep) => void
   updateBaseConfig: (config: Partial<BasePromptConfig>) => void
   updateVSEnhancement: (enhancement: Partial<VSEnhancement>) => void
-  updateAdvancedEnhancements: (enhancements: Partial<any>) => void
+  updateAdvancedEnhancements: (enhancements: Partial<AdvancedEnhancements>) => void
   generatePrompt: () => void
   executePrompt: (apiKey: string) => Promise<void>
   saveTemplate: (name: string, description: string, tags: string[]) => void
@@ -147,14 +149,18 @@ export function PromptBuilderProvider({ children }: { children: React.ReactNode 
     dispatch({ type: 'UPDATE_VS_ENHANCEMENT', payload: enhancement })
   }, [])
 
-  const updateAdvancedEnhancements = useCallback((enhancements: Partial<any>) => {
+  const updateAdvancedEnhancements = useCallback((enhancements: Partial<AdvancedEnhancements>) => {
     dispatch({ type: 'UPDATE_ADVANCED_ENHANCEMENTS', payload: enhancements })
   }, [])
 
   const generatePrompt = useCallback(() => {
-    const generated = generateEnhancedPrompt(state.baseConfig, state.vsEnhancement)
+    const generated = generateEnhancedPrompt(
+      state.baseConfig,
+      state.vsEnhancement,
+      state.advancedEnhancements
+    )
     dispatch({ type: 'GENERATE_PROMPT', payload: generated })
-  }, [state.baseConfig, state.vsEnhancement])
+  }, [state.baseConfig, state.vsEnhancement, state.advancedEnhancements])
 
   const executePrompt = useCallback(
     async (apiKey: string) => {
@@ -202,6 +208,7 @@ export function PromptBuilderProvider({ children }: { children: React.ReactNode 
         description,
         config: state.baseConfig,
         vsEnhancement: state.vsEnhancement,
+        advancedEnhancements: state.advancedEnhancements,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         tags,
@@ -214,7 +221,7 @@ export function PromptBuilderProvider({ children }: { children: React.ReactNode 
       const templates = saved ? JSON.parse(saved) : []
       localStorage.setItem('promptTemplates', JSON.stringify([template, ...templates]))
     },
-    [state.baseConfig, state.vsEnhancement]
+    [state.baseConfig, state.vsEnhancement, state.advancedEnhancements]
   )
 
   const loadTemplate = useCallback((template: PromptTemplate) => {

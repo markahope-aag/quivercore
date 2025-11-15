@@ -9,8 +9,11 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Tooltip } from '@/components/ui/tooltip'
 import { X, Plus } from 'lucide-react'
 import { TONE_OPTIONS, AUDIENCE_OPTIONS, COMPLEXITY_LEVELS } from '@/lib/constants/enhancements'
+import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
+import { EnhancementExamples } from '../EnhancementExamples'
 import type { SmartConstraints as SmartConstraintsType } from '@/lib/utils/enhancementGenerators'
 
 interface SmartConstraintsProps {
@@ -78,10 +81,11 @@ export function SmartConstraints({ config, onChange }: SmartConstraintsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Smart Constraints</CardTitle>
-        <CardDescription>
-          Define specific rules, limits, and requirements for the output
-        </CardDescription>
+        <div className="flex items-center gap-2">
+          <CardTitle>Smart Constraints</CardTitle>
+          <Tooltip content={ENHANCEMENT_HELP.smartConstraints.tooltip} />
+        </div>
+        <CardDescription>{ENHANCEMENT_HELP.smartConstraints.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Length Constraints */}
@@ -327,6 +331,12 @@ export function SmartConstraints({ config, onChange }: SmartConstraintsProps) {
             </div>
           )}
         </div>
+
+        <EnhancementExamples
+          before={ENHANCEMENT_HELP.smartConstraints.examples.before}
+          after={ENHANCEMENT_HELP.smartConstraints.examples.after}
+          title="Example: Smart Constraints"
+        />
       </CardContent>
     </Card>
   )
