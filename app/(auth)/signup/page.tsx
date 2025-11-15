@@ -21,18 +21,24 @@ export default function SignupPage() {
     setError(null)
     setLoading(true)
 
-    const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      })
 
-    if (error) {
-      setError(error.message)
+      if (error) {
+        setError(error.message)
+        setLoading(false)
+      } else {
+        router.push('/prompts')
+        router.refresh()
+      }
+    } catch (err: any) {
+      console.error('Signup error:', err)
+      setError(err.message || 'Failed to connect to authentication service. Please check your configuration.')
       setLoading(false)
-    } else {
-      router.push('/prompts')
-      router.refresh()
     }
   }
 
