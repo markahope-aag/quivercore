@@ -57,15 +57,21 @@ export async function handleSubscriptionCreated(
   }
 
   // Create or update subscription in database
+  // Use type assertion for period dates as Stripe types may vary
+  const sub = subscription as any
   const { error } = await supabase.from('user_subscriptions').upsert({
     user_id: userId,
     plan_id: plan.id,
     status: subscription.status as any,
     stripe_subscription_id: subscription.id,
     stripe_customer_id: subscription.customer as string,
-    current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-    current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-    cancel_at_period_end: subscription.cancel_at_period_end,
+    current_period_start: sub.current_period_start
+      ? new Date(sub.current_period_start * 1000).toISOString()
+      : null,
+    current_period_end: sub.current_period_end
+      ? new Date(sub.current_period_end * 1000).toISOString()
+      : null,
+    cancel_at_period_end: subscription.cancel_at_period_end || false,
     trial_end: subscription.trial_end
       ? new Date(subscription.trial_end * 1000).toISOString()
       : null,
