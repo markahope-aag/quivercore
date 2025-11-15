@@ -16,50 +16,65 @@ interface PromptsPageProps {
 }
 
 export default async function PromptsPage({ searchParams }: PromptsPageProps) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) {
-    return null
-  }
+    if (!user) {
+      return null
+    }
 
-  const params = await searchParams
-  const favorite = params.favorite === 'true'
-  const recent = params.recent === 'true'
-  const type = params.type
-  const category = params.category
-  const tag = params.tag
-  const searchQuery = params.q
+    const params = await searchParams
+    const favorite = params.favorite === 'true'
+    const recent = params.recent === 'true'
+    const type = params.type
+    const category = params.category
+    const tag = params.tag
+    const searchQuery = params.q
 
-  // Get all prompts for filters (we'll filter client-side for search)
-  let query = supabase
-    .from('prompts')
-    .select('*')
-    .eq('user_id', user.id)
+    // Get all prompts for filters (we'll filter client-side for search)
+    let query = supabase
+      .from('prompts')
+      .select('*')
+      .eq('user_id', user.id)
 
-  if (favorite) {
-    query = query.eq('is_favorite', true)
-  }
+    if (favorite) {
+      query = query.eq('is_favorite', true)
+    }
 
-  if (type) {
-    query = query.eq('type', type)
-  }
+    if (type) {
+      query = query.eq('type', type)
+    }
 
-  if (category) {
-    query = query.eq('category', category)
-  }
+    if (category) {
+      query = query.eq('category', category)
+    }
 
-  if (tag) {
-    query = query.contains('tags', [tag])
-  }
+    if (tag) {
+      query = query.contains('tags', [tag])
+    }
 
-  if (recent) {
-    query = query.order('updated_at', { ascending: false }).limit(20)
-  } else {
-    query = query.order('created_at', { ascending: false })
-  }
+    if (recent) {
+      query = query.order('updated_at', { ascending: false }).limit(20)
+    } else {
+      query = query.order('created_at', { ascending: false })
+    }
 
-  const { data: prompts } = await query
+    const { data: prompts, error } = await query
+
+    if (error) {
+      console.error('Error fetching prompts:', error)
+      return (
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">All Prompts</h1>
+            <p className="text-muted-foreground text-destructive">
+              Error loading prompts: {error.message}
+            </p>
+          </div>
+        </div>
+      )
+    }
 
   // Filter by search query if provided
   let filteredPrompts = prompts || []
@@ -98,5 +113,18 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
       </Suspense>
     </div>
   )
+  } catch (error: any) {
+    console.error('PromptsPage error:', error)
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">All Prompts</h1>
+          <p className="text-muted-foreground text-destructive">
+            An error occurred: {error?.message || 'Unknown error'}
+          </p>
+        </div>
+      </div>
+    )
+  }
 }
 
