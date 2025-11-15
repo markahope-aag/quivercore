@@ -23,13 +23,17 @@ export default function SignupPage() {
 
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       })
 
       if (error) {
         setError(error.message)
+        setLoading(false)
+      } else if (data.user && !data.session) {
+        // Email confirmation required
+        setError('Please check your email and click the confirmation link to complete your signup.')
         setLoading(false)
       } else {
         router.push('/prompts')

@@ -51,7 +51,12 @@ export default function LoginPage() {
       })
 
       if (error) {
-        setError(error.message)
+        // Provide more helpful error messages
+        if (error.message.includes('Email not confirmed')) {
+          setError('Please check your email and click the confirmation link before signing in.')
+        } else {
+          setError(error.message)
+        }
         setLoading(false)
       } else {
         router.push('/prompts')
