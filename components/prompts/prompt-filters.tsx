@@ -136,12 +136,12 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
-        <Select value={currentType} onValueChange={(value) => updateFilters({ type: value || null })}>
+        <Select value={currentType || '__all__'} onValueChange={(value) => updateFilters({ type: value === '__all__' ? null : value })}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Types" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Types</SelectItem>
+            <SelectItem value="__all__">All Types</SelectItem>
             {types.map((type) => (
               <SelectItem key={type} value={type}>
                 {type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
@@ -150,12 +150,12 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
           </SelectContent>
         </Select>
 
-        <Select value={currentCategory} onValueChange={(value) => updateFilters({ category: value || null })}>
+        <Select value={currentCategory || '__all__'} onValueChange={(value) => updateFilters({ category: value === '__all__' ? null : value })}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
+            <SelectItem value="__all__">All Categories</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category} value={category}>
                 {category}
