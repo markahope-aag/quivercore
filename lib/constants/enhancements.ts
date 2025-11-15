@@ -85,7 +85,7 @@ export const DEFAULT_ADVANCED_ENHANCEMENTS = {
   formatController: {
     enabled: false,
     type: 'none' as const,
-    structuredFormat: 'json',
+    structuredFormat: 'json' as 'json' | 'yaml' | 'xml' | undefined,
     customFormat: '',
     includeExamples: false,
   },
