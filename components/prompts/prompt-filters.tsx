@@ -14,7 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { X, Grid3x3, List, Search } from 'lucide-react'
 import { Prompt } from '@/lib/types/database'
-import { getCategoriesForType, CATEGORIES_BY_TYPE } from '@/lib/constants/categories'
+import { getCategoriesForType, CATEGORIES_BY_TYPE, TYPE_LABELS } from '@/lib/constants/categories'
 
 interface PromptFiltersProps {
   prompts: Prompt[]
@@ -45,23 +45,29 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
     router.push(`/prompts?${params.toString()}`)
   }
 
-  // Extract unique values from prompts
-  const types = Array.from(new Set(prompts.map(p => p.type).filter(Boolean)))
+  // Get all available types (always show all types, not just ones with prompts)
+  const allTypes = Object.keys(TYPE_LABELS)
   const userCategories = Array.from(new Set(prompts.map(p => p.category).filter((cat): cat is string => Boolean(cat))))
   const allTags = prompts.flatMap(p => p.tags || [])
   const uniqueTags = Array.from(new Set(allTags))
   
   // Get current type filter to show relevant categories
   const currentTypeFilter = searchParams.get('type')
-  const predefinedCategories = currentTypeFilter 
-    ? getCategoriesForType(currentTypeFilter)
-    : []
   
-  // Combine predefined and user categories, prioritizing predefined
-  const categories = [
-    ...predefinedCategories.filter(cat => userCategories.includes(cat)),
-    ...userCategories.filter((cat: string) => !predefinedCategories.includes(cat))
-  ]
+  // Get categories based on selected type
+  let categories: string[] = []
+  if (currentTypeFilter) {
+    // If a type is selected, show all predefined categories for that type
+    const predefinedCategories = getCategoriesForType(currentTypeFilter)
+    // Combine predefined categories with any user categories that match
+    categories = [
+      ...predefinedCategories,
+      ...userCategories.filter((cat: string) => !predefinedCategories.includes(cat))
+    ]
+  } else {
+    // If no type selected, show all user categories
+    categories = userCategories
+  }
 
   // Get current filter values from URL
   const currentType = searchParams.get('type') || ''
@@ -142,9 +148,9 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="__all__">All Types</SelectItem>
-            {types.map((type) => (
+            {allTypes.map((type) => (
               <SelectItem key={type} value={type}>
-                {type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                {TYPE_LABELS[type] || type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </SelectItem>
             ))}
           </SelectContent>
