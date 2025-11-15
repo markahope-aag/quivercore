@@ -47,7 +47,7 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
 
   // Extract unique values from prompts
   const types = Array.from(new Set(prompts.map(p => p.type).filter(Boolean)))
-  const userCategories = Array.from(new Set(prompts.map(p => p.category).filter(Boolean)))
+  const userCategories = Array.from(new Set(prompts.map(p => p.category).filter((cat): cat is string => Boolean(cat))))
   const allTags = prompts.flatMap(p => p.tags || [])
   const uniqueTags = Array.from(new Set(allTags))
   
@@ -60,7 +60,7 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
   // Combine predefined and user categories, prioritizing predefined
   const categories = [
     ...predefinedCategories.filter(cat => userCategories.includes(cat)),
-    ...userCategories.filter(cat => !predefinedCategories.includes(cat))
+    ...userCategories.filter((cat: string) => !predefinedCategories.includes(cat))
   ]
 
   // Get current filter values from URL
