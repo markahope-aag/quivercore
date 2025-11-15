@@ -27,7 +27,7 @@ export function FormatController({ config, onChange }: FormatControllerProps) {
           </div>
           <Switch
             checked={config.enabled}
-            onCheckedChange={(enabled) => onChange({ ...config, enabled })}
+            onCheckedChange={(enabled: boolean) => onChange({ ...config, enabled })}
           />
         </div>
       </CardHeader>
@@ -90,7 +90,7 @@ export function FormatController({ config, onChange }: FormatControllerProps) {
                 <Switch
                   id="include-examples"
                   checked={config.includeExamples || false}
-                  onCheckedChange={(includeExamples) =>
+                  onCheckedChange={(includeExamples: boolean) =>
                     onChange({ ...config, includeExamples })
                   }
                 />

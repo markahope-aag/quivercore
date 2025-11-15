@@ -26,7 +26,7 @@ export function ReasoningScaffolds({ config, onChange }: ReasoningScaffoldsProps
           </div>
           <Switch
             checked={config.enabled}
-            onCheckedChange={(enabled) => onChange({ ...config, enabled })}
+            onCheckedChange={(enabled: boolean) => onChange({ ...config, enabled })}
           />
         </div>
       </CardHeader>
@@ -60,7 +60,7 @@ export function ReasoningScaffolds({ config, onChange }: ReasoningScaffoldsProps
                 <Switch
                   id="show-working"
                   checked={config.showWorking || false}
-                  onCheckedChange={(showWorking) => onChange({ ...config, showWorking })}
+                  onCheckedChange={(showWorking: boolean) => onChange({ ...config, showWorking })}
                 />
                 <Label htmlFor="show-working" className="font-normal cursor-pointer">
                   Show reasoning process step-by-step

@@ -90,7 +90,7 @@ export function SmartConstraints({ config, onChange }: SmartConstraintsProps) {
             <Label>Length Constraints</Label>
             <Switch
               checked={config.length.enabled}
-              onCheckedChange={(enabled) =>
+              onCheckedChange={(enabled: boolean) =>
                 onChange({ ...config, length: { ...config.length, enabled } })
               }
             />
@@ -160,7 +160,7 @@ export function SmartConstraints({ config, onChange }: SmartConstraintsProps) {
             <Label>Tone & Style</Label>
             <Switch
               checked={config.tone.enabled}
-              onCheckedChange={(enabled) =>
+              onCheckedChange={(enabled: boolean) =>
                 onChange({ ...config, tone: { ...config.tone, enabled } })
               }
             />
@@ -189,7 +189,7 @@ export function SmartConstraints({ config, onChange }: SmartConstraintsProps) {
             <Label>Target Audience</Label>
             <Switch
               checked={config.audience.enabled}
-              onCheckedChange={(enabled) =>
+              onCheckedChange={(enabled: boolean) =>
                 onChange({ ...config, audience: { ...config.audience, enabled } })
               }
             />
@@ -223,7 +223,7 @@ export function SmartConstraints({ config, onChange }: SmartConstraintsProps) {
             <Label>Content Exclusions</Label>
             <Switch
               checked={config.exclusions.enabled}
-              onCheckedChange={(enabled) =>
+              onCheckedChange={(enabled: boolean) =>
                 onChange({ ...config, exclusions: { ...config.exclusions, enabled } })
               }
             />
@@ -262,7 +262,7 @@ export function SmartConstraints({ config, onChange }: SmartConstraintsProps) {
             <Label>Must Include</Label>
             <Switch
               checked={config.requirements.enabled}
-              onCheckedChange={(enabled) =>
+              onCheckedChange={(enabled: boolean) =>
                 onChange({ ...config, requirements: { ...config.requirements, enabled } })
               }
             />
@@ -301,7 +301,7 @@ export function SmartConstraints({ config, onChange }: SmartConstraintsProps) {
             <Label>Complexity Level</Label>
             <Switch
               checked={config.complexity.enabled}
-              onCheckedChange={(enabled) =>
+              onCheckedChange={(enabled: boolean) =>
                 onChange({ ...config, complexity: { ...config.complexity, enabled } })
               }
             />

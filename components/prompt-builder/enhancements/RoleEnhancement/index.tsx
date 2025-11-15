@@ -27,7 +27,7 @@ export function RoleEnhancement({ config, onChange }: RoleEnhancementProps) {
           </div>
           <Switch
             checked={config.enabled}
-            onCheckedChange={(enabled) => onChange({ ...config, enabled })}
+            onCheckedChange={(enabled: boolean) => onChange({ ...config, enabled })}
           />
         </div>
       </CardHeader>

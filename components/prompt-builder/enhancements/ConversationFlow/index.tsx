@@ -46,7 +46,7 @@ export function ConversationFlow({ config, onChange }: ConversationFlowProps) {
             <Switch
               id="allow-clarification"
               checked={config.allowClarification || false}
-              onCheckedChange={(allowClarification) =>
+              onCheckedChange={(allowClarification: boolean) =>
                 onChange({ ...config, allowClarification })
               }
             />
