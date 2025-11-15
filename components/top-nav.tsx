@@ -40,6 +40,12 @@ export function TopNav() {
           >
             Prompts
           </Link>
+          <Link
+            href="/builder"
+            className="transition-colors hover:text-foreground/80 text-foreground"
+          >
+            Builder
+          </Link>
         </nav>
 
         {/* Right side actions */}
