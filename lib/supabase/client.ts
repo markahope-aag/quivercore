@@ -16,7 +16,7 @@ export function createClient() {
   // Fallback: try hardcoded values if env vars are missing (for debugging)
   if (!supabaseUrl) {
     console.warn('NEXT_PUBLIC_SUPABASE_URL is missing, using fallback')
-    supabaseUrl = 'https://ulgqdctfhqvazpjfvplp.supabase.co'
+    supabaseUrl = 'https://ulgqdtcfhqvazpjfvplp.supabase.co'
   }
   
   if (!supabaseAnonKey) {
