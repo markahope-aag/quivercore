@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { PromptCard } from './prompt-card'
+import { PromptListItem } from './prompt-list-item'
 import { Prompt } from '@/lib/types/database'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -10,9 +11,10 @@ import { Plus } from 'lucide-react'
 
 interface PromptListProps {
   initialPrompts: Prompt[]
+  viewMode?: 'grid' | 'list'
 }
 
-export function PromptList({ initialPrompts }: PromptListProps) {
+export function PromptList({ initialPrompts, viewMode = 'grid' }: PromptListProps) {
   const [prompts, setPrompts] = useState<Prompt[]>(initialPrompts)
 
   useEffect(() => {
@@ -42,6 +44,16 @@ export function PromptList({ initialPrompts }: PromptListProps) {
           </div>
         </CardContent>
       </Card>
+    )
+  }
+
+  if (viewMode === 'list') {
+    return (
+      <div className="space-y-2">
+        {prompts.map((prompt) => (
+          <PromptListItem key={prompt.id} prompt={prompt} />
+        ))}
+      </div>
     )
   }
 
