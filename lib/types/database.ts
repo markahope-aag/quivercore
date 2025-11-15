@@ -3,9 +3,14 @@ export interface Prompt {
   user_id: string
   title: string
   content: string
+  // New fields (primary)
   use_case: string | null
   framework: string | null
   enhancement_technique: string | null
+  // Legacy fields (for backward compatibility)
+  type: 'ai_prompt' | 'email_template' | 'snippet' | 'other' | null
+  category: string | null
+  // Common fields
   tags: string[] | null
   description: string | null
   variables: Record<string, any> | null
