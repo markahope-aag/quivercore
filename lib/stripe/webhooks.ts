@@ -146,10 +146,11 @@ export async function handleInvoicePaid(
   const supabase = await createClient()
 
   // Get subscription ID (can be string or expanded object)
+  // Type assertion needed because Stripe Invoice type may not expose subscription directly
   const subscriptionId =
-    typeof invoice.subscription === 'string'
-      ? invoice.subscription
-      : invoice.subscription?.id
+    typeof (invoice as any).subscription === 'string'
+      ? (invoice as any).subscription
+      : (invoice as any).subscription?.id
 
   if (!subscriptionId) {
     return // Not a subscription invoice
