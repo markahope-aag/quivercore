@@ -29,13 +29,20 @@ export function PromptCard({ prompt }: PromptCardProps) {
     setIsFavorite(newFavorite)
 
     try {
-      await fetch(`/api/prompts/${prompt.id}`, {
+      const response = await fetch(`/api/prompts/${prompt.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_favorite: newFavorite }),
       })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(error.error || 'Failed to update favorite')
+      }
     } catch (error) {
       setIsFavorite(!newFavorite) // Revert on error
+      console.error('Failed to toggle favorite:', error)
+      alert('Failed to update favorite. Please try again.')
     }
   }
 
@@ -45,12 +52,19 @@ export function PromptCard({ prompt }: PromptCardProps) {
     }
 
     try {
-      await fetch(`/api/prompts/${prompt.id}`, {
+      const response = await fetch(`/api/prompts/${prompt.id}`, {
         method: 'DELETE',
       })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(error.error || 'Failed to delete prompt')
+      }
+
       router.refresh()
     } catch (error) {
       console.error('Failed to delete prompt:', error)
+      alert('Failed to delete prompt. Please try again.')
     }
   }
 

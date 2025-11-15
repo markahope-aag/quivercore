@@ -100,7 +100,8 @@ export function PromptForm({ prompt }: PromptFormProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to save prompt')
+        const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(error.error || 'Failed to save prompt')
       }
 
       router.push('/prompts')
