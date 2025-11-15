@@ -145,11 +145,16 @@ export async function handleInvoicePaid(
 ): Promise<void> {
   const supabase = await createClient()
 
-  if (!invoice.subscription || typeof invoice.subscription === 'string') {
+  // Get subscription ID (can be string or expanded object)
+  const subscriptionId =
+    typeof invoice.subscription === 'string'
+      ? invoice.subscription
+      : invoice.subscription?.id
+
+  if (!subscriptionId) {
     return // Not a subscription invoice
   }
 
-  const subscriptionId = invoice.subscription.id
   const customerId =
     typeof invoice.customer === 'string'
       ? invoice.customer
@@ -220,17 +225,18 @@ export async function processWebhookEvent(
 
     case 'invoice.payment_failed':
       // Handle payment failure - update subscription status
-      const invoice = event.data.object as Stripe.Invoice
-      if (invoice.subscription) {
-        const subscriptionId =
-          typeof invoice.subscription === 'string'
-            ? invoice.subscription
-            : invoice.subscription.id
+      const failedInvoice = event.data.object as Stripe.Invoice
+      const failedSubscriptionId =
+        typeof failedInvoice.subscription === 'string'
+          ? failedInvoice.subscription
+          : (failedInvoice.subscription as Stripe.Subscription)?.id
+      
+      if (failedSubscriptionId) {
         const supabase = await createClient()
         await supabase
           .from('user_subscriptions')
           .update({ status: 'past_due' })
-          .eq('stripe_subscription_id', subscriptionId)
+          .eq('stripe_subscription_id', failedSubscriptionId)
       }
       break
 

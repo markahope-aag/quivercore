@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Get raw body
+    // Get raw body as text (Next.js App Router provides this automatically)
     const body = await request.text()
 
     // Verify webhook signature
@@ -46,13 +46,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Disable body parsing for webhook route (we need raw body for signature verification)
+// Use Node.js runtime for webhook (required for raw body access)
 export const runtime = 'nodejs'
-
-// Next.js 13+ requires explicit configuration for raw body
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
 
