@@ -88,15 +88,17 @@ export async function handleSubscriptionUpdated(
   const supabase = await createClient()
 
   // Update subscription in database
+  // Use type assertion for period dates as Stripe types may vary
+  const sub = subscription as any
   const { error } = await supabase
     .from('user_subscriptions')
     .update({
       status: subscription.status as any,
-      current_period_start: subscription.current_period_start
-        ? new Date(subscription.current_period_start * 1000).toISOString()
+      current_period_start: sub.current_period_start
+        ? new Date(sub.current_period_start * 1000).toISOString()
         : null,
-      current_period_end: subscription.current_period_end
-        ? new Date(subscription.current_period_end * 1000).toISOString()
+      current_period_end: sub.current_period_end
+        ? new Date(sub.current_period_end * 1000).toISOString()
         : null,
       cancel_at_period_end: subscription.cancel_at_period_end || false,
       canceled_at: subscription.canceled_at
