@@ -13,7 +13,8 @@
     "test:coverage": "vitest --coverage",
     "analyze": "ANALYZE=true npm run build",
     "pre-commit": "npm run type-check && npm run lint",
-    "test:stripe": "tsx scripts/test-stripe-connection.ts"
+    "test:stripe": "tsx scripts/test-stripe-connection.ts",
+    "verify:stripe": "tsx scripts/verify-stripe-db-connection.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.69.0",
