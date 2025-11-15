@@ -20,7 +20,7 @@ import type {
   SmartConstraints,
   ReasoningScaffolds,
   ConversationFlow,
-} from '@/src/types/index'
+} from '@/lib/types/enhancements'
 import { DEFAULT_BASE_CONFIG, DEFAULT_VS_ENHANCEMENT } from '@/lib/constants/prompt-builder'
 import { generateEnhancedPrompt } from '@/lib/utils/prompt-generation'
 

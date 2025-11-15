@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { generateEnhancedPrompt } from './prompt-generation'
 import { DomainCategory, FrameworkType, VSDistributionType } from '@/lib/types/prompt-builder'
 import type { BasePromptConfig, VSEnhancement } from '@/lib/types/prompt-builder'
-import type { AdvancedEnhancements } from '@/src/types/index'
+import type { AdvancedEnhancements } from '@/lib/types/enhancements'
 import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/src/constants/enhancements'
 
 describe('Prompt Generation', () => {

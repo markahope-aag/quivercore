@@ -13,7 +13,7 @@ import { ReasoningScaffolds as ReasoningScaffoldsComponent } from '../enhancemen
 import { ConversationFlow as ConversationFlowComponent } from '../enhancements/ConversationFlow'
 import { usePromptBuilder } from '@/contexts/PromptBuilderContext'
 import { ENHANCEMENT_PRESETS, validateEnhancementConflicts } from '@/lib/constants/enhancement-help'
-import type { AdvancedEnhancements, RoleEnhancement, FormatControl, SmartConstraints, ReasoningScaffolds, ConversationFlow } from '@/src/types/index'
+import type { AdvancedEnhancements, RoleEnhancement, FormatControl, SmartConstraints, ReasoningScaffolds, ConversationFlow } from '@/lib/types/enhancements'
 
 export function AdvancedEnhancementsStep() {
   const { state, updateAdvancedEnhancements } = usePromptBuilder()

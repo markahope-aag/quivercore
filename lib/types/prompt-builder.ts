@@ -1,6 +1,6 @@
 // Types for AI Prompt Builder
 
-import type { AdvancedEnhancements } from '@/src/types/index'
+import type { AdvancedEnhancements } from './enhancements'
 
 // ============================================================================
 // ENUMS & CONSTANTS

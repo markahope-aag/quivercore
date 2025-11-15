@@ -4,7 +4,7 @@ import type {
   SmartConstraints,
   ReasoningScaffolds,
   ConversationFlow,
-} from '@/src/types/index'
+} from '@/lib/types/enhancements'
 
 export class EnhancementGenerators {
   static generateRoleEnhancement(config: RoleEnhancement): string {

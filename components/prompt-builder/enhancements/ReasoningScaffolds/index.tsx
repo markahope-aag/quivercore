@@ -9,7 +9,7 @@ import { Tooltip } from '@/components/ui/tooltip'
 import { REASONING_STYLES } from '@/src/constants/enhancements'
 import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
 import { EnhancementExamples } from '../EnhancementExamples'
-import type { ReasoningScaffolds as ReasoningScaffoldsType } from '@/src/types/index'
+import type { ReasoningScaffolds as ReasoningScaffoldsType } from '@/lib/types/enhancements'
 
 interface ReasoningScaffoldsProps {
   config: ReasoningScaffoldsType

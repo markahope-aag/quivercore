@@ -11,7 +11,7 @@ import { Tooltip } from '@/components/ui/tooltip'
 import { X, Plus } from 'lucide-react'
 import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
 import { EnhancementExamples } from '../EnhancementExamples'
-import type { SmartConstraints as SmartConstraintsType } from '@/src/types/index'
+import type { SmartConstraints as SmartConstraintsType } from '@/lib/types/enhancements'
 
 interface SmartConstraintsProps {
   config: SmartConstraintsType

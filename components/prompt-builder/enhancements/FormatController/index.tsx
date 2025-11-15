@@ -10,7 +10,7 @@ import { Tooltip } from '@/components/ui/tooltip'
 import { FORMAT_STRUCTURES, LENGTH_SPEC_TYPES, STYLE_GUIDES } from '@/src/constants/enhancements'
 import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
 import { EnhancementExamples } from '../EnhancementExamples'
-import type { FormatControl as FormatControlType } from '@/src/types/index'
+import type { FormatControl as FormatControlType } from '@/lib/types/enhancements'
 
 interface FormatControllerProps {
   config: FormatControlType

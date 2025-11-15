@@ -9,7 +9,7 @@ import { Tooltip } from '@/components/ui/tooltip'
 import { EXPERTISE_LEVELS, AUTHORITY_LEVELS } from '@/src/constants/enhancements'
 import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
 import { EnhancementExamples } from '../EnhancementExamples'
-import type { RoleEnhancement as RoleEnhancementType } from '@/src/types/index'
+import type { RoleEnhancement as RoleEnhancementType } from '@/lib/types/enhancements'
 
 interface RoleEnhancementProps {
   config: RoleEnhancementType

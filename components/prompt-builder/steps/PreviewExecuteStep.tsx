@@ -5,7 +5,7 @@ import { usePromptBuilder } from '@/contexts/PromptBuilderContext'
 import { exportPrompt, copyToClipboard, exportVSResponsesAsCSV } from '@/lib/utils/export'
 import { parseVSResponse } from '@/lib/utils/api-client'
 import type { ExportFormat } from '@/lib/utils/export'
-import type { AdvancedEnhancements } from '@/src/types/index'
+import type { AdvancedEnhancements } from '@/lib/types/enhancements'
 import { EnhancementTestRunner } from '../EnhancementTestRunner'
 
 // Helper function to get list of enabled advanced enhancements

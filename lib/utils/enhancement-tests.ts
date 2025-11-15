@@ -2,10 +2,10 @@
 // This file provides test cases and validation functions for advanced enhancements
 
 import { generateEnhancedPrompt } from './prompt-generation'
-import { EnhancementGenerators } from '@/src/utils/enhancementGenerators'
+import { EnhancementGenerators } from '@/src/utils/enhancementGenerators' // Keep src/ for now as it's the source
 import type { BasePromptConfig, VSEnhancement } from '@/lib/types/prompt-builder'
-import type { AdvancedEnhancements } from '@/src/types/index'
-import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/src/constants/enhancements'
+import type { AdvancedEnhancements } from '@/lib/types/enhancements'
+import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/src/constants/enhancements' // Keep src/ for now as it's the source
 import { DomainCategory, FrameworkType, VSDistributionType } from '@/lib/types/prompt-builder'
 
 // Test configuration

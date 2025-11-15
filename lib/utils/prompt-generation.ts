@@ -14,8 +14,8 @@ import type {
 } from '@/lib/types/prompt-builder'
 import { generateVSInstructions, getVSFormat } from './vs-enhancement'
 import { generateFrameworkPrompt } from './framework-templates'
-import type { AdvancedEnhancements } from '@/src/types/index'
-import { EnhancementGenerators } from '@/src/utils/enhancementGenerators'
+import type { AdvancedEnhancements } from '@/lib/types/enhancements'
+import { EnhancementGenerators } from '@/src/utils/enhancementGenerators' // Keep src/ for now as it's the source
 
 /**
  * Generates an enhanced prompt by combining base prompt, VS enhancement, and advanced enhancements.

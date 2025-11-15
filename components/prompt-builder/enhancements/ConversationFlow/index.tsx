@@ -11,7 +11,7 @@ import { Tooltip } from '@/components/ui/tooltip'
 import { X } from 'lucide-react'
 import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
 import { EnhancementExamples } from '../EnhancementExamples'
-import type { ConversationFlow as ConversationFlowType } from '@/src/types/index'
+import type { ConversationFlow as ConversationFlowType } from '@/lib/types/enhancements'
 
 interface ConversationFlowProps {
   config: ConversationFlowType

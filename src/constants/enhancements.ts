@@ -5,7 +5,7 @@ import type {
   SmartConstraints,
   ReasoningScaffolds,
   ConversationFlow,
-} from '@/src/types/index'
+} from '@/lib/types/enhancements'
 
 export const DEFAULT_ROLE_ENHANCEMENT: RoleEnhancement = {
   enabled: false,
