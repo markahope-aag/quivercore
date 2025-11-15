@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { handleError, ErrorCodes, ApplicationError } from '@/lib/utils/error-handler'
 import { logger } from '@/lib/utils/logger'
 import { sanitizeInput } from '@/lib/utils/sanitize'
+import Anthropic from '@anthropic-ai/sdk'
 // Rate limiting is handled by Next.js middleware, not needed here
 
 /**
@@ -42,22 +43,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Execute prompt using Anthropic API
+    // Execute prompt using Anthropic SDK
     logger.debug('Executing prompt via server', {
       promptLength: promptText.length,
       systemPromptLength: systemPrompt.length,
       model,
     })
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model,
+    const anthropic = new Anthropic({
+      apiKey: apiKey,
+    })
+
+    try {
+      const message = await anthropic.messages.create({
+        model: model as Anthropic.MessageCreateParams['model'],
         max_tokens: maxTokens,
         system: systemPrompt || undefined,
         messages: [
@@ -66,56 +65,74 @@ export async function POST(request: NextRequest) {
             content: promptText,
           },
         ],
-      }),
-    })
+      })
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      logger.error('Anthropic API error', { status: response.status, errorData })
-
-      if (response.status === 401) {
+      // Validate response structure
+      if (!message.content || !Array.isArray(message.content) || message.content.length === 0) {
         throw new ApplicationError(
-          'Invalid API key configuration',
-          ErrorCodes.EXTERNAL_API_ERROR,
-          502
-        )
-      } else if (response.status === 429) {
-        throw new ApplicationError(
-          'Rate limit exceeded. Please try again later.',
-          ErrorCodes.RATE_LIMIT_EXCEEDED,
-          429
-        )
-      } else {
-        throw new ApplicationError(
-          errorData.error?.message || `API error: ${response.status}`,
+          'Invalid API response: missing content',
           ErrorCodes.EXTERNAL_API_ERROR,
           502
         )
       }
+
+      // Extract text from content blocks
+      const textContent = message.content
+        .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+        .map((block) => block.text)
+        .join('')
+
+      if (!textContent) {
+        throw new ApplicationError(
+          'Invalid API response: no text content',
+          ErrorCodes.EXTERNAL_API_ERROR,
+          502
+        )
+      }
+
+      logger.debug('Prompt executed successfully', {
+        model: message.model,
+        stopReason: message.stop_reason,
+        tokensUsed: message.usage,
+      })
+
+      return NextResponse.json({
+        response: textContent,
+        model: message.model,
+        tokensUsed: message.usage,
+      })
+    } catch (error: unknown) {
+      // Handle Anthropic SDK errors
+      if (error instanceof Anthropic.APIError) {
+        logger.error('Anthropic API error', {
+          status: error.status,
+          message: error.message,
+          error: error.error,
+        })
+
+        if (error.status === 401) {
+          throw new ApplicationError(
+            'Invalid API key configuration',
+            ErrorCodes.EXTERNAL_API_ERROR,
+            502
+          )
+        } else if (error.status === 429) {
+          throw new ApplicationError(
+            'Rate limit exceeded. Please try again later.',
+            ErrorCodes.RATE_LIMIT_EXCEEDED,
+            429
+          )
+        } else {
+          throw new ApplicationError(
+            error.message || `API error: ${error.status}`,
+            ErrorCodes.EXTERNAL_API_ERROR,
+            502
+          )
+        }
+      }
+      // Re-throw if it's not an Anthropic error
+      throw error
     }
-
-    const data = await response.json()
-
-    // Validate response structure
-    if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
-      throw new ApplicationError(
-        'Invalid API response: missing content',
-        ErrorCodes.EXTERNAL_API_ERROR,
-        502
-      )
-    }
-
-    logger.debug('Prompt executed successfully', {
-      model: data.model,
-      stopReason: data.stop_reason,
-      tokensUsed: data.usage,
-    })
-
-    return NextResponse.json({
-      response: data.content[0].text,
-      model: data.model,
-      tokensUsed: data.usage,
-    })
   } catch (error: unknown) {
     const appError = handleError(error)
     logger.error('POST /api/prompts/execute error', appError)

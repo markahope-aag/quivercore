@@ -1,5 +1,6 @@
 // Claude API client for prompt execution
 
+import Anthropic from '@anthropic-ai/sdk'
 import { logger } from './logger'
 
 interface ClaudeAPIConfig {
@@ -59,59 +60,61 @@ export async function executePrompt(
   })
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': config.apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: config.model || 'claude-3-sonnet-20240229',
-        max_tokens: config.maxTokens || 4096,
-        system: systemPrompt,
-        messages: [
-          {
-            role: 'user',
-            content: promptText,
-          },
-        ],
-      }),
+    const anthropic = new Anthropic({
+      apiKey: config.apiKey,
     })
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      logger.error('API error response', errorData)
-
-      if (response.status === 401) {
-        throw new Error('Invalid API key')
-      } else if (response.status === 429) {
-        throw new Error('Rate limit exceeded. Please try again later.')
-      } else {
-        throw new Error(errorData.error?.message || `API error: ${response.status}`)
-      }
-    }
-
-    const data = await response.json()
+    const message = await anthropic.messages.create({
+      model: (config.model || 'claude-3-sonnet-20240229') as Anthropic.MessageCreateParams['model'],
+      max_tokens: config.maxTokens || 4096,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: promptText,
+        },
+      ],
+    })
 
     logger.debug('API response received', {
-      model: data.model,
-      stopReason: data.stop_reason,
-      tokensUsed: data.usage,
+      model: message.model,
+      stopReason: message.stop_reason,
+      tokensUsed: message.usage,
     })
 
     // Validate response structure
-    if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
+    if (!message.content || !Array.isArray(message.content) || message.content.length === 0) {
       throw new Error('Invalid API response: missing content')
     }
 
+    // Extract text from content blocks
+    const textContent = message.content
+      .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+      .map((block) => block.text)
+      .join('')
+
+    if (!textContent) {
+      throw new Error('Invalid API response: no text content')
+    }
+
     return {
-      response: data.content[0].text,
-      model: data.model,
-      tokensUsed: data.usage,
+      response: textContent,
+      model: message.model,
+      tokensUsed: message.usage,
     }
   } catch (error: unknown) {
     logger.error('API execution error', error)
+
+    // Handle Anthropic SDK errors
+    if (error instanceof Anthropic.APIError) {
+      if (error.status === 401) {
+        throw new Error('Invalid API key')
+      } else if (error.status === 429) {
+        throw new Error('Rate limit exceeded. Please try again later.')
+      } else {
+        throw new Error(error.message || `API error: ${error.status}`)
+      }
+    }
 
     if (error instanceof Error && error.message.includes('fetch')) {
       throw new Error('Network error. Please check your internet connection.')
@@ -137,59 +140,41 @@ export async function* streamResponse(
   })
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': config.apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: config.model || 'claude-3-sonnet-20240229',
-        max_tokens: config.maxTokens || 4096,
-        system: systemPrompt,
-        stream: true,
-        messages: [
-          {
-            role: 'user',
-            content: promptText,
-          },
-        ],
-      }),
+    const anthropic = new Anthropic({
+      apiKey: config.apiKey,
     })
 
-    if (!response.ok || !response.body) {
-      throw new Error(`API error: ${response.status}`)
-    }
+    const stream = await anthropic.messages.stream({
+      model: (config.model || 'claude-3-sonnet-20240229') as Anthropic.MessageStreamParams['model'],
+      max_tokens: config.maxTokens || 4096,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: promptText,
+        },
+      ],
+    })
 
-    const reader = response.body.getReader()
-    const decoder = new TextDecoder()
-
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-
-      const chunk = decoder.decode(value)
-      const lines = chunk.split('\n').filter((line) => line.trim())
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6)
-          if (data === '[DONE]') continue
-
-          try {
-            const parsed = JSON.parse(data)
-            if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-              yield parsed.delta.text
-            }
-          } catch (e) {
-            // Skip malformed JSON
-          }
-        }
+    for await (const event of stream) {
+      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+        yield event.delta.text
       }
     }
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error('API streaming error', error)
+
+    // Handle Anthropic SDK errors
+    if (error instanceof Anthropic.APIError) {
+      if (error.status === 401) {
+        throw new Error('Invalid API key')
+      } else if (error.status === 429) {
+        throw new Error('Rate limit exceeded. Please try again later.')
+      } else {
+        throw new Error(error.message || `API error: ${error.status}`)
+      }
+    }
+
     throw error
   }
 }
