@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { usePromptBuilder } from '@/contexts/PromptBuilderContext'
-import { getTemplates, searchTemplates, deleteTemplate, exportTemplate } from '@/lib/utils/storage'
+import { getTemplates, searchTemplates, deleteTemplate } from '@/lib/utils/storage'
+import { exportTemplate } from '@/lib/utils/export'
 import type { PromptTemplate } from '@/lib/types/prompt-builder'
 
 export function TemplateLibrary() {

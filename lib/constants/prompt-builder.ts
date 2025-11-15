@@ -145,7 +145,11 @@ export const PROBABILITY_THRESHOLDS = [
   { value: 0.05, label: '0.05 (Very rare)' },
 ]
 
-export const RESPONSE_COUNT_OPTIONS = [3, 5, 7]
+export const RESPONSE_COUNT_OPTIONS = [
+  { value: 3, label: '3 responses' },
+  { value: 5, label: '5 responses' },
+  { value: 7, label: '7 responses' },
+]
 
 export const BALANCED_DIMENSIONS = [
   'Technical vs Creative',
@@ -172,3 +176,41 @@ export const DEFAULT_BASE_CONFIG = {
   targetOutcome: '',
   frameworkConfig: {},
 }
+
+// Alias exports for UI components (formatted for dropdowns)
+export const DOMAIN_CATEGORIES = [
+  { value: 'Writing & Content', label: 'Writing & Content' },
+  { value: 'Business & Strategy', label: 'Business & Strategy' },
+  { value: 'Code & Development', label: 'Code & Development' },
+  { value: 'Data & Analysis', label: 'Data & Analysis' },
+  { value: 'Research & Learning', label: 'Research & Learning' },
+  { value: 'Marketing & Sales', label: 'Marketing & Sales' },
+  { value: 'Creative & Design', label: 'Creative & Design' },
+  { value: 'Communication', label: 'Communication' },
+  { value: 'Productivity & Planning', label: 'Productivity & Planning' },
+  { value: 'Education & Training', label: 'Education & Training' },
+  { value: 'Technical Writing', label: 'Technical Writing' },
+  { value: 'Legal & Compliance', label: 'Legal & Compliance' },
+  { value: 'HR & Recruiting', label: 'HR & Recruiting' },
+  { value: 'Finance & Accounting', label: 'Finance & Accounting' },
+  { value: 'Customer Support', label: 'Customer Support' },
+  { value: 'SEO & Search', label: 'SEO & Search' },
+  { value: 'Social Media', label: 'Social Media' },
+  { value: 'Templates', label: 'Templates' },
+  { value: 'Frameworks', label: 'Frameworks' },
+  { value: 'Multi-step Workflows', label: 'Multi-step Workflows' },
+  { value: 'Other', label: 'Other' },
+]
+
+export const FRAMEWORK_OPTIONS = [
+  { value: 'Role-Based', label: 'Role-Based' },
+  { value: 'Few-Shot', label: 'Few-Shot' },
+  { value: 'Chain-of-Thought', label: 'Chain-of-Thought' },
+  { value: 'Template/Fill-in', label: 'Template/Fill-in' },
+  { value: 'Constraint-Based', label: 'Constraint-Based' },
+  { value: 'Iterative/Multi-Turn', label: 'Iterative/Multi-Turn' },
+  { value: 'Comparative', label: 'Comparative' },
+  { value: 'Generative', label: 'Generative' },
+  { value: 'Analytical', label: 'Analytical' },
+  { value: 'Transformation', label: 'Transformation' },
+]

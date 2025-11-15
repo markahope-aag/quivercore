@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { usePromptBuilder } from '@/contexts/PromptBuilderContext'
 import {
   VS_DISTRIBUTION_TYPES,
@@ -77,7 +78,7 @@ export function VSEnhancementStep() {
     updateVSEnhancement({ antiTypicalityEnabled: !vs.antiTypicalityEnabled })
   }
 
-  const [customDimensionInput, setCustomDimensionInput] = React.useState('')
+  const [customDimensionInput, setCustomDimensionInput] = useState('')
 
   return (
     <div className="space-y-6">

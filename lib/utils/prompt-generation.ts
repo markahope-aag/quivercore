@@ -65,27 +65,6 @@ function getFrameworkInstructions(framework: string): string {
   return instructions[framework] || ''
 }
 
-function generateVSInstructions(vsEnhancement: VSEnhancement): string {
-  const instructions: string[] = []
-
-  // Add verbalized parameter instructions
-  Object.entries(vsEnhancement.parameters).forEach(([paramName, config]) => {
-    if (config && config.verbalize) {
-      const paramDef = VS_PARAMETERS.find((p) => p.name === paramName)
-      if (paramDef && config.instruction) {
-        instructions.push(config.instruction)
-      }
-    }
-  })
-
-  // Add custom instructions
-  if (vsEnhancement.customInstructions) {
-    instructions.push(vsEnhancement.customInstructions)
-  }
-
-  return instructions.join('\n')
-}
-
 function generateDefaultSystemPrompt(domain: string): string {
   const systemPrompts: Record<string, string> = {
     'Writing & Content': 'You are an expert writer and content creator with a keen eye for clarity, engagement, and style.',
