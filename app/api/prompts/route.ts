@@ -47,9 +47,10 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(data)
-  } catch (error) {
+  } catch (error: any) {
+    console.error('GET /api/prompts error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error?.message || 'Internal server error' },
       { status: 500 }
     )
   }
@@ -114,9 +115,10 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(prompt, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
+    console.error('POST /api/prompts error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error?.message || 'Internal server error' },
       { status: 500 }
     )
   }

@@ -33,9 +33,10 @@ export async function GET(
     }
 
     return NextResponse.json(data)
-  } catch (error) {
+  } catch (error: any) {
+    console.error('GET /api/prompts/[id] error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error?.message || 'Internal server error' },
       { status: 500 }
     )
   }
@@ -138,9 +139,10 @@ export async function PATCH(
     }
 
     return NextResponse.json(data)
-  } catch (error) {
+  } catch (error: any) {
+    console.error('PATCH /api/prompts/[id] error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error?.message || 'Internal server error' },
       { status: 500 }
     )
   }
@@ -171,9 +173,10 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch (error: any) {
+    console.error('DELETE /api/prompts/[id] error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error?.message || 'Internal server error' },
       { status: 500 }
     )
   }
