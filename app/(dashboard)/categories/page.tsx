@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { getTypeLabel, CATEGORIES_BY_TYPE } from '@/lib/constants/categories'
+import { Folder, FolderOpen } from 'lucide-react'
 
 export default async function CategoriesPage() {
   const supabase = await createClient()
@@ -16,65 +18,100 @@ export default async function CategoriesPage() {
     .select('category, type')
     .eq('user_id', user.id)
 
-  // Group by category
-  const categoryMap = new Map<string, { count: number; types: Set<string> }>()
+  // Group by type, then by category
+  const typeMap = new Map<string, Map<string, number>>()
   
   prompts?.forEach((prompt) => {
-    if (prompt.category) {
-      const existing = categoryMap.get(prompt.category) || { count: 0, types: new Set<string>() }
-      existing.count++
-      existing.types.add(prompt.type)
-      categoryMap.set(prompt.category, existing)
+    if (prompt.category && prompt.type) {
+      if (!typeMap.has(prompt.type)) {
+        typeMap.set(prompt.type, new Map())
+      }
+      const categoryMap = typeMap.get(prompt.type)!
+      const current = categoryMap.get(prompt.category) || 0
+      categoryMap.set(prompt.category, current + 1)
     }
   })
 
-  const categories = Array.from(categoryMap.entries())
-    .map(([category, data]) => ({
-      name: category,
-      count: data.count,
-      types: Array.from(data.types),
-    }))
-    .sort((a, b) => b.count - a.count)
+  const types = ['ai_prompt', 'email_template', 'snippet', 'other']
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
         <p className="text-muted-foreground">
-          Browse prompts by category
+          Browse prompts organized by type and category
         </p>
       </div>
-      {categories.length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center text-muted-foreground">
-            No categories yet. Create prompts with categories to organize them.
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {categories.map((category) => (
-            <Link key={category.name} href={`/prompts?category=${encodeURIComponent(category.name)}`}>
-              <Card className="hover:bg-accent transition-colors cursor-pointer">
-                <CardHeader>
-                  <CardTitle>{category.name}</CardTitle>
-                  <CardDescription>
-                    {category.count} prompt{category.count !== 1 ? 's' : ''}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {category.types.map((type) => (
-                      <Badge key={type} variant="secondary">
-                        {type.replace('_', ' ')}
-                      </Badge>
-                    ))}
-                  </div>
+
+      {types.map((type) => {
+        const categoryMap = typeMap.get(type) || new Map()
+        const predefinedCategories = CATEGORIES_BY_TYPE[type] || []
+        const hasPrompts = categoryMap.size > 0
+
+        return (
+          <div key={type} className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Folder className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-2xl font-semibold">{getTypeLabel(type)}</h2>
+              {hasPrompts && (
+                <Badge variant="secondary">
+                  {Array.from(categoryMap.values()).reduce((a, b) => a + b, 0)} prompt{Array.from(categoryMap.values()).reduce((a, b) => a + b, 0) !== 1 ? 's' : ''}
+                </Badge>
+              )}
+            </div>
+
+            {hasPrompts ? (
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {predefinedCategories.map((category) => {
+                  const count = categoryMap.get(category) || 0
+                  if (count === 0) return null
+                  
+                  return (
+                    <Link 
+                      key={category} 
+                      href={`/prompts?type=${type}&category=${encodeURIComponent(category)}`}
+                    >
+                      <Card className="hover:bg-accent transition-colors cursor-pointer h-full">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base">{category}</CardTitle>
+                          <CardDescription>
+                            {count} prompt{count !== 1 ? 's' : ''}
+                          </CardDescription>
+                        </CardHeader>
+                      </Card>
+                    </Link>
+                  )
+                })}
+                
+                {/* Show custom categories that aren't in predefined list */}
+                {Array.from(categoryMap.entries())
+                  .filter(([cat]) => !predefinedCategories.includes(cat))
+                  .map(([category, count]) => (
+                    <Link 
+                      key={category} 
+                      href={`/prompts?type=${type}&category=${encodeURIComponent(category)}`}
+                    >
+                      <Card className="hover:bg-accent transition-colors cursor-pointer h-full border-dashed">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base">{category}</CardTitle>
+                          <CardDescription>
+                            {count} prompt{count !== 1 ? 's' : ''}
+                          </CardDescription>
+                        </CardHeader>
+                      </Card>
+                    </Link>
+                  ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="py-6 text-center text-muted-foreground text-sm">
+                  No prompts in this category yet
                 </CardContent>
               </Card>
-            </Link>
-          ))}
-        </div>
-      )}
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

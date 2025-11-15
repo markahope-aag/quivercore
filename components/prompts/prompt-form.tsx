@@ -29,6 +29,7 @@ import { Prompt, PromptType } from '@/lib/types/database'
 import { extractVariables } from '@/lib/utils/prompt'
 import { Badge } from '@/components/ui/badge'
 import { X } from 'lucide-react'
+import { getCategoriesForType } from '@/lib/constants/categories'
 
 const promptFormSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -49,6 +50,7 @@ export function PromptForm({ prompt }: PromptFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [detectedVariables, setDetectedVariables] = useState<string[]>([])
+  const [customCategory, setCustomCategory] = useState(false)
 
   const form = useForm<PromptFormValues>({
     resolver: zodResolver(promptFormSchema),
@@ -63,6 +65,18 @@ export function PromptForm({ prompt }: PromptFormProps) {
   })
 
   const content = form.watch('content')
+  const selectedType = form.watch('type')
+  const currentCategory = form.watch('category')
+  const availableCategories = getCategoriesForType(selectedType)
+  
+  // Check if current category is in the predefined list
+  useEffect(() => {
+    if (currentCategory && !availableCategories.includes(currentCategory)) {
+      setCustomCategory(true)
+    } else {
+      setCustomCategory(false)
+    }
+  }, [currentCategory, availableCategories])
 
   useEffect(() => {
     if (content) {
@@ -212,9 +226,57 @@ export function PromptForm({ prompt }: PromptFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., Marketing, Development" {...field} />
-                </FormControl>
+                <div className="space-y-2">
+                  {!customCategory ? (
+                    <Select 
+                      onValueChange={(value) => {
+                        if (value === '__custom__') {
+                          setCustomCategory(true)
+                          field.onChange('')
+                        } else {
+                          field.onChange(value)
+                        }
+                      }}
+                      value={field.value || ''}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {availableCategories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="__custom__">
+                          + Custom Category
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="space-y-2">
+                      <Input 
+                        placeholder="Enter custom category" 
+                        {...field}
+                        value={field.value || ''}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setCustomCategory(false)
+                          field.onChange('')
+                        }}
+                        className="text-xs"
+                      >
+                        Use predefined categories
+                      </Button>
+                    </div>
+                  )}
+                </div>
                 <FormMessage />
               </FormItem>
             )}

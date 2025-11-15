@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { X, Grid3x3, List, Search } from 'lucide-react'
 import { Prompt } from '@/lib/types/database'
+import { getCategoriesForType, CATEGORIES_BY_TYPE } from '@/lib/constants/categories'
 
 interface PromptFiltersProps {
   prompts: Prompt[]
@@ -46,9 +47,21 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
 
   // Extract unique values from prompts
   const types = Array.from(new Set(prompts.map(p => p.type).filter(Boolean)))
-  const categories = Array.from(new Set(prompts.map(p => p.category).filter(Boolean)))
+  const userCategories = Array.from(new Set(prompts.map(p => p.category).filter(Boolean)))
   const allTags = prompts.flatMap(p => p.tags || [])
   const uniqueTags = Array.from(new Set(allTags))
+  
+  // Get current type filter to show relevant categories
+  const currentTypeFilter = searchParams.get('type')
+  const predefinedCategories = currentTypeFilter 
+    ? getCategoriesForType(currentTypeFilter)
+    : []
+  
+  // Combine predefined and user categories, prioritizing predefined
+  const categories = [
+    ...predefinedCategories.filter(cat => userCategories.includes(cat)),
+    ...userCategories.filter(cat => !predefinedCategories.includes(cat))
+  ]
 
   // Get current filter values from URL
   const currentType = searchParams.get('type') || ''
