@@ -264,6 +264,10 @@ export interface PromptBuilderState {
   savedTemplates: PromptTemplate[]
   isExecuting: boolean
   errors: Record<string, string>
+  validationResults: {
+    issues: string[]
+    suggestions: string[]
+  }
 }
 
 export type PromptBuilderAction =
@@ -271,6 +275,12 @@ export type PromptBuilderAction =
   | { type: 'UPDATE_BASE_CONFIG'; payload: Partial<BasePromptConfig> }
   | { type: 'UPDATE_VS_ENHANCEMENT'; payload: Partial<VSEnhancement> }
   | { type: 'UPDATE_ADVANCED_ENHANCEMENTS'; payload: Partial<AdvancedEnhancements> }
+  | { type: 'UPDATE_ROLE_ENHANCEMENT'; payload: Partial<AdvancedEnhancements['roleEnhancement']> }
+  | { type: 'UPDATE_FORMAT_CONTROL'; payload: Partial<AdvancedEnhancements['formatControl']> }
+  | { type: 'UPDATE_SMART_CONSTRAINTS'; payload: Partial<AdvancedEnhancements['smartConstraints']> }
+  | { type: 'UPDATE_REASONING_SCAFFOLDS'; payload: Partial<AdvancedEnhancements['reasoningScaffolds']> }
+  | { type: 'UPDATE_CONVERSATION_FLOW'; payload: Partial<AdvancedEnhancements['conversationFlow']> }
+  | { type: 'VALIDATE_ENHANCEMENTS'; payload: { issues: string[]; suggestions: string[] } }
   | { type: 'GENERATE_PROMPT'; payload: GeneratedPrompt }
   | { type: 'ADD_EXECUTION_RESULT'; payload: ExecutionResult }
   | { type: 'SET_EXECUTING'; payload: boolean }

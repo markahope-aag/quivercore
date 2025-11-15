@@ -10,22 +10,69 @@ import type {
   GeneratedPrompt,
   ExecutionResult,
   PromptTemplate,
+  PromptConfiguration,
 } from '@/lib/types/prompt-builder'
-import type { AdvancedEnhancements } from '@/src/types/index'
+import { DomainCategory, FrameworkType } from '@/lib/types/prompt-builder'
+import type {
+  AdvancedEnhancements,
+  RoleEnhancement,
+  FormatControl,
+  SmartConstraints,
+  ReasoningScaffolds,
+  ConversationFlow,
+} from '@/src/types/index'
 import { DEFAULT_BASE_CONFIG, DEFAULT_VS_ENHANCEMENT } from '@/lib/constants/prompt-builder'
-import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/src/constants/enhancements'
 import { generateEnhancedPrompt } from '@/lib/utils/prompt-generation'
 
 const initialState: PromptBuilderState = {
   currentStep: 'base',
   baseConfig: DEFAULT_BASE_CONFIG,
   vsEnhancement: DEFAULT_VS_ENHANCEMENT,
-  advancedEnhancements: DEFAULT_ADVANCED_ENHANCEMENTS,
+  advancedEnhancements: {
+    roleEnhancement: {
+      enabled: false,
+      expertiseLevel: 'expert',
+      authorityLevel: 'advisory',
+      domainSpecialty: '',
+    },
+    formatControl: {
+      enabled: false,
+      structure: 'paragraphs',
+      styleGuide: 'conversational',
+      lengthSpec: { type: 'word-count' },
+    },
+    smartConstraints: {
+      enabled: false,
+      positiveConstraints: [],
+      negativeConstraints: [],
+      boundaryConditions: [],
+      qualityGates: [],
+    },
+    reasoningScaffolds: {
+      enabled: false,
+      showWork: false,
+      stepByStep: false,
+      exploreAlternatives: false,
+      confidenceScoring: false,
+      reasoningStyle: 'logical',
+    },
+    conversationFlow: {
+      enabled: false,
+      contextPreservation: true,
+      followUpTemplates: [],
+      clarificationProtocols: true,
+      iterationImprovement: true,
+    },
+  },
   generatedPrompt: null,
   executionResults: [],
   savedTemplates: [],
   isExecuting: false,
   errors: {},
+  validationResults: {
+    issues: [],
+    suggestions: [],
+  },
 }
 
 function promptBuilderReducer(
@@ -55,6 +102,101 @@ function promptBuilderReducer(
           ...state.advancedEnhancements,
           ...action.payload,
         } as AdvancedEnhancements,
+      }
+
+    case 'UPDATE_ROLE_ENHANCEMENT':
+      return {
+        ...state,
+        advancedEnhancements: {
+          ...state.advancedEnhancements,
+          roleEnhancement: {
+            ...(state.advancedEnhancements.roleEnhancement || {
+              enabled: false,
+              expertiseLevel: 'expert',
+              authorityLevel: 'advisory',
+              domainSpecialty: '',
+            }),
+            ...action.payload,
+          } as RoleEnhancement,
+        },
+      }
+
+    case 'UPDATE_FORMAT_CONTROL':
+      return {
+        ...state,
+        advancedEnhancements: {
+          ...state.advancedEnhancements,
+          formatControl: {
+            ...(state.advancedEnhancements.formatControl || {
+              enabled: false,
+              structure: 'paragraphs',
+              styleGuide: 'conversational',
+              lengthSpec: { type: 'word-count' },
+            }),
+            ...action.payload,
+          } as FormatControl,
+        },
+      }
+
+    case 'UPDATE_SMART_CONSTRAINTS':
+      return {
+        ...state,
+        advancedEnhancements: {
+          ...state.advancedEnhancements,
+          smartConstraints: {
+            ...(state.advancedEnhancements.smartConstraints || {
+              enabled: false,
+              positiveConstraints: [],
+              negativeConstraints: [],
+              boundaryConditions: [],
+              qualityGates: [],
+            }),
+            ...action.payload,
+          } as SmartConstraints,
+        },
+      }
+
+    case 'UPDATE_REASONING_SCAFFOLDS':
+      return {
+        ...state,
+        advancedEnhancements: {
+          ...state.advancedEnhancements,
+          reasoningScaffolds: {
+            ...(state.advancedEnhancements.reasoningScaffolds || {
+              enabled: false,
+              showWork: false,
+              stepByStep: false,
+              exploreAlternatives: false,
+              confidenceScoring: false,
+              reasoningStyle: 'logical',
+            }),
+            ...action.payload,
+          } as ReasoningScaffolds,
+        },
+      }
+
+    case 'UPDATE_CONVERSATION_FLOW':
+      return {
+        ...state,
+        advancedEnhancements: {
+          ...state.advancedEnhancements,
+          conversationFlow: {
+            ...(state.advancedEnhancements.conversationFlow || {
+              enabled: false,
+              contextPreservation: true,
+              followUpTemplates: [],
+              clarificationProtocols: true,
+              iterationImprovement: true,
+            }),
+            ...action.payload,
+          } as ConversationFlow,
+        },
+      }
+
+    case 'VALIDATE_ENHANCEMENTS':
+      return {
+        ...state,
+        validationResults: action.payload,
       }
 
     case 'GENERATE_PROMPT':
@@ -110,7 +252,10 @@ function promptBuilderReducer(
       }
 
     case 'RESET_BUILDER':
-      return initialState
+      return {
+        ...initialState,
+        validationResults: { issues: [], suggestions: [] },
+      }
 
     default:
       return state
@@ -125,6 +270,12 @@ interface PromptBuilderContextType {
   updateBaseConfig: (config: Partial<BasePromptConfig>) => void
   updateVSEnhancement: (enhancement: Partial<VSEnhancement>) => void
   updateAdvancedEnhancements: (enhancements: Partial<AdvancedEnhancements>) => void
+  updateRoleEnhancement: (enhancement: Partial<RoleEnhancement>) => void
+  updateFormatControl: (control: Partial<FormatControl>) => void
+  updateSmartConstraints: (constraints: Partial<SmartConstraints>) => void
+  updateReasoningScaffolds: (scaffolds: Partial<ReasoningScaffolds>) => void
+  updateConversationFlow: (flow: Partial<ConversationFlow>) => void
+  validateEnhancements: () => Promise<void>
   generatePrompt: () => void
   executePrompt: (apiKey: string) => Promise<void>
   saveTemplate: (name: string, description: string, tags: string[]) => void
@@ -155,6 +306,57 @@ export function PromptBuilderProvider({ children }: { children: React.ReactNode 
   const updateAdvancedEnhancements = useCallback((enhancements: Partial<AdvancedEnhancements>) => {
     dispatch({ type: 'UPDATE_ADVANCED_ENHANCEMENTS', payload: enhancements })
   }, [])
+
+  const updateRoleEnhancement = useCallback((enhancement: Partial<RoleEnhancement>) => {
+    dispatch({ type: 'UPDATE_ROLE_ENHANCEMENT', payload: enhancement })
+  }, [])
+
+  const updateFormatControl = useCallback((control: Partial<FormatControl>) => {
+    dispatch({ type: 'UPDATE_FORMAT_CONTROL', payload: control })
+  }, [])
+
+  const updateSmartConstraints = useCallback((constraints: Partial<SmartConstraints>) => {
+    dispatch({ type: 'UPDATE_SMART_CONSTRAINTS', payload: constraints })
+  }, [])
+
+  const updateReasoningScaffolds = useCallback((scaffolds: Partial<ReasoningScaffolds>) => {
+    dispatch({ type: 'UPDATE_REASONING_SCAFFOLDS', payload: scaffolds })
+  }, [])
+
+  const updateConversationFlow = useCallback((flow: Partial<ConversationFlow>) => {
+    dispatch({ type: 'UPDATE_CONVERSATION_FLOW', payload: flow })
+  }, [])
+
+  const validateEnhancements = useCallback(async () => {
+    // Convert state to PromptConfiguration for validation
+    const config: PromptConfiguration = {
+      domain: state.baseConfig.domain as DomainCategory,
+      framework: state.baseConfig.framework as FrameworkType,
+      frameworkConfig: state.baseConfig.frameworkConfig,
+      basePrompt: state.baseConfig.basePrompt,
+      targetOutcome: state.baseConfig.targetOutcome,
+      vsEnabled: state.vsEnhancement.enabled,
+      vsConfig: state.vsEnhancement.enabled
+        ? {
+            type: state.vsEnhancement.distributionType,
+            responseCount: state.vsEnhancement.numberOfResponses,
+            includeReasoning: state.vsEnhancement.includeProbabilityReasoning,
+            customConstraints: state.vsEnhancement.customConstraints || undefined,
+            rarityThreshold: state.vsEnhancement.probabilityThreshold,
+            categories: [
+              ...(state.vsEnhancement.dimensions || []),
+              ...(state.vsEnhancement.customDimensions || []),
+            ],
+            antiTypicalityMode: state.vsEnhancement.antiTypicalityEnabled,
+          }
+        : undefined,
+      advancedEnhancements: state.advancedEnhancements,
+    }
+
+    const { PromptOptimizers } = await import('@/src/utils/promptOptimizers')
+    const validationResult = PromptOptimizers.validateEnhancementCombination(config)
+    dispatch({ type: 'VALIDATE_ENHANCEMENTS', payload: validationResult })
+  }, [state])
 
   const generatePrompt = useCallback(() => {
     const generated = generateEnhancedPrompt(
@@ -264,6 +466,12 @@ export function PromptBuilderProvider({ children }: { children: React.ReactNode 
     updateBaseConfig,
     updateVSEnhancement,
     updateAdvancedEnhancements,
+    updateRoleEnhancement,
+    updateFormatControl,
+    updateSmartConstraints,
+    updateReasoningScaffolds,
+    updateConversationFlow,
+    validateEnhancements,
     generatePrompt,
     executePrompt,
     saveTemplate,
