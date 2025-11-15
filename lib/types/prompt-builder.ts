@@ -1,7 +1,6 @@
 // Types for AI Prompt Builder
 
-import type { AdvancedEnhancements } from '@/lib/utils/enhancementGenerators'
-import type { AdvancedEnhancements as NewAdvancedEnhancements } from '@/src/types/index'
+import type { AdvancedEnhancements } from '@/src/types/index'
 
 // ============================================================================
 // ENUMS & CONSTANTS
@@ -119,7 +118,7 @@ export interface PromptConfiguration {
   targetOutcome?: string
   vsEnabled: boolean
   vsConfig?: VSConfiguration
-  advancedEnhancements?: NewAdvancedEnhancements
+  advancedEnhancements?: AdvancedEnhancements
   createdAt?: Date
   updatedAt?: Date
 }
@@ -223,7 +222,7 @@ export interface PromptTemplate {
   description: string
   config: BasePromptConfig
   vsEnhancement: VSEnhancement
-  advancedEnhancements?: AdvancedEnhancements // Optional for backward compatibility
+  advancedEnhancements?: AdvancedEnhancements
   createdAt: string
   updatedAt: string
   tags: string[]

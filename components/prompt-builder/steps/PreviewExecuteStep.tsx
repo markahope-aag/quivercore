@@ -5,37 +5,30 @@ import { usePromptBuilder } from '@/contexts/PromptBuilderContext'
 import { exportPrompt, copyToClipboard, exportVSResponsesAsCSV } from '@/lib/utils/export'
 import { parseVSResponse } from '@/lib/utils/api-client'
 import type { ExportFormat } from '@/lib/utils/export'
-import type { AdvancedEnhancements } from '@/lib/utils/enhancementGenerators'
+import type { AdvancedEnhancements } from '@/src/types/index'
 import { EnhancementTestRunner } from '../EnhancementTestRunner'
 
 // Helper function to get list of enabled advanced enhancements
 function getEnabledAdvancedEnhancements(enhancements: AdvancedEnhancements): string[] {
   const enabled: string[] = []
 
-  if (enhancements.roleEnhancement.enabled && enhancements.roleEnhancement.type !== 'none') {
+  if (enhancements.roleEnhancement?.enabled) {
     enabled.push('Role Enhancement')
   }
 
-  if (enhancements.formatController.enabled && enhancements.formatController.type !== 'none') {
-    enabled.push('Format Controller')
+  if (enhancements.formatControl?.enabled) {
+    enabled.push('Format Control')
   }
 
-  if (
-    enhancements.smartConstraints.length.enabled ||
-    enhancements.smartConstraints.tone.enabled ||
-    enhancements.smartConstraints.audience.enabled ||
-    enhancements.smartConstraints.exclusions.enabled ||
-    enhancements.smartConstraints.requirements.enabled ||
-    enhancements.smartConstraints.complexity.enabled
-  ) {
+  if (enhancements.smartConstraints?.enabled) {
     enabled.push('Smart Constraints')
   }
 
-  if (enhancements.reasoningScaffold.enabled && enhancements.reasoningScaffold.type !== 'none') {
-    enabled.push('Reasoning Scaffold')
+  if (enhancements.reasoningScaffolds?.enabled) {
+    enabled.push('Reasoning Scaffolds')
   }
 
-  if (enhancements.conversationFlow.type !== 'single') {
+  if (enhancements.conversationFlow?.enabled) {
     enabled.push('Conversation Flow')
   }
 
@@ -47,60 +40,63 @@ function formatAdvancedEnhancementDetails(enhancements: AdvancedEnhancements): s
   const details: string[] = []
 
   // Role Enhancement
-  if (enhancements.roleEnhancement.enabled && enhancements.roleEnhancement.type !== 'none') {
-    if (enhancements.roleEnhancement.type === 'expert' && enhancements.roleEnhancement.expertise) {
-      details.push(`Role: Expert in ${enhancements.roleEnhancement.expertise}`)
-    } else if (enhancements.roleEnhancement.type === 'persona' && enhancements.roleEnhancement.customRole) {
-      details.push(`Role: ${enhancements.roleEnhancement.customRole}`)
-    } else if (enhancements.roleEnhancement.type === 'perspective' && enhancements.roleEnhancement.perspective) {
-      details.push(`Perspective: ${enhancements.roleEnhancement.perspective}`)
+  if (enhancements.roleEnhancement?.enabled) {
+    const role = enhancements.roleEnhancement
+    details.push(`Role: ${role.expertiseLevel} in ${role.domainSpecialty}`)
+    if (role.experienceYears) {
+      details.push(`${role.experienceYears} years experience`)
     }
+    details.push(`Authority: ${role.authorityLevel}`)
   }
 
-  // Format Controller
-  if (enhancements.formatController.enabled && enhancements.formatController.type !== 'none') {
-    const formatType = enhancements.formatController.type
-      .replace('_', ' ')
-      .replace(/\b\w/g, (l) => l.toUpperCase())
-    details.push(`Format: ${formatType}`)
+  // Format Control
+  if (enhancements.formatControl?.enabled) {
+    const format = enhancements.formatControl
+    details.push(`Format: ${format.structure}`)
+    if (format.lengthSpec.target) {
+      details.push(`Length: ${format.lengthSpec.target} ${format.lengthSpec.type}`)
+    }
+    details.push(`Style: ${format.styleGuide}`)
   }
 
   // Smart Constraints
-  const constraintParts: string[] = []
-  if (enhancements.smartConstraints.length.enabled) {
-    const { min, max, unit } = enhancements.smartConstraints.length
-    if (min > 0 && max > 0) {
-      constraintParts.push(`${min}-${max} ${unit}`)
-    } else if (min > 0) {
-      constraintParts.push(`min ${min} ${unit}`)
-    } else if (max > 0) {
-      constraintParts.push(`max ${max} ${unit}`)
+  if (enhancements.smartConstraints?.enabled) {
+    const constraints = enhancements.smartConstraints
+    if (constraints.positiveConstraints.length > 0) {
+      details.push(`Must include: ${constraints.positiveConstraints.length} items`)
+    }
+    if (constraints.negativeConstraints.length > 0) {
+      details.push(`Must avoid: ${constraints.negativeConstraints.length} items`)
+    }
+    if (constraints.boundaryConditions.length > 0) {
+      details.push(`Boundaries: ${constraints.boundaryConditions.length} conditions`)
+    }
+    if (constraints.qualityGates.length > 0) {
+      details.push(`Quality gates: ${constraints.qualityGates.length} requirements`)
     }
   }
-  if (enhancements.smartConstraints.tone.enabled && enhancements.smartConstraints.tone.tones.length > 0) {
-    constraintParts.push(`tone: ${enhancements.smartConstraints.tone.tones.join(', ')}`)
-  }
-  if (enhancements.smartConstraints.audience.enabled && enhancements.smartConstraints.audience.target) {
-    constraintParts.push(`audience: ${enhancements.smartConstraints.audience.target}`)
-  }
-  if (constraintParts.length > 0) {
-    details.push(`Constraints: ${constraintParts.join(', ')}`)
-  }
 
-  // Reasoning Scaffold
-  if (enhancements.reasoningScaffold.enabled && enhancements.reasoningScaffold.type !== 'none') {
-    const reasoningType = enhancements.reasoningScaffold.type
-      .replace('_', ' ')
-      .replace(/\b\w/g, (l) => l.toUpperCase())
-    details.push(`Reasoning: ${reasoningType}`)
+  // Reasoning Scaffolds
+  if (enhancements.reasoningScaffolds?.enabled) {
+    const reasoning = enhancements.reasoningScaffolds
+    const parts: string[] = []
+    if (reasoning.showWork) parts.push('show work')
+    if (reasoning.stepByStep) parts.push('step-by-step')
+    if (reasoning.exploreAlternatives) parts.push('alternatives')
+    if (reasoning.confidenceScoring) parts.push('confidence scores')
+    parts.push(reasoning.reasoningStyle)
+    details.push(`Reasoning: ${parts.join(', ')}`)
   }
 
   // Conversation Flow
-  if (enhancements.conversationFlow.type !== 'single') {
-    const flowType = enhancements.conversationFlow.type
-      .replace('_', ' ')
-      .replace(/\b\w/g, (l) => l.toUpperCase())
-    details.push(`Flow: ${flowType}`)
+  if (enhancements.conversationFlow?.enabled) {
+    const flow = enhancements.conversationFlow
+    const parts: string[] = []
+    if (flow.contextPreservation) parts.push('context preservation')
+    if (flow.clarificationProtocols) parts.push('clarification')
+    if (flow.iterationImprovement) parts.push('iteration')
+    if (flow.followUpTemplates.length > 0) parts.push(`${flow.followUpTemplates.length} follow-ups`)
+    details.push(`Flow: ${parts.join(', ')}`)
   }
 
   return details.join(' • ') || 'None'

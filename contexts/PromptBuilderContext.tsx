@@ -11,9 +11,9 @@ import type {
   ExecutionResult,
   PromptTemplate,
 } from '@/lib/types/prompt-builder'
-import type { AdvancedEnhancements } from '@/lib/utils/enhancementGenerators'
+import type { AdvancedEnhancements } from '@/src/types/index'
 import { DEFAULT_BASE_CONFIG, DEFAULT_VS_ENHANCEMENT } from '@/lib/constants/prompt-builder'
-import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/lib/constants/enhancements'
+import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/src/constants/enhancements'
 import { generateEnhancedPrompt } from '@/lib/utils/prompt-generation'
 
 const initialState: PromptBuilderState = {
@@ -51,7 +51,10 @@ function promptBuilderReducer(
     case 'UPDATE_ADVANCED_ENHANCEMENTS':
       return {
         ...state,
-        advancedEnhancements: { ...state.advancedEnhancements, ...action.payload },
+        advancedEnhancements: {
+          ...state.advancedEnhancements,
+          ...action.payload,
+        } as AdvancedEnhancements,
       }
 
     case 'GENERATE_PROMPT':

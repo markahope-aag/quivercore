@@ -7,7 +7,8 @@ import type {
 } from '@/lib/types/prompt-builder'
 import { generateVSInstructions, getVSFormat } from './vs-enhancement'
 import { generateFrameworkPrompt } from './framework-templates'
-import { generateAllAdvancedEnhancements, type AdvancedEnhancements } from './enhancementGenerators'
+import type { AdvancedEnhancements } from '@/src/types/index'
+import { EnhancementGenerators } from '@/src/utils/enhancementGenerators'
 
 export function generateEnhancedPrompt(
   baseConfig: BasePromptConfig,
@@ -25,9 +26,26 @@ export function generateEnhancedPrompt(
   }
 
   // Generate advanced enhancements if provided
-  const advancedEnhancementText = advancedEnhancements
-    ? generateAllAdvancedEnhancements(advancedEnhancements)
-    : ''
+  let advancedEnhancementText = ''
+  if (advancedEnhancements) {
+    const sections: string[] = []
+    if (advancedEnhancements.roleEnhancement?.enabled) {
+      sections.push(EnhancementGenerators.generateRoleEnhancement(advancedEnhancements.roleEnhancement))
+    }
+    if (advancedEnhancements.formatControl?.enabled) {
+      sections.push(EnhancementGenerators.generateFormatControl(advancedEnhancements.formatControl))
+    }
+    if (advancedEnhancements.smartConstraints?.enabled) {
+      sections.push(EnhancementGenerators.generateSmartConstraints(advancedEnhancements.smartConstraints))
+    }
+    if (advancedEnhancements.reasoningScaffolds?.enabled) {
+      sections.push(EnhancementGenerators.generateReasoningScaffolds(advancedEnhancements.reasoningScaffolds))
+    }
+    if (advancedEnhancements.conversationFlow?.enabled) {
+      sections.push(EnhancementGenerators.generateConversationFlow(advancedEnhancements.conversationFlow))
+    }
+    advancedEnhancementText = sections.filter((s) => s.trim()).join('\n\n')
+  }
 
   // Combine VS enhancement and advanced enhancements
   let enhancementText = ''

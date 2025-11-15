@@ -4,8 +4,8 @@
 import { generateEnhancedPrompt } from './prompt-generation'
 import { generateAllAdvancedEnhancements } from './enhancementGenerators'
 import type { BasePromptConfig, VSEnhancement } from '@/lib/types/prompt-builder'
-import type { AdvancedEnhancements } from './enhancementGenerators'
-import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/lib/constants/enhancements'
+import type { AdvancedEnhancements } from '@/src/types/index'
+import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/src/constants/enhancements'
 import { DomainCategory, FrameworkType, VSDistributionType } from '@/lib/types/prompt-builder'
 
 // Test configuration

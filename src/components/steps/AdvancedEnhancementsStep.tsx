@@ -6,7 +6,6 @@ import type {
   SmartConstraints,
   ReasoningScaffolds,
   ConversationFlow,
-  AdvancedEnhancements,
 } from '@/src/types/index'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
@@ -71,10 +70,8 @@ const AdvancedEnhancementsStep: React.FC = () => {
 
 // Role Enhancement Panel
 const RoleEnhancementPanel: React.FC = () => {
-  const { state, dispatch } = usePromptBuilder()
-  // Get current config from state, using new type structure
-  const currentEnhancements = (state.advancedEnhancements as any) as AdvancedEnhancements | undefined
-  const config = currentEnhancements?.roleEnhancement || {
+  const { state, updateAdvancedEnhancements } = usePromptBuilder()
+  const config = state.advancedEnhancements?.roleEnhancement || {
     enabled: false,
     expertiseLevel: 'intermediate' as const,
     domainSpecialty: '',
@@ -83,12 +80,8 @@ const RoleEnhancementPanel: React.FC = () => {
 
   const handleChange = (updates: Partial<RoleEnhancement>) => {
     const newConfig = { ...config, ...updates }
-    // Update using dispatch with new type structure
-    dispatch({
-      type: 'UPDATE_ADVANCED_ENHANCEMENTS',
-      payload: {
-        roleEnhancement: newConfig,
-      } as any, // Type assertion needed until context is updated
+    updateAdvancedEnhancements({
+      roleEnhancement: newConfig,
     })
   }
 
@@ -181,9 +174,8 @@ const RoleEnhancementPanel: React.FC = () => {
 
 // Format Control Panel
 const FormatControlPanel: React.FC = () => {
-  const { state, dispatch } = usePromptBuilder()
-  const currentEnhancements = (state.advancedEnhancements as any) as AdvancedEnhancements | undefined
-  const config = currentEnhancements?.formatControl || {
+  const { state, updateAdvancedEnhancements } = usePromptBuilder()
+  const config = state.advancedEnhancements?.formatControl || {
     enabled: false,
     structure: 'paragraphs' as const,
     lengthSpec: { type: 'word-count' as const },
@@ -192,11 +184,8 @@ const FormatControlPanel: React.FC = () => {
 
   const handleChange = (updates: Partial<FormatControl>) => {
     const newConfig = { ...config, ...updates }
-    dispatch({
-      type: 'UPDATE_ADVANCED_ENHANCEMENTS',
-      payload: {
-        formatControl: newConfig,
-      } as any,
+    updateAdvancedEnhancements({
+      formatControl: newConfig,
     })
   }
 
@@ -311,9 +300,8 @@ const FormatControlPanel: React.FC = () => {
 
 // Smart Constraints Panel
 const SmartConstraintsPanel: React.FC = () => {
-  const { state, dispatch } = usePromptBuilder()
-  const currentEnhancements = (state.advancedEnhancements as any) as AdvancedEnhancements | undefined
-  const config = currentEnhancements?.smartConstraints || {
+  const { state, updateAdvancedEnhancements } = usePromptBuilder()
+  const config = state.advancedEnhancements?.smartConstraints || {
     enabled: false,
     positiveConstraints: [],
     negativeConstraints: [],
@@ -323,11 +311,8 @@ const SmartConstraintsPanel: React.FC = () => {
 
   const handleChange = (updates: Partial<SmartConstraints>) => {
     const newConfig = { ...config, ...updates }
-    dispatch({
-      type: 'UPDATE_ADVANCED_ENHANCEMENTS',
-      payload: {
-        smartConstraints: newConfig,
-      } as any,
+    updateAdvancedEnhancements({
+      smartConstraints: newConfig,
     })
   }
 
@@ -466,9 +451,8 @@ const ConstraintList: React.FC<{
 
 // Reasoning Scaffolds Panel
 const ReasoningScaffoldsPanel: React.FC = () => {
-  const { state, dispatch } = usePromptBuilder()
-  const currentEnhancements = (state.advancedEnhancements as any) as AdvancedEnhancements | undefined
-  const config = currentEnhancements?.reasoningScaffolds || {
+  const { state, updateAdvancedEnhancements } = usePromptBuilder()
+  const config = state.advancedEnhancements?.reasoningScaffolds || {
     enabled: false,
     showWork: false,
     stepByStep: false,
@@ -479,11 +463,8 @@ const ReasoningScaffoldsPanel: React.FC = () => {
 
   const handleChange = (updates: Partial<ReasoningScaffolds>) => {
     const newConfig = { ...config, ...updates }
-    dispatch({
-      type: 'UPDATE_ADVANCED_ENHANCEMENTS',
-      payload: {
-        reasoningScaffolds: newConfig,
-      } as any,
+    updateAdvancedEnhancements({
+      reasoningScaffolds: newConfig,
     })
   }
 
@@ -552,9 +533,8 @@ const ReasoningScaffoldsPanel: React.FC = () => {
 
 // Conversation Flow Panel
 const ConversationFlowPanel: React.FC = () => {
-  const { state, dispatch } = usePromptBuilder()
-  const currentEnhancements = (state.advancedEnhancements as any) as AdvancedEnhancements | undefined
-  const config = currentEnhancements?.conversationFlow || {
+  const { state, updateAdvancedEnhancements } = usePromptBuilder()
+  const config = state.advancedEnhancements?.conversationFlow || {
     enabled: false,
     contextPreservation: false,
     followUpTemplates: [],
@@ -564,11 +544,8 @@ const ConversationFlowPanel: React.FC = () => {
 
   const handleChange = (updates: Partial<ConversationFlow>) => {
     const newConfig = { ...config, ...updates }
-    dispatch({
-      type: 'UPDATE_ADVANCED_ENHANCEMENTS',
-      payload: {
-        conversationFlow: newConfig,
-      } as any,
+    updateAdvancedEnhancements({
+      conversationFlow: newConfig,
     })
   }
 
