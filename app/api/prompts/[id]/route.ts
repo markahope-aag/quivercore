@@ -60,7 +60,7 @@ export async function PATCH(
     // Get current prompt to save version
     const { data: currentPrompt } = await supabase
       .from('prompts')
-      .select('content')
+      .select('content, title, description, tags')
       .eq('id', id)
       .eq('user_id', user.id)
       .single()
