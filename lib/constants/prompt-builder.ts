@@ -54,9 +54,10 @@ export const FRAMEWORK_DESCRIPTIONS: Record<string, string> = {
 
 export const BUILDER_STEPS = [
   { id: 'base', label: 'Base Prompt', description: 'Define your core prompt' },
+  { id: 'framework', label: 'Framework', description: 'Configure framework settings' },
   { id: 'enhancement', label: 'VS Enhancement', description: 'Add verbalized sampling' },
-  { id: 'preview', label: 'Preview', description: 'Review generated prompt' },
-  { id: 'execute', label: 'Execute', description: 'Run and see results' },
+  { id: 'advanced', label: 'Advanced', description: 'Fine-tune with advanced enhancements' },
+  { id: 'preview', label: 'Preview & Execute', description: 'Review and run your prompt' },
 ] as const
 
 export const VS_DISTRIBUTION_TYPES = [

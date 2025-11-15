@@ -12,12 +12,14 @@ import type {
   PromptTemplate,
 } from '@/lib/types/prompt-builder'
 import { DEFAULT_BASE_CONFIG, DEFAULT_VS_ENHANCEMENT } from '@/lib/constants/prompt-builder'
+import { DEFAULT_ADVANCED_ENHANCEMENTS } from '@/lib/constants/enhancements'
 import { generateEnhancedPrompt } from '@/lib/utils/prompt-generation'
 
 const initialState: PromptBuilderState = {
   currentStep: 'base',
   baseConfig: DEFAULT_BASE_CONFIG,
   vsEnhancement: DEFAULT_VS_ENHANCEMENT,
+  advancedEnhancements: DEFAULT_ADVANCED_ENHANCEMENTS,
   generatedPrompt: null,
   executionResults: [],
   savedTemplates: [],
@@ -43,6 +45,12 @@ function promptBuilderReducer(
       return {
         ...state,
         vsEnhancement: { ...state.vsEnhancement, ...action.payload },
+      }
+
+    case 'UPDATE_ADVANCED_ENHANCEMENTS':
+      return {
+        ...state,
+        advancedEnhancements: { ...state.advancedEnhancements, ...action.payload },
       }
 
     case 'GENERATE_PROMPT':
@@ -111,6 +119,7 @@ interface PromptBuilderContextType {
   setStep: (step: BuilderStep) => void
   updateBaseConfig: (config: Partial<BasePromptConfig>) => void
   updateVSEnhancement: (enhancement: Partial<VSEnhancement>) => void
+  updateAdvancedEnhancements: (enhancements: Partial<any>) => void
   generatePrompt: () => void
   executePrompt: (apiKey: string) => Promise<void>
   saveTemplate: (name: string, description: string, tags: string[]) => void
@@ -136,6 +145,10 @@ export function PromptBuilderProvider({ children }: { children: React.ReactNode 
 
   const updateVSEnhancement = useCallback((enhancement: Partial<VSEnhancement>) => {
     dispatch({ type: 'UPDATE_VS_ENHANCEMENT', payload: enhancement })
+  }, [])
+
+  const updateAdvancedEnhancements = useCallback((enhancements: Partial<any>) => {
+    dispatch({ type: 'UPDATE_ADVANCED_ENHANCEMENTS', payload: enhancements })
   }, [])
 
   const generatePrompt = useCallback(() => {
@@ -240,6 +253,7 @@ export function PromptBuilderProvider({ children }: { children: React.ReactNode 
     setStep,
     updateBaseConfig,
     updateVSEnhancement,
+    updateAdvancedEnhancements,
     generatePrompt,
     executePrompt,
     saveTemplate,

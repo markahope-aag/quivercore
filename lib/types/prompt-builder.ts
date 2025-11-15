@@ -248,12 +248,13 @@ export interface ExecutionResult {
   }
 }
 
-export type BuilderStep = 'base' | 'framework' | 'enhancement' | 'preview'
+export type BuilderStep = 'base' | 'framework' | 'enhancement' | 'advanced' | 'preview'
 
 export interface PromptBuilderState {
   currentStep: BuilderStep
   baseConfig: BasePromptConfig
   vsEnhancement: VSEnhancement
+  advancedEnhancements: any // Will be typed from enhancementGenerators
   generatedPrompt: GeneratedPrompt | null
   executionResults: ExecutionResult[]
   savedTemplates: PromptTemplate[]
@@ -265,6 +266,7 @@ export type PromptBuilderAction =
   | { type: 'SET_STEP'; payload: BuilderStep }
   | { type: 'UPDATE_BASE_CONFIG'; payload: Partial<BasePromptConfig> }
   | { type: 'UPDATE_VS_ENHANCEMENT'; payload: Partial<VSEnhancement> }
+  | { type: 'UPDATE_ADVANCED_ENHANCEMENTS'; payload: Partial<any> }
   | { type: 'GENERATE_PROMPT'; payload: GeneratedPrompt }
   | { type: 'ADD_EXECUTION_RESULT'; payload: ExecutionResult }
   | { type: 'SET_EXECUTING'; payload: boolean }

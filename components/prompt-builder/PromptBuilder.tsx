@@ -5,6 +5,7 @@ import { BuilderStep } from '@/lib/types/prompt-builder'
 import { BasePromptStep } from './steps/BasePromptStep'
 import { FrameworkConfigStep } from './steps/FrameworkConfigStep'
 import { VSEnhancementStep } from './steps/VSEnhancementStep'
+import { AdvancedEnhancementsStep } from './steps/AdvancedEnhancementsStep'
 import { PreviewExecuteStep } from './steps/PreviewExecuteStep'
 
 const STEPS: { id: BuilderStep; label: string; description: string }[] = [
@@ -22,6 +23,11 @@ const STEPS: { id: BuilderStep; label: string; description: string }[] = [
     id: 'enhancement',
     label: 'VS Enhancement',
     description: 'Add Verbalized Sampling',
+  },
+  {
+    id: 'advanced',
+    label: 'Advanced',
+    description: 'Fine-tune enhancements',
   },
   {
     id: 'preview',
@@ -47,6 +53,8 @@ export function PromptBuilder() {
         return true // Framework config is optional
       case 'enhancement':
         return true // VS enhancement is optional
+      case 'advanced':
+        return true // Advanced enhancements are optional
       case 'preview':
         return true
       default:
@@ -74,6 +82,8 @@ export function PromptBuilder() {
         return <FrameworkConfigStep />
       case 'enhancement':
         return <VSEnhancementStep />
+      case 'advanced':
+        return <AdvancedEnhancementsStep />
       case 'preview':
         return <PreviewExecuteStep />
       default:
