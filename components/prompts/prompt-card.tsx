@@ -72,13 +72,6 @@ export function PromptCard({ prompt }: PromptCardProps) {
     navigator.clipboard.writeText(prompt.content)
   }
 
-  const typeLabels: Record<string, string> = {
-    ai_prompt: 'AI Prompt',
-    email_template: 'Email Template',
-    snippet: 'Snippet',
-    other: 'Other',
-  }
-
   return (
     <Card className="flex flex-col hover:shadow-lg transition-shadow">
       <CardHeader>
@@ -107,12 +100,19 @@ export function PromptCard({ prompt }: PromptCardProps) {
       </CardHeader>
       <CardContent className="flex-1">
         <div className="space-y-2">
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="outline">{typeLabels[prompt.type] || prompt.type}</Badge>
-            {prompt.category && (
-              <Badge variant="secondary">{prompt.category}</Badge>
-            )}
-          </div>
+          {(prompt.use_case || prompt.framework || prompt.enhancement_technique) && (
+            <div className="flex flex-wrap gap-2">
+              {prompt.use_case && (
+                <Badge variant="default" className="bg-blue-500">{prompt.use_case}</Badge>
+              )}
+              {prompt.framework && (
+                <Badge variant="default" className="bg-purple-500">{prompt.framework}</Badge>
+              )}
+              {prompt.enhancement_technique && (
+                <Badge variant="default" className="bg-green-600">{prompt.enhancement_technique}</Badge>
+              )}
+            </div>
+          )}
           {prompt.tags && prompt.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {prompt.tags.slice(0, 3).map((tag) => (

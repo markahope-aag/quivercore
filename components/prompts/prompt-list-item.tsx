@@ -70,13 +70,6 @@ export function PromptListItem({ prompt }: PromptListItemProps) {
     navigator.clipboard.writeText(prompt.content)
   }
 
-  const typeLabels: Record<string, string> = {
-    ai_prompt: 'AI Prompt',
-    email_template: 'Email Template',
-    snippet: 'Snippet',
-    other: 'Other',
-  }
-
   return (
     <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
       <Button
@@ -89,7 +82,7 @@ export function PromptListItem({ prompt }: PromptListItemProps) {
           className={`h-4 w-4 ${isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
         />
       </Button>
-      
+
       <div className="flex-1 min-w-0">
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
@@ -102,12 +95,19 @@ export function PromptListItem({ prompt }: PromptListItemProps) {
               </p>
             )}
             <div className="flex flex-wrap gap-2 mt-2">
-              <Badge variant="outline" className="text-xs">
-                {typeLabels[prompt.type] || prompt.type}
-              </Badge>
-              {prompt.category && (
-                <Badge variant="secondary" className="text-xs">
-                  {prompt.category}
+              {prompt.use_case && (
+                <Badge variant="default" className="text-xs bg-blue-500">
+                  {prompt.use_case}
+                </Badge>
+              )}
+              {prompt.framework && (
+                <Badge variant="default" className="text-xs bg-purple-500">
+                  {prompt.framework}
+                </Badge>
+              )}
+              {prompt.enhancement_technique && (
+                <Badge variant="default" className="text-xs bg-green-600">
+                  {prompt.enhancement_technique}
                 </Badge>
               )}
               {prompt.tags?.slice(0, 3).map((tag) => (

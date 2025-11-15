@@ -12,9 +12,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { X, Grid3x3, List, Search } from 'lucide-react'
+import { X, Grid3x3, List, Search, Star } from 'lucide-react'
 import { Prompt } from '@/lib/types/database'
-import { getCategoriesForType, CATEGORIES_BY_TYPE, TYPE_LABELS } from '@/lib/constants/categories'
+import { getUseCases } from '@/lib/constants/use-cases'
+import { getFrameworks } from '@/lib/constants/frameworks'
+import { getEnhancementTechniques } from '@/lib/constants/enhancement-techniques'
 
 interface PromptFiltersProps {
   prompts: Prompt[]
@@ -45,35 +47,41 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
     router.push(`/prompts?${params.toString()}`)
   }
 
-  // Get all available types (always show all types, not just ones with prompts)
-  const allTypes = Object.keys(TYPE_LABELS)
-  const userCategories = Array.from(new Set(prompts.map(p => p.category).filter((cat): cat is string => Boolean(cat))))
+  // Get use-cases, frameworks, and enhancement techniques from prompts and merge with predefined
+  const userUseCases = Array.from(new Set(prompts.map(p => p.use_case).filter((uc): uc is string => Boolean(uc))))
+  const userFrameworks = Array.from(new Set(prompts.map(p => p.framework).filter((fw): fw is string => Boolean(fw))))
+  const userEnhancementTechniques = Array.from(new Set(prompts.map(p => p.enhancement_technique).filter((et): et is string => Boolean(et))))
   const allTags = prompts.flatMap(p => p.tags || [])
   const uniqueTags = Array.from(new Set(allTags))
-  
-  // Get current type filter to show relevant categories
-  const currentTypeFilter = searchParams.get('type')
-  
-  // Get categories based on selected type
-  let categories: string[] = []
-  if (currentTypeFilter) {
-    // If a type is selected, show all predefined categories for that type
-    const predefinedCategories = getCategoriesForType(currentTypeFilter)
-    // Combine predefined categories with any user categories that match
-    categories = [
-      ...predefinedCategories,
-      ...userCategories.filter((cat: string) => !predefinedCategories.includes(cat))
-    ]
-  } else {
-    // If no type selected, show all user categories
-    categories = userCategories
-  }
+
+  // Get use-cases (always show all predefined + user custom ones)
+  const predefinedUseCases = getUseCases()
+  const useCases = [
+    ...predefinedUseCases,
+    ...userUseCases.filter((uc: string) => !predefinedUseCases.includes(uc))
+  ]
+
+  // Get frameworks (always show all predefined + user custom ones)
+  const predefinedFrameworks = getFrameworks()
+  const frameworks = [
+    ...predefinedFrameworks,
+    ...userFrameworks.filter((fw: string) => !predefinedFrameworks.includes(fw))
+  ]
+
+  // Get enhancement techniques (always show all predefined + user custom ones)
+  const predefinedEnhancementTechniques = getEnhancementTechniques()
+  const enhancementTechniques = [
+    ...predefinedEnhancementTechniques,
+    ...userEnhancementTechniques.filter((et: string) => !predefinedEnhancementTechniques.includes(et))
+  ]
 
   // Get current filter values from URL
-  const currentType = searchParams.get('type') || ''
-  const currentCategory = searchParams.get('category') || ''
+  const currentUseCase = searchParams.get('use_case') || ''
+  const currentFramework = searchParams.get('framework') || ''
+  const currentEnhancementTechnique = searchParams.get('enhancement_technique') || ''
   const currentTag = searchParams.get('tag') || ''
   const currentSearch = searchParams.get('q') || ''
+  const currentFavorite = searchParams.get('favorite') === 'true'
 
   useEffect(() => {
     setSearchQuery(currentSearch)
@@ -103,7 +111,7 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
     router.push('/prompts')
   }
 
-  const hasActiveFilters = currentType || currentCategory || currentTag || currentSearch
+  const hasActiveFilters = currentUseCase || currentFramework || currentEnhancementTechnique || currentTag || currentSearch || currentFavorite
 
   return (
     <div className="space-y-4">
@@ -121,6 +129,15 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
           </div>
         </form>
         <div className="flex gap-2">
+          <Button
+            variant={currentFavorite ? 'default' : 'outline'}
+            size="icon"
+            onClick={() => updateFilters({ favorite: currentFavorite ? null : 'true' })}
+            title="Show favorites"
+          >
+            <Star className={`h-4 w-4 ${currentFavorite ? 'fill-current' : ''}`} />
+          </Button>
+          <div className="w-px bg-border" />
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="icon"
@@ -142,29 +159,43 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
-        <Select value={currentType || '__all__'} onValueChange={(value) => updateFilters({ type: value === '__all__' ? null : value })}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All Types" />
+        <Select value={currentUseCase || '__all__'} onValueChange={(value) => updateFilters({ use_case: value === '__all__' ? null : value })}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="All Use Cases" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__all__">All Types</SelectItem>
-            {allTypes.map((type) => (
-              <SelectItem key={type} value={type}>
-                {TYPE_LABELS[type] || type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            <SelectItem value="__all__">All Use Cases</SelectItem>
+            {useCases.map((useCase) => (
+              <SelectItem key={useCase} value={useCase}>
+                {useCase}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Select value={currentCategory || '__all__'} onValueChange={(value) => updateFilters({ category: value === '__all__' ? null : value })}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All Categories" />
+        <Select value={currentFramework || '__all__'} onValueChange={(value) => updateFilters({ framework: value === '__all__' ? null : value })}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="All Frameworks" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__all__">All Categories</SelectItem>
-            {categories.map((category) => (
-              <SelectItem key={category} value={category}>
-                {category}
+            <SelectItem value="__all__">All Frameworks</SelectItem>
+            {frameworks.map((framework) => (
+              <SelectItem key={framework} value={framework}>
+                {framework}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={currentEnhancementTechnique || '__all__'} onValueChange={(value) => updateFilters({ enhancement_technique: value === '__all__' ? null : value })}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="All Techniques" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">All Techniques</SelectItem>
+            {enhancementTechniques.map((technique) => (
+              <SelectItem key={technique} value={technique}>
+                {technique}
               </SelectItem>
             ))}
           </SelectContent>
@@ -179,24 +210,35 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
       </div>
 
       {/* Active Filter Tags */}
-      {(currentType || currentCategory || currentTag) && (
+      {(currentUseCase || currentFramework || currentEnhancementTechnique || currentTag) && (
         <div className="flex flex-wrap gap-2">
-          {currentType && (
+          {currentUseCase && (
             <Badge variant="secondary" className="gap-1">
-              Type: {currentType.replace('_', ' ')}
+              Use Case: {currentUseCase}
               <button
-                onClick={() => updateFilters({ type: null })}
+                onClick={() => updateFilters({ use_case: null })}
                 className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
               >
                 <X className="h-3 w-3" />
               </button>
             </Badge>
           )}
-          {currentCategory && (
+          {currentFramework && (
             <Badge variant="secondary" className="gap-1">
-              Category: {currentCategory}
+              Framework: {currentFramework}
               <button
-                onClick={() => updateFilters({ category: null })}
+                onClick={() => updateFilters({ framework: null })}
+                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          {currentEnhancementTechnique && (
+            <Badge variant="secondary" className="gap-1">
+              Technique: {currentEnhancementTechnique}
+              <button
+                onClick={() => updateFilters({ enhancement_technique: null })}
                 className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
               >
                 <X className="h-3 w-3" />

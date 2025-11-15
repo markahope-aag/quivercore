@@ -56,7 +56,7 @@ export async function PATCH(
 
     const { id } = await params
     const body = await request.json()
-    const { title, content, type, category, tags, description, is_favorite } = body
+    const { title, content, use_case, framework, enhancement_technique, tags, description, is_favorite } = body
 
     // Get current prompt to save version
     const { data: currentPrompt } = await supabase
@@ -114,8 +114,9 @@ export async function PATCH(
     const updateData: any = {}
     if (title !== undefined) updateData.title = title
     if (content !== undefined) updateData.content = content
-    if (type !== undefined) updateData.type = type
-    if (category !== undefined) updateData.category = category
+    if (use_case !== undefined) updateData.use_case = use_case
+    if (framework !== undefined) updateData.framework = framework
+    if (enhancement_technique !== undefined) updateData.enhancement_technique = enhancement_technique
     if (tags !== undefined) updateData.tags = tags
     if (description !== undefined) updateData.description = description
     if (is_favorite !== undefined) updateData.is_favorite = is_favorite

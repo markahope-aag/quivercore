@@ -25,17 +25,20 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Prompt, PromptType } from '@/lib/types/database'
+import { Prompt } from '@/lib/types/database'
 import { extractVariables } from '@/lib/utils/prompt'
 import { Badge } from '@/components/ui/badge'
 import { X } from 'lucide-react'
-import { getCategoriesForType } from '@/lib/constants/categories'
+import { getUseCases } from '@/lib/constants/use-cases'
+import { getFrameworks } from '@/lib/constants/frameworks'
+import { getEnhancementTechniques } from '@/lib/constants/enhancement-techniques'
 
 const promptFormSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   content: z.string().min(1, 'Content is required'),
-  type: z.enum(['ai_prompt', 'email_template', 'snippet', 'other']),
-  category: z.string().optional(),
+  use_case: z.string().optional(),
+  framework: z.string().optional(),
+  enhancement_technique: z.string().optional(),
   description: z.string().optional(),
   tags: z.string().optional(),
 })
@@ -50,33 +53,57 @@ export function PromptForm({ prompt }: PromptFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [detectedVariables, setDetectedVariables] = useState<string[]>([])
-  const [customCategory, setCustomCategory] = useState(false)
+  const [customUseCase, setCustomUseCase] = useState(false)
+  const [customFramework, setCustomFramework] = useState(false)
+  const [customEnhancementTechnique, setCustomEnhancementTechnique] = useState(false)
 
   const form = useForm<PromptFormValues>({
     resolver: zodResolver(promptFormSchema),
     defaultValues: {
       title: prompt?.title || '',
       content: prompt?.content || '',
-      type: (prompt?.type || 'ai_prompt') as PromptType,
-      category: prompt?.category || '',
+      use_case: prompt?.use_case || '',
+      framework: prompt?.framework || '',
+      enhancement_technique: prompt?.enhancement_technique || '',
       description: prompt?.description || '',
       tags: prompt?.tags?.join(', ') || '',
     },
   })
 
   const content = form.watch('content')
-  const selectedType = form.watch('type')
-  const currentCategory = form.watch('category')
-  const availableCategories = getCategoriesForType(selectedType)
-  
-  // Check if current category is in the predefined list
+  const currentUseCase = form.watch('use_case')
+  const currentFramework = form.watch('framework')
+  const currentEnhancementTechnique = form.watch('enhancement_technique')
+  const availableUseCases = getUseCases()
+  const availableFrameworks = getFrameworks()
+  const availableEnhancementTechniques = getEnhancementTechniques()
+
+  // Check if current use-case is in the predefined list
   useEffect(() => {
-    if (currentCategory && !availableCategories.includes(currentCategory)) {
-      setCustomCategory(true)
+    if (currentUseCase && !availableUseCases.includes(currentUseCase)) {
+      setCustomUseCase(true)
     } else {
-      setCustomCategory(false)
+      setCustomUseCase(false)
     }
-  }, [currentCategory, availableCategories])
+  }, [currentUseCase, availableUseCases])
+
+  // Check if current framework is in the predefined list
+  useEffect(() => {
+    if (currentFramework && !availableFrameworks.includes(currentFramework)) {
+      setCustomFramework(true)
+    } else {
+      setCustomFramework(false)
+    }
+  }, [currentFramework, availableFrameworks])
+
+  // Check if current enhancement technique is in the predefined list
+  useEffect(() => {
+    if (currentEnhancementTechnique && !availableEnhancementTechniques.includes(currentEnhancementTechnique)) {
+      setCustomEnhancementTechnique(true)
+    } else {
+      setCustomEnhancementTechnique(false)
+    }
+  }, [currentEnhancementTechnique, availableEnhancementTechniques])
 
   useEffect(() => {
     if (content) {
@@ -98,8 +125,9 @@ export function PromptForm({ prompt }: PromptFormProps) {
       const body = {
         title: values.title,
         content: values.content,
-        type: values.type,
-        category: values.category || null,
+        use_case: values.use_case || null,
+        framework: values.framework || null,
+        enhancement_technique: values.enhancement_technique || null,
         description: values.description || null,
         tags,
       }
@@ -147,30 +175,6 @@ export function PromptForm({ prompt }: PromptFormProps) {
 
         <FormField
           control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="ai_prompt">AI Prompt</SelectItem>
-                  <SelectItem value="email_template">Email Template</SelectItem>
-                  <SelectItem value="snippet">Snippet</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem>
@@ -182,6 +186,198 @@ export function PromptForm({ prompt }: PromptFormProps) {
                   rows={2}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="use_case"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Use Case</FormLabel>
+              <div className="space-y-2">
+                {!customUseCase ? (
+                  <Select
+                    onValueChange={(value) => {
+                      if (value === '__custom__') {
+                        setCustomUseCase(true)
+                        field.onChange('')
+                      } else {
+                        field.onChange(value)
+                      }
+                    }}
+                    value={field.value || ''}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a use case" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {availableUseCases.map((useCase) => (
+                        <SelectItem key={useCase} value={useCase}>
+                          {useCase}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__custom__">
+                        + Custom Use Case
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Enter custom use case"
+                      {...field}
+                      value={field.value || ''}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setCustomUseCase(false)
+                        field.onChange('')
+                      }}
+                      className="text-xs"
+                    >
+                      Use predefined use cases
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="framework"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Framework</FormLabel>
+              <div className="space-y-2">
+                {!customFramework ? (
+                  <Select
+                    onValueChange={(value) => {
+                      if (value === '__custom__') {
+                        setCustomFramework(true)
+                        field.onChange('')
+                      } else {
+                        field.onChange(value)
+                      }
+                    }}
+                    value={field.value || ''}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a framework" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {availableFrameworks.map((framework) => (
+                        <SelectItem key={framework} value={framework}>
+                          {framework}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__custom__">
+                        + Custom Framework
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Enter custom framework"
+                      {...field}
+                      value={field.value || ''}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setCustomFramework(false)
+                        field.onChange('')
+                      }}
+                      className="text-xs"
+                    >
+                      Use predefined frameworks
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <FormDescription>
+                The prompting technique or pattern used
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="enhancement_technique"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Enhancement Technique</FormLabel>
+              <div className="space-y-2">
+                {!customEnhancementTechnique ? (
+                  <Select
+                    onValueChange={(value) => {
+                      if (value === '__custom__') {
+                        setCustomEnhancementTechnique(true)
+                        field.onChange('')
+                      } else {
+                        field.onChange(value)
+                      }
+                    }}
+                    value={field.value || ''}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an enhancement technique" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {availableEnhancementTechniques.map((technique) => (
+                        <SelectItem key={technique} value={technique}>
+                          {technique}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__custom__">
+                        + Custom Enhancement Technique
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Enter custom enhancement technique"
+                      {...field}
+                      value={field.value || ''}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setCustomEnhancementTechnique(false)
+                        field.onChange('')
+                      }}
+                      className="text-xs"
+                    >
+                      Use predefined enhancement techniques
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <FormDescription>
+                Advanced techniques to improve prompt performance
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -219,86 +415,22 @@ export function PromptForm({ prompt }: PromptFormProps) {
           )}
         />
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <div className="space-y-2">
-                  {!customCategory ? (
-                    <Select 
-                      onValueChange={(value) => {
-                        if (value === '__custom__') {
-                          setCustomCategory(true)
-                          field.onChange('')
-                        } else {
-                          field.onChange(value)
-                        }
-                      }}
-                      value={field.value || ''}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {availableCategories.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
-                        <SelectItem value="__custom__">
-                          + Custom Category
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="space-y-2">
-                      <Input 
-                        placeholder="Enter custom category" 
-                        {...field}
-                        value={field.value || ''}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setCustomCategory(false)
-                          field.onChange('')
-                        }}
-                        className="text-xs"
-                      >
-                        Use predefined categories
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="tags"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tags</FormLabel>
-                <FormControl>
-                  <Input placeholder="tag1, tag2, tag3" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Separate tags with commas
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="tags"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tags</FormLabel>
+              <FormControl>
+                <Input placeholder="tag1, tag2, tag3" {...field} />
+              </FormControl>
+              <FormDescription>
+                Separate tags with commas
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="flex justify-end gap-4">
           <Button

@@ -14,8 +14,9 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams
     const favorite = searchParams.get('favorite')
-    const type = searchParams.get('type')
-    const category = searchParams.get('category')
+    const useCase = searchParams.get('use_case')
+    const framework = searchParams.get('framework')
+    const enhancementTechnique = searchParams.get('enhancement_technique')
     const tag = searchParams.get('tag')
 
     let query = supabase
@@ -28,12 +29,16 @@ export async function GET(request: NextRequest) {
       query = query.eq('is_favorite', true)
     }
 
-    if (type) {
-      query = query.eq('type', type)
+    if (useCase) {
+      query = query.eq('use_case', useCase)
     }
 
-    if (category) {
-      query = query.eq('category', category)
+    if (framework) {
+      query = query.eq('framework', framework)
+    }
+
+    if (enhancementTechnique) {
+      query = query.eq('enhancement_technique', enhancementTechnique)
     }
 
     if (tag) {
@@ -66,7 +71,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, content, type, category, tags, description } = body
+    const { title, content, use_case, framework, enhancement_technique, tags, description } = body
 
     // Extract variables from content
     const variables = extractVariables(content)
@@ -93,8 +98,9 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         title,
         content,
-        type: type || 'ai_prompt',
-        category: category || null,
+        use_case: use_case || null,
+        framework: framework || null,
+        enhancement_technique: enhancement_technique || null,
         tags: tags || [],
         description: description || null,
         variables: Object.keys(variablesObj).length > 0 ? variablesObj : null,

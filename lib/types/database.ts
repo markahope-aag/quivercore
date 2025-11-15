@@ -1,12 +1,11 @@
-export type PromptType = 'ai_prompt' | 'email_template' | 'snippet' | 'other'
-
 export interface Prompt {
   id: string
   user_id: string
   title: string
   content: string
-  type: PromptType
-  category: string | null
+  use_case: string | null
+  framework: string | null
+  enhancement_technique: string | null
   tags: string[] | null
   description: string | null
   variables: Record<string, any> | null

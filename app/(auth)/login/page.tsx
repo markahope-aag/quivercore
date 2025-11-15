@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -15,17 +15,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [envCheck, setEnvCheck] = useState<string>('')
-
-  useEffect(() => {
-    // Check environment variables on mount
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    setEnvCheck(
-      `URL: ${url ? `${url.substring(0, 40)}...` : 'MISSING'} | ` +
-      `Key: ${key ? 'SET' : 'MISSING'}`
-    )
-  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,17 +22,6 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // Double check env vars before creating client
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      
-      console.log('Login attempt - URL:', url)
-      console.log('Login attempt - Key present:', !!key)
-      
-      if (!url || !key) {
-        throw new Error('Environment variables not available. Please check Vercel settings and redeploy.')
-      }
-
       const supabase = createClient()
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -78,11 +56,6 @@ export default function LoginPage() {
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
-            {envCheck && (
-              <div className="rounded-md bg-muted p-2 text-xs font-mono">
-                {envCheck}
-              </div>
-            )}
             {error && (
               <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
                 {error}
