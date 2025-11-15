@@ -57,13 +57,6 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
     navigator.clipboard.writeText(prompt.content)
   }
 
-  const typeLabels: Record<string, string> = {
-    ai_prompt: 'AI Prompt',
-    email_template: 'Email Template',
-    snippet: 'Snippet',
-    other: 'Other',
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
@@ -81,9 +74,14 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
             </Button>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
-            <Badge variant="outline">{typeLabels[prompt.type] || prompt.type}</Badge>
-            {prompt.category && (
-              <Badge variant="secondary">{prompt.category}</Badge>
+            {prompt.use_case && (
+              <Badge variant="outline">{prompt.use_case}</Badge>
+            )}
+            {prompt.framework && (
+              <Badge variant="secondary">{prompt.framework}</Badge>
+            )}
+            {prompt.enhancement_technique && (
+              <Badge variant="default">{prompt.enhancement_technique}</Badge>
             )}
             <span className="text-sm">
               Used {prompt.usage_count} time{prompt.usage_count !== 1 ? 's' : ''}
