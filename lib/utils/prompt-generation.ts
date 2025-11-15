@@ -80,12 +80,6 @@ function generateDefaultSystemPrompt(domain: string): string {
   return systemPrompts[domain] || 'You are a helpful AI assistant.'
 }
 
-export function verbalizeParameter(paramName: string, value: number): string {
-  const param = VS_PARAMETERS.find((p) => p.name === paramName)
-  if (!param) return ''
-
-  return param.verbalizeTemplate.replace('{value}', value.toString())
-}
 
 export function validatePromptConfig(baseConfig: BasePromptConfig): Record<string, string> {
   const errors: Record<string, string> = {}
@@ -98,7 +92,7 @@ export function validatePromptConfig(baseConfig: BasePromptConfig): Record<strin
     errors.basePrompt = 'Base prompt must be less than 10,000 characters'
   }
 
-  if (baseConfig.framework === 'Few-Shot' && baseConfig.examples.length === 0) {
+  if (baseConfig.framework === 'Few-Shot' && (!baseConfig.frameworkConfig.fewShotExamples || baseConfig.frameworkConfig.fewShotExamples.length === 0)) {
     errors.examples = 'Few-Shot framework requires at least one example'
   }
 

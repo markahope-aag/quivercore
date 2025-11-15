@@ -4,7 +4,7 @@ import type { FrameworkConfig } from '@/lib/types/prompt-builder'
 
 export const FRAMEWORK_TEMPLATES = {
   'Role-Based': (config: FrameworkConfig, basePrompt: string, vsEnhancement: string) => {
-    const role = config.roleExpertise || 'an expert assistant'
+    const role = config.roleBasedRole || 'an expert assistant'
     return `You are ${role}.
 
 ${basePrompt}
@@ -32,9 +32,9 @@ ${vsEnhancement}`
   },
 
   'Few-Shot': (config: FrameworkConfig, basePrompt: string, vsEnhancement: string) => {
-    const examples = config.examples || []
+    const examples = config.fewShotExamples || []
     const examplesText = examples
-      .map((ex, idx) => `Example ${idx + 1}:\nInput: ${ex.input}\nOutput: ${ex.output}`)
+      .map((ex: any, idx: number) => `Example ${idx + 1}:\nInput: ${ex.input}\nOutput: ${ex.output}`)
       .join('\n\n')
 
     return `Here are examples to guide your response:
@@ -62,8 +62,8 @@ ${vsEnhancement}`
   },
 
   'Constraint-Based': (config: FrameworkConfig, basePrompt: string, vsEnhancement: string) => {
-    const constraints = config.constraints || []
-    const constraintsText = constraints.map((c, idx) => `${idx + 1}. ${c}`).join('\n')
+    const constraints = config.constraintSpecs || []
+    const constraintsText = constraints.map((c: string, idx: number) => `${idx + 1}. ${c}`).join('\n')
 
     return `${basePrompt}
 

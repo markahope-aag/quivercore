@@ -1,46 +1,45 @@
 // Constants for AI Prompt Builder
 
-import type { PromptDomain, PromptFramework, VSParameter } from '@/lib/types/prompt-builder'
-import { VSDistributionType } from '@/lib/types/prompt-builder'
+import { DomainCategory, FrameworkType, VSDistributionType } from '@/lib/types/prompt-builder'
 
 // Core Categories
-export const CORE_DOMAINS: PromptDomain[] = [
-  'Writing & Content',
-  'Business & Strategy',
-  'Code & Development',
-  'Data & Analysis',
-  'Research & Learning',
-  'Marketing & Sales',
-  'Creative & Design',
-  'Communication',
+export const CORE_DOMAINS = [
+  DomainCategory.WRITING_CONTENT,
+  DomainCategory.BUSINESS_STRATEGY,
+  DomainCategory.CODE_DEVELOPMENT,
+  DomainCategory.DATA_ANALYSIS,
+  DomainCategory.RESEARCH_LEARNING,
+  DomainCategory.MARKETING_SALES,
+  DomainCategory.CREATIVE_DESIGN,
+  DomainCategory.COMMUNICATION,
 ]
 
-export const PROMPT_DOMAINS: PromptDomain[] = [
-  'Writing & Content',
-  'Business & Strategy',
-  'Code & Development',
-  'Data & Analysis',
-  'Research & Learning',
-  'Marketing & Sales',
-  'Creative & Design',
-  'Communication',
-  'Other',
+export const PROMPT_DOMAINS = [
+  DomainCategory.WRITING_CONTENT,
+  DomainCategory.BUSINESS_STRATEGY,
+  DomainCategory.CODE_DEVELOPMENT,
+  DomainCategory.DATA_ANALYSIS,
+  DomainCategory.RESEARCH_LEARNING,
+  DomainCategory.MARKETING_SALES,
+  DomainCategory.CREATIVE_DESIGN,
+  DomainCategory.COMMUNICATION,
+  DomainCategory.OTHER,
 ]
 
-export const PROMPT_FRAMEWORKS: PromptFramework[] = [
-  'Role-Based',
-  'Few-Shot',
-  'Chain-of-Thought',
-  'Template/Fill-in',
-  'Constraint-Based',
-  'Iterative/Multi-Turn',
-  'Comparative',
-  'Generative',
-  'Analytical',
-  'Transformation',
+export const PROMPT_FRAMEWORKS = [
+  FrameworkType.ROLE_BASED,
+  FrameworkType.FEW_SHOT,
+  FrameworkType.CHAIN_OF_THOUGHT,
+  FrameworkType.TEMPLATE_FILL_IN,
+  FrameworkType.CONSTRAINT_BASED,
+  FrameworkType.ITERATIVE_MULTI_TURN,
+  FrameworkType.COMPARATIVE,
+  FrameworkType.GENERATIVE,
+  FrameworkType.ANALYTICAL,
+  FrameworkType.TRANSFORMATION,
 ]
 
-export const FRAMEWORK_DESCRIPTIONS: Record<PromptFramework, string> = {
+export const FRAMEWORK_DESCRIPTIONS: Record<string, string> = {
   'Role-Based': 'Assign a specific role or persona to the AI (e.g., "You are an expert copywriter...")',
   'Few-Shot': 'Provide examples of input-output pairs to guide the AI',
   'Chain-of-Thought': 'Ask the AI to show its reasoning step-by-step',
@@ -52,68 +51,6 @@ export const FRAMEWORK_DESCRIPTIONS: Record<PromptFramework, string> = {
   'Analytical': 'Break down and examine existing content',
   'Transformation': 'Convert content from one format/style to another',
 }
-
-export const VS_PARAMETERS: Array<{
-  name: VSParameter
-  label: string
-  description: string
-  min: number
-  max: number
-  step: number
-  default: number
-  verbalizeTemplate: string
-}> = [
-  {
-    name: 'temperature',
-    label: 'Temperature',
-    description: 'Controls randomness. Higher = more creative, lower = more focused',
-    min: 0,
-    max: 2,
-    step: 0.1,
-    default: 1.0,
-    verbalizeTemplate: 'Use a creativity level of {value} (on a scale of 0-2, where 0 is most deterministic and 2 is most creative).',
-  },
-  {
-    name: 'top_p',
-    label: 'Top P (Nucleus Sampling)',
-    description: 'Controls diversity via nucleus sampling',
-    min: 0,
-    max: 1,
-    step: 0.05,
-    default: 1.0,
-    verbalizeTemplate: 'Consider the top {value}% most likely next words when generating your response.',
-  },
-  {
-    name: 'top_k',
-    label: 'Top K',
-    description: 'Limits vocabulary to top K tokens',
-    min: 1,
-    max: 100,
-    step: 1,
-    default: 50,
-    verbalizeTemplate: 'Limit your vocabulary choices to the top {value} most likely words at each step.',
-  },
-  {
-    name: 'presence_penalty',
-    label: 'Presence Penalty',
-    description: 'Penalizes repeated tokens',
-    min: -2,
-    max: 2,
-    step: 0.1,
-    default: 0,
-    verbalizeTemplate: 'Apply a {value} penalty for repeating topics (negative encourages, positive discourages repetition).',
-  },
-  {
-    name: 'frequency_penalty',
-    label: 'Frequency Penalty',
-    description: 'Penalizes tokens based on frequency',
-    min: -2,
-    max: 2,
-    step: 0.1,
-    default: 0,
-    verbalizeTemplate: 'Apply a {value} penalty based on word frequency (negative encourages, positive discourages common words).',
-  },
-]
 
 export const BUILDER_STEPS = [
   { id: 'base', label: 'Base Prompt', description: 'Define your core prompt' },
