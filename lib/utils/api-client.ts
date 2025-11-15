@@ -87,7 +87,7 @@ export async function executePrompt(
   logger.debug('Executing prompt', {
     promptLength: promptText.length,
     systemPromptLength: systemPrompt.length,
-    model: config.model || 'claude-3-sonnet-20240229',
+    model: config.model || 'claude-3-5-sonnet-20241022',
   })
 
   return executeWithRetry(

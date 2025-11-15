@@ -87,23 +87,33 @@ describe('/api/prompts', () => {
     })
 
     it('applies favorite filter when provided', async () => {
+      const eqCalls: Array<[string, unknown]> = []
       const queryBuilder = {
-        eq: vi.fn().mockReturnThis(),
-        order: vi.fn(() => Promise.resolve({ data: [], error: null })),
+        eq: vi.fn((key: string, value: unknown) => {
+          eqCalls.push([key, value])
+          return queryBuilder
+        }),
+        order: vi.fn(() => queryBuilder),
+        range: vi.fn(() => queryBuilder),
       }
 
       mockSupabase.from = vi.fn(() => ({
         select: vi.fn(() => queryBuilder),
       })) as any
 
+      // Mock unstable_cache to execute the function directly
+      const { unstable_cache } = await import('next/cache')
+      vi.mocked(unstable_cache).mockImplementation((fn) => {
+        return async () => {
+          return await fn()
+        }
+      })
+
       const request = new NextRequest('http://localhost/api/prompts?favorite=true')
       await GET(request)
 
-      // The query builder chain includes user_id first, then is_favorite
-      expect(queryBuilder.eq).toHaveBeenCalled()
-      // Check that is_favorite was called (may be called after user_id)
-      const calls = vi.mocked(queryBuilder.eq).mock.calls
-      const favoriteCall = calls.find(call => call[0] === 'is_favorite')
+      // Check that is_favorite was called with true
+      const favoriteCall = eqCalls.find(call => call[0] === 'is_favorite')
       expect(favoriteCall).toBeDefined()
       expect(favoriteCall?.[1]).toBe(true)
     })

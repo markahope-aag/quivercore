@@ -268,6 +268,7 @@ export interface PromptBuilderState {
     issues: string[]
     suggestions: string[]
   }
+  selectedModel: string
 }
 
 export type PromptBuilderAction =

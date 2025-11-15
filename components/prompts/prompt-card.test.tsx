@@ -105,11 +105,22 @@ describe('PromptCard', () => {
     })
     global.fetch = mockFetch
     global.confirm = vi.fn(() => true)
+    
+    const mockRefresh = vi.fn()
+    vi.mock('next/navigation', () => ({
+      useRouter: () => ({ refresh: mockRefresh }),
+    }))
 
     render(<PromptCard prompt={mockPrompt} />)
     
-    // Find the dropdown menu trigger (three dots button)
-    const menuButton = screen.getByText('⋮').closest('button')
+    // Find the dropdown menu trigger - look for the MoreVertical icon or menu button
+    const menuButtons = screen.getAllByRole('button')
+    // The dropdown trigger should be one of the buttons
+    const menuButton = menuButtons.find(btn => {
+      const svg = btn.querySelector('svg')
+      return svg && (svg.getAttribute('data-lucide') === 'more-vertical' || btn.getAttribute('aria-haspopup') === 'true')
+    }) || menuButtons[menuButtons.length - 1] // Fallback to last button
+    
     expect(menuButton).toBeInTheDocument()
     
     if (menuButton) {

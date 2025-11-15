@@ -73,6 +73,7 @@ const initialState: PromptBuilderState = {
     issues: [],
     suggestions: [],
   },
+  selectedModel: 'claude-3-5-sonnet-20241022',
 }
 
 function promptBuilderReducer(
@@ -199,6 +200,12 @@ function promptBuilderReducer(
         validationResults: action.payload,
       }
 
+    case 'SET_MODEL':
+      return {
+        ...state,
+        selectedModel: action.payload,
+      }
+
     case 'GENERATE_PROMPT':
       return {
         ...state,
@@ -284,6 +291,7 @@ interface PromptBuilderContextType {
   resetBuilder: () => void
   setError: (field: string, message: string) => void
   clearErrors: () => void
+  setModel: (model: string) => void
 }
 
 const PromptBuilderContext = createContext<PromptBuilderContextType | undefined>(undefined)
@@ -384,7 +392,7 @@ export function PromptBuilderProvider({ children }: { children: React.ReactNode 
           body: JSON.stringify({
             promptText: state.generatedPrompt.finalPrompt,
             systemPrompt: state.generatedPrompt.systemPrompt,
-            model: 'claude-3-sonnet-20240229',
+            model: state.selectedModel,
             maxTokens: 4096,
           }),
         })
@@ -498,6 +506,7 @@ export function PromptBuilderProvider({ children }: { children: React.ReactNode 
     resetBuilder,
     setError,
     clearErrors,
+    setModel,
   }
 
   return <PromptBuilderContext.Provider value={value}>{children}</PromptBuilderContext.Provider>

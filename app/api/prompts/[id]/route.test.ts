@@ -21,10 +21,22 @@ vi.mock('@/lib/utils/sanitize', () => ({
   sanitizeStringArray: vi.fn((arr: string[]) => arr),
 }))
 
+vi.mock('@/lib/utils/prompt', () => ({
+  extractVariables: vi.fn(() => []),
+  generateSearchableText: vi.fn(() => 'test'),
+}))
+
+vi.mock('@/lib/openai/client', () => ({
+  generateEmbedding: vi.fn(() => Promise.resolve([])),
+}))
+
 vi.mock('next/cache', () => ({
   unstable_cache: vi.fn((fn) => {
-    // Return the function directly - unstable_cache wraps it but we want to execute it directly in tests
-    return fn
+    // Return an async function that executes the cached function
+    // This matches the actual behavior of unstable_cache
+    return async (...args: unknown[]) => {
+      return await fn(...args)
+    }
   }),
 }))
 
@@ -97,7 +109,22 @@ describe('/api/prompts/[id]', () => {
         from: vi.fn(() => ({
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn(() => Promise.resolve({ data: mockPrompt, error: null })),
+              eq: vi.fn(() => ({
+                single: vi.fn(() => Promise.resolve({ 
+                  data: {
+                    ...mockPrompt,
+                    description: null,
+                    tags: null,
+                    created_at: '2024-01-01T00:00:00Z',
+                    updated_at: '2024-01-01T00:00:00Z',
+                    is_favorite: false,
+                    use_case: null,
+                    framework: null,
+                    enhancement_technique: null,
+                  }, 
+                  error: null 
+                })),
+              })),
             })),
           })),
         })),
@@ -122,12 +149,14 @@ describe('/api/prompts/[id]', () => {
         from: vi.fn(() => ({
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              single: vi.fn(() =>
-                Promise.resolve({
-                  data: null,
-                  error: { code: 'PGRST116', message: 'Not found' },
-                })
-              ),
+              eq: vi.fn(() => ({
+                single: vi.fn(() =>
+                  Promise.resolve({
+                    data: null,
+                    error: { code: 'PGRST116', message: 'Not found' },
+                  })
+                ),
+              })),
             })),
           })),
         })),
@@ -162,6 +191,15 @@ describe('/api/prompts/[id]', () => {
       const updatedPrompt = { ...mockPrompt, title: 'Updated Title' }
       const { createClient } = await import('@/lib/supabase/server')
       
+      // Mock for extractVariables and generateEmbedding
+      vi.mock('@/lib/utils/prompt', () => ({
+        extractVariables: vi.fn(() => []),
+        generateSearchableText: vi.fn(() => 'test'),
+      }))
+      vi.mock('@/lib/openai/client', () => ({
+        generateEmbedding: vi.fn(() => Promise.resolve([])),
+      }))
+      
       const freshMockSupabase = {
         auth: {
           getUser: vi.fn(() => Promise.resolve({ data: { user: mockUser } })),
@@ -171,13 +209,17 @@ describe('/api/prompts/[id]', () => {
             return {
               select: vi.fn(() => ({
                 eq: vi.fn(() => ({
-                  single: vi.fn(() => Promise.resolve({ data: { ...mockPrompt, content: 'Test Content' }, error: null })),
+                  eq: vi.fn(() => ({
+                    single: vi.fn(() => Promise.resolve({ data: { ...mockPrompt, content: 'Test Content', title: 'Test Prompt', description: null, tags: null }, error: null })),
+                  })),
                 })),
               })),
               update: vi.fn(() => ({
                 eq: vi.fn(() => ({
-                  select: vi.fn(() => ({
-                    single: vi.fn(() => Promise.resolve({ data: updatedPrompt, error: null })),
+                  eq: vi.fn(() => ({
+                    select: vi.fn(() => ({
+                      single: vi.fn(() => Promise.resolve({ data: updatedPrompt, error: null })),
+                    })),
                   })),
                 })),
               })),

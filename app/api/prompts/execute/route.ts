@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     // Validate and sanitize inputs
     const promptText = sanitizeInput(body.promptText || '', 50000)
     const systemPrompt = sanitizeInput(body.systemPrompt || '', 10000)
-    const model = body.model || 'claude-3-sonnet-20240229'
+    const model = body.model || 'claude-3-5-sonnet-20241022'
     const maxTokens = Math.min(4096, Math.max(100, parseInt(body.maxTokens || '4096', 10)))
 
     if (!promptText || promptText.trim().length === 0) {

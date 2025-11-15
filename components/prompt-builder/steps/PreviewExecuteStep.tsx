@@ -7,6 +7,7 @@ import { parseVSResponse } from '@/lib/utils/api-client'
 import type { ExportFormat } from '@/lib/utils/export'
 import type { AdvancedEnhancements } from '@/lib/types/enhancements'
 import { EnhancementTestRunner } from '../EnhancementTestRunner'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 // Helper function to get list of enabled advanced enhancements
 function getEnabledAdvancedEnhancements(enhancements: AdvancedEnhancements): string[] {
@@ -103,7 +104,7 @@ function formatAdvancedEnhancementDetails(enhancements: AdvancedEnhancements): s
 }
 
 export function PreviewExecuteStep() {
-  const { state, generatePrompt, executePrompt, saveTemplate, setError } = usePromptBuilder()
+  const { state, generatePrompt, executePrompt, saveTemplate, setError, setModel } = usePromptBuilder()
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [templateName, setTemplateName] = useState('')
   const [templateDescription, setTemplateDescription] = useState('')
@@ -215,6 +216,35 @@ export function PreviewExecuteStep() {
           <EnhancementTestRunner />
         </div>
       )}
+
+      {/* Model Selector */}
+      <div className="rounded-md border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-800">
+        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Claude Model
+        </label>
+        <Select value={state.selectedModel} onValueChange={setModel}>
+          <SelectTrigger className="w-full max-w-md">
+            <SelectValue placeholder="Select a model" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="claude-3-5-sonnet-20241022">
+              Claude 3.5 Sonnet (Latest) - Best balance of speed and quality
+            </SelectItem>
+            <SelectItem value="claude-3-opus-20240229">
+              Claude 3 Opus - Highest quality, slower
+            </SelectItem>
+            <SelectItem value="claude-3-sonnet-20240229">
+              Claude 3 Sonnet - Good balance (legacy)
+            </SelectItem>
+            <SelectItem value="claude-3-haiku-20240307">
+              Claude 3 Haiku - Fastest, lower cost
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          Choose the Claude model for prompt execution. Claude 3.5 Sonnet offers the best balance of speed, quality, and cost.
+        </p>
+      </div>
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
