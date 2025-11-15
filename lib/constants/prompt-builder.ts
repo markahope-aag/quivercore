@@ -1,6 +1,7 @@
 // Constants for AI Prompt Builder
 
 import type { PromptDomain, PromptFramework, VSParameter } from '@/lib/types/prompt-builder'
+import { VSDistributionType } from '@/lib/types/prompt-builder'
 
 // Core Categories
 export const CORE_DOMAINS: PromptDomain[] = [
@@ -163,7 +164,7 @@ export const BALANCED_DIMENSIONS = [
 export const DEFAULT_VS_ENHANCEMENT = {
   enabled: false,
   numberOfResponses: 5 as const,
-  distributionType: 'broad_spectrum' as const,
+  distributionType: VSDistributionType.BROAD_SPECTRUM,
   includeProbabilityReasoning: false,
   customConstraints: '',
   antiTypicalityEnabled: false,
