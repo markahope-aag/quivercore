@@ -17,6 +17,7 @@ import { Prompt } from '@/lib/types/database'
 import { getUseCases } from '@/lib/constants/use-cases'
 import { getFrameworks } from '@/lib/constants/frameworks'
 import { getEnhancementTechniques } from '@/lib/constants/enhancement-techniques'
+import { useDebounce } from '@/lib/hooks/use-debounce'
 
 interface PromptFiltersProps {
   prompts?: Prompt[]
@@ -88,6 +89,25 @@ export function PromptFilters({ prompts }: PromptFiltersProps = {}) {
     setSearchQuery(currentSearch)
   }, [currentSearch])
 
+  // Debounce search query to avoid too many URL updates
+  const debouncedSearchQuery = useDebounce(searchQuery, 500)
+
+  // Update URL when debounced search query changes
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString())
+    
+    if (debouncedSearchQuery) {
+      params.set('q', debouncedSearchQuery)
+    } else {
+      params.delete('q')
+    }
+
+    // Only update if the value actually changed
+    if (debouncedSearchQuery !== currentSearch) {
+      router.push(`/prompts?${params.toString()}`)
+    }
+  }, [debouncedSearchQuery, router, searchParams, currentSearch])
+
   const updateFilters = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString())
     
@@ -104,6 +124,7 @@ export function PromptFilters({ prompts }: PromptFiltersProps = {}) {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
+    // Search is now handled by debounced effect, but we keep this for immediate submission
     updateFilters({ q: searchQuery || null })
   }
 

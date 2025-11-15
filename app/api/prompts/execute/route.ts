@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { handleError, ErrorCodes, ApplicationError } from '@/lib/utils/error-handler'
 import { logger } from '@/lib/utils/logger'
 import { sanitizeInput } from '@/lib/utils/sanitize'
+import { executeWithRetry } from '@/lib/utils/retry'
 import Anthropic from '@anthropic-ai/sdk'
 // Rate limiting is handled by Next.js middleware, not needed here
 
@@ -55,17 +56,30 @@ export async function POST(request: NextRequest) {
     })
 
     try {
-      const message = await anthropic.messages.create({
-        model: model as Anthropic.MessageCreateParams['model'],
-        max_tokens: maxTokens,
-        system: systemPrompt || undefined,
-        messages: [
-          {
-            role: 'user',
-            content: promptText,
+      const message = await executeWithRetry(
+        async () => {
+          return anthropic.messages.create({
+            model: model as Anthropic.MessageCreateParams['model'],
+            max_tokens: maxTokens,
+            system: systemPrompt || undefined,
+            messages: [
+              {
+                role: 'user',
+                content: promptText,
+              },
+            ],
+          })
+        },
+        {
+          maxRetries: 3,
+          baseDelay: 1000,
+          maxDelay: 30000,
+          retryableErrors: [429, 500, 502, 503, 504],
+          onRetry: (attempt, error) => {
+            logger.warn(`Retrying prompt execution (attempt ${attempt})`, { error })
           },
-        ],
-      })
+        }
+      )
 
       // Validate response structure
       if (!message.content || !Array.isArray(message.content) || message.content.length === 0) {

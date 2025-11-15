@@ -2,6 +2,7 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import { logger } from './logger'
+import { executeWithRetry } from './retry'
 
 interface ClaudeAPIConfig {
   apiKey: string
@@ -44,7 +45,7 @@ export async function executePrompt(
   promptText: string,
   systemPrompt: string,
   config: ClaudeAPIConfig
-): Promise<{ response: string; model: string; tokensUsed?: any }> {
+): Promise<{ response: string; model: string; tokensUsed?: Anthropic.Message.Usage }> {
   // Check rate limit
   await rateLimiter.checkLimit()
 
@@ -59,50 +60,61 @@ export async function executePrompt(
     model: config.model || 'claude-3-sonnet-20240229',
   })
 
-  try {
-    const anthropic = new Anthropic({
-      apiKey: config.apiKey,
-    })
+  return executeWithRetry(
+    async () => {
+      const anthropic = new Anthropic({
+        apiKey: config.apiKey,
+      })
 
-    const message = await anthropic.messages.create({
-      model: (config.model || 'claude-3-sonnet-20240229') as Anthropic.MessageCreateParams['model'],
-      max_tokens: config.maxTokens || 4096,
-      system: systemPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: promptText,
-        },
-      ],
-    })
+      const message = await anthropic.messages.create({
+        model: (config.model || 'claude-3-sonnet-20240229') as Anthropic.MessageCreateParams['model'],
+        max_tokens: config.maxTokens || 4096,
+        system: systemPrompt,
+        messages: [
+          {
+            role: 'user',
+            content: promptText,
+          },
+        ],
+      })
 
-    logger.debug('API response received', {
-      model: message.model,
-      stopReason: message.stop_reason,
-      tokensUsed: message.usage,
-    })
+      logger.debug('API response received', {
+        model: message.model,
+        stopReason: message.stop_reason,
+        tokensUsed: message.usage,
+      })
 
-    // Validate response structure
-    if (!message.content || !Array.isArray(message.content) || message.content.length === 0) {
-      throw new Error('Invalid API response: missing content')
+      // Validate response structure
+      if (!message.content || !Array.isArray(message.content) || message.content.length === 0) {
+        throw new Error('Invalid API response: missing content')
+      }
+
+      // Extract text from content blocks
+      const textContent = message.content
+        .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+        .map((block) => block.text)
+        .join('')
+
+      if (!textContent) {
+        throw new Error('Invalid API response: no text content')
+      }
+
+      return {
+        response: textContent,
+        model: message.model,
+        tokensUsed: message.usage,
+      }
+    },
+    {
+      maxRetries: 3,
+      baseDelay: 1000,
+      maxDelay: 30000,
+      retryableErrors: [429, 500, 502, 503, 504],
+      onRetry: (attempt, error) => {
+        logger.warn(`Retrying API call (attempt ${attempt})`, { error })
+      },
     }
-
-    // Extract text from content blocks
-    const textContent = message.content
-      .filter((block): block is Anthropic.TextBlock => block.type === 'text')
-      .map((block) => block.text)
-      .join('')
-
-    if (!textContent) {
-      throw new Error('Invalid API response: no text content')
-    }
-
-    return {
-      response: textContent,
-      model: message.model,
-      tokensUsed: message.usage,
-    }
-  } catch (error: unknown) {
+  ).catch((error: unknown) => {
     logger.error('API execution error', error)
 
     // Handle Anthropic SDK errors
