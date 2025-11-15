@@ -12,6 +12,7 @@ import { Prompt } from '@/lib/types/database'
 import { format } from 'date-fns'
 import { TestPanel } from './test-panel'
 import { VersionHistory } from './version-history'
+import { sanitizeForDisplay } from '@/lib/utils/sanitize'
 
 interface PromptDetailProps {
   prompt: Prompt
@@ -62,7 +63,7 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold tracking-tight">{prompt.title}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{sanitizeForDisplay(prompt.title)}</h1>
             <Button
               variant="ghost"
               size="icon"
@@ -75,13 +76,13 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
           </div>
           <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
             {prompt.use_case && (
-              <Badge variant="outline">{prompt.use_case}</Badge>
+              <Badge variant="outline">{sanitizeForDisplay(prompt.use_case)}</Badge>
             )}
             {prompt.framework && (
-              <Badge variant="secondary">{prompt.framework}</Badge>
+              <Badge variant="secondary">{sanitizeForDisplay(prompt.framework)}</Badge>
             )}
             {prompt.enhancement_technique && (
-              <Badge variant="default">{prompt.enhancement_technique}</Badge>
+              <Badge variant="default">{sanitizeForDisplay(prompt.enhancement_technique)}</Badge>
             )}
             <span className="text-sm">
               Used {prompt.usage_count} time{prompt.usage_count !== 1 ? 's' : ''}
@@ -94,7 +95,7 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
             <div className="flex flex-wrap gap-2 mt-3">
               {prompt.tags.map((tag) => (
                 <Badge key={tag} variant="outline" className="text-xs">
-                  {tag}
+                  {sanitizeForDisplay(tag)}
                 </Badge>
               ))}
             </div>
@@ -124,7 +125,7 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
             <CardTitle>Description</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">{prompt.description}</p>
+            <p className="text-muted-foreground">{sanitizeForDisplay(prompt.description)}</p>
           </CardContent>
         </Card>
       )}
@@ -136,7 +137,7 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
         <CardContent>
           <div className="prose prose-sm dark:prose-invert max-w-none">
             <pre className="whitespace-pre-wrap font-mono text-sm bg-muted p-4 rounded-lg">
-              {prompt.content}
+              {sanitizeForDisplay(prompt.content)}
             </pre>
           </div>
         </CardContent>

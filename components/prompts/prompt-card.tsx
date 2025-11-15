@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { Star, Edit, Trash2, Copy, TestTube } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,12 +15,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Prompt } from '@/lib/types/database'
 import { format } from 'date-fns'
+import { sanitizeForDisplay } from '@/lib/utils/sanitize'
 
 interface PromptCardProps {
   prompt: Prompt
 }
 
-export function PromptCard({ prompt }: PromptCardProps) {
+export const PromptCard = memo(function PromptCard({ prompt }: PromptCardProps) {
   const router = useRouter()
   const [isFavorite, setIsFavorite] = useState(prompt.is_favorite)
 
@@ -79,11 +80,11 @@ export function PromptCard({ prompt }: PromptCardProps) {
           <div className="flex-1">
             <CardTitle className="line-clamp-1">
               <Link href={`/prompts/${prompt.id}`} className="hover:underline">
-                {prompt.title}
+                {sanitizeForDisplay(prompt.title)}
               </Link>
             </CardTitle>
             <CardDescription className="line-clamp-2 mt-1">
-              {prompt.description || 'No description'}
+              {prompt.description ? sanitizeForDisplay(prompt.description) : 'No description'}
             </CardDescription>
           </div>
           <Button
@@ -103,13 +104,13 @@ export function PromptCard({ prompt }: PromptCardProps) {
           {(prompt.use_case || prompt.framework || prompt.enhancement_technique) && (
             <div className="flex flex-wrap gap-2">
               {prompt.use_case && (
-                <Badge variant="default" className="bg-blue-500">{prompt.use_case}</Badge>
+                <Badge variant="default" className="bg-blue-500">{sanitizeForDisplay(prompt.use_case)}</Badge>
               )}
               {prompt.framework && (
-                <Badge variant="default" className="bg-purple-500">{prompt.framework}</Badge>
+                <Badge variant="default" className="bg-purple-500">{sanitizeForDisplay(prompt.framework)}</Badge>
               )}
               {prompt.enhancement_technique && (
-                <Badge variant="default" className="bg-green-600">{prompt.enhancement_technique}</Badge>
+                <Badge variant="default" className="bg-green-600">{sanitizeForDisplay(prompt.enhancement_technique)}</Badge>
               )}
             </div>
           )}
@@ -117,7 +118,7 @@ export function PromptCard({ prompt }: PromptCardProps) {
             <div className="flex flex-wrap gap-1">
               {prompt.tags.slice(0, 3).map((tag) => (
                 <Badge key={tag} variant="outline" className="text-xs">
-                  {tag}
+                  {sanitizeForDisplay(tag)}
                 </Badge>
               ))}
               {prompt.tags.length > 3 && (
@@ -175,5 +176,5 @@ export function PromptCard({ prompt }: PromptCardProps) {
       </CardFooter>
     </Card>
   )
-}
+})
 

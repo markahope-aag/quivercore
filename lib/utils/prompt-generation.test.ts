@@ -57,7 +57,7 @@ describe('Prompt Generation', () => {
 
       const result = generateEnhancedPrompt(baseConfig, vsEnhancement, enhancements)
 
-      expect(result.finalPrompt).toContain('expert')
+      expect(result.finalPrompt).toContain('highly experienced professional')
       expect(result.finalPrompt).toContain('AI Technology')
     })
 
@@ -74,7 +74,7 @@ describe('Prompt Generation', () => {
 
       const result = generateEnhancedPrompt(baseConfig, vsEnhancement, enhancements)
 
-      expect(result.finalPrompt).toContain('Markdown')
+      expect(result.finalPrompt).toContain('FORMAT:')
     })
 
     it('should include smart constraints in prompt', () => {
@@ -136,7 +136,7 @@ describe('Prompt Generation', () => {
 
       const result = generateEnhancedPrompt(baseConfig, vsEnhancement, enhancements)
 
-      expect(result.finalPrompt).toContain('expert')
+      expect(result.finalPrompt).toContain('highly experienced professional')
       expect(result.finalPrompt).toContain('Content Writing')
       expect(result.finalPrompt).toContain('JSON')
       expect(result.finalPrompt).toContain('300')

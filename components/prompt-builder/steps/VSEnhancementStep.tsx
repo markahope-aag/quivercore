@@ -43,7 +43,12 @@ export function VSEnhancementStep() {
   }
 
   const handleProbabilityThresholdChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateVSEnhancement({ probabilityThreshold: parseFloat(e.target.value) as any })
+    const value = parseFloat(e.target.value) as 0.15 | 0.1 | 0.05 | undefined
+    if (value === 0.15 || value === 0.1 || value === 0.05) {
+      updateVSEnhancement({ probabilityThreshold: value })
+    } else if (e.target.value === '') {
+      updateVSEnhancement({ probabilityThreshold: undefined })
+    }
   }
 
   const handleDimensionToggle = (dimension: string) => {

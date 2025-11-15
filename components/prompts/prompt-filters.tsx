@@ -19,10 +19,10 @@ import { getFrameworks } from '@/lib/constants/frameworks'
 import { getEnhancementTechniques } from '@/lib/constants/enhancement-techniques'
 
 interface PromptFiltersProps {
-  prompts: Prompt[]
+  prompts?: Prompt[]
 }
 
-export function PromptFilters({ prompts }: PromptFiltersProps) {
+export function PromptFilters({ prompts }: PromptFiltersProps = {}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
@@ -48,10 +48,11 @@ export function PromptFilters({ prompts }: PromptFiltersProps) {
   }
 
   // Get use-cases, frameworks, and enhancement techniques from prompts and merge with predefined
-  const userUseCases = Array.from(new Set(prompts.map(p => p.use_case).filter((uc): uc is string => Boolean(uc))))
-  const userFrameworks = Array.from(new Set(prompts.map(p => p.framework).filter((fw): fw is string => Boolean(fw))))
-  const userEnhancementTechniques = Array.from(new Set(prompts.map(p => p.enhancement_technique).filter((et): et is string => Boolean(et))))
-  const allTags = prompts.flatMap(p => p.tags || [])
+  // If prompts not provided, only show predefined options
+  const userUseCases = prompts ? Array.from(new Set(prompts.map(p => p.use_case).filter((uc): uc is string => Boolean(uc)))) : []
+  const userFrameworks = prompts ? Array.from(new Set(prompts.map(p => p.framework).filter((fw): fw is string => Boolean(fw)))) : []
+  const userEnhancementTechniques = prompts ? Array.from(new Set(prompts.map(p => p.enhancement_technique).filter((et): et is string => Boolean(et)))) : []
+  const allTags = prompts ? prompts.flatMap(p => p.tags || []) : []
   const uniqueTags = Array.from(new Set(allTags))
 
   // Get use-cases (always show all predefined + user custom ones)

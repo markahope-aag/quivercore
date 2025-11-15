@@ -104,7 +104,6 @@ function formatAdvancedEnhancementDetails(enhancements: AdvancedEnhancements): s
 
 export function PreviewExecuteStep() {
   const { state, generatePrompt, executePrompt, saveTemplate, setError } = usePromptBuilder()
-  const [apiKey, setApiKey] = useState('')
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [templateName, setTemplateName] = useState('')
   const [templateDescription, setTemplateDescription] = useState('')
@@ -120,17 +119,12 @@ export function PreviewExecuteStep() {
   }, [state.baseConfig, state.vsEnhancement, state.advancedEnhancements, generatePrompt])
 
   const handleExecute = async () => {
-    if (!apiKey.trim()) {
-      setError('execution', 'API key is required')
-      return
-    }
-
     if (!state.generatedPrompt) {
       setError('execution', 'No prompt generated')
       return
     }
 
-    await executePrompt(apiKey)
+    await executePrompt()
   }
 
   const handleExport = (format: ExportFormat) => {
@@ -405,20 +399,10 @@ export function PreviewExecuteStep() {
           Execute your prompt using the Claude API to see the results.
         </p>
 
-        <div className="mt-4">
-          <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            API Key
-          </label>
-          <input
-            type="password"
-            id="apiKey"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="sk-ant-..."
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white sm:text-sm"
-          />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Your Claude API key (stored locally, never sent to our servers)
+        <div className="mt-4 rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
+          <p className="text-sm text-blue-800 dark:text-blue-300">
+            <strong>Secure Execution:</strong> Prompts are executed securely using server-side API keys. 
+            No API keys are required or stored in your browser.
           </p>
         </div>
 
@@ -430,7 +414,7 @@ export function PreviewExecuteStep() {
 
         <button
           onClick={handleExecute}
-          disabled={state.isExecuting || !apiKey.trim()}
+          disabled={state.isExecuting}
           className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {state.isExecuting ? (

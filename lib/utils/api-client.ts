@@ -1,5 +1,7 @@
 // Claude API client for prompt execution
 
+import { logger } from './logger'
+
 interface ClaudeAPIConfig {
   apiKey: string
   model?: string
@@ -50,11 +52,10 @@ export async function executePrompt(
     throw new Error('API key is required')
   }
 
-  console.log('[API] Executing prompt:', {
+  logger.debug('Executing prompt', {
     promptLength: promptText.length,
     systemPromptLength: systemPrompt.length,
     model: config.model || 'claude-3-sonnet-20240229',
-    timestamp: new Date().toISOString(),
   })
 
   try {
@@ -80,7 +81,7 @@ export async function executePrompt(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      console.error('[API] Error response:', errorData)
+      logger.error('API error response', errorData)
 
       if (response.status === 401) {
         throw new Error('Invalid API key')
@@ -93,22 +94,26 @@ export async function executePrompt(
 
     const data = await response.json()
 
-    console.log('[API] Response received:', {
+    logger.debug('API response received', {
       model: data.model,
       stopReason: data.stop_reason,
       tokensUsed: data.usage,
-      timestamp: new Date().toISOString(),
     })
+
+    // Validate response structure
+    if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
+      throw new Error('Invalid API response: missing content')
+    }
 
     return {
       response: data.content[0].text,
       model: data.model,
       tokensUsed: data.usage,
     }
-  } catch (error: any) {
-    console.error('[API] Execution error:', error)
+  } catch (error: unknown) {
+    logger.error('API execution error', error)
 
-    if (error.message.includes('fetch')) {
+    if (error instanceof Error && error.message.includes('fetch')) {
       throw new Error('Network error. Please check your internet connection.')
     }
 
@@ -127,9 +132,8 @@ export async function* streamResponse(
     throw new Error('API key is required')
   }
 
-  console.log('[API] Streaming prompt:', {
+  logger.debug('Streaming prompt', {
     promptLength: promptText.length,
-    timestamp: new Date().toISOString(),
   })
 
   try {
@@ -185,7 +189,7 @@ export async function* streamResponse(
       }
     }
   } catch (error) {
-    console.error('[API] Streaming error:', error)
+    logger.error('API streaming error', error)
     throw error
   }
 }
@@ -281,6 +285,6 @@ export function validatePromptConfiguration(config: {
 
 export async function handleRateLimit(retryAfter?: number): Promise<void> {
   const delay = retryAfter || 60
-  console.log(`[API] Rate limited. Waiting ${delay} seconds...`)
+  logger.warn(`Rate limited. Waiting ${delay} seconds...`)
   await new Promise((resolve) => setTimeout(resolve, delay * 1000))
 }

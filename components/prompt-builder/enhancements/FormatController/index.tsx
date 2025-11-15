@@ -3,18 +3,18 @@
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Tooltip } from '@/components/ui/tooltip'
-import { FORMAT_CONTROLLER_TYPES } from '@/lib/constants/enhancements'
+import { FORMAT_STRUCTURES, LENGTH_SPEC_TYPES, STYLE_GUIDES } from '@/src/constants/enhancements'
 import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
 import { EnhancementExamples } from '../EnhancementExamples'
-import type { FormatController as FormatControllerType } from '@/lib/utils/enhancementGenerators'
+import type { FormatControl as FormatControlType } from '@/src/types/index'
 
 interface FormatControllerProps {
-  config: FormatControllerType
-  onChange: (config: FormatControllerType) => void
+  config: FormatControlType
+  onChange: (config: FormatControlType) => void
 }
 
 export function FormatController({ config, onChange }: FormatControllerProps) {
@@ -38,16 +38,16 @@ export function FormatController({ config, onChange }: FormatControllerProps) {
       {config.enabled && (
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="format-type">Format Type</Label>
+            <Label htmlFor="format-structure">Output Structure</Label>
             <Select
-              value={config.type}
-              onValueChange={(type: any) => onChange({ ...config, type })}
+              value={config.structure}
+              onValueChange={(structure: FormatControlType['structure']) => onChange({ ...config, structure })}
             >
-              <SelectTrigger id="format-type">
+              <SelectTrigger id="format-structure">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {FORMAT_CONTROLLER_TYPES.map((option) => (
+                {FORMAT_STRUCTURES.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     <div>
                       <div className="font-medium">{option.label}</div>
@@ -59,53 +59,7 @@ export function FormatController({ config, onChange }: FormatControllerProps) {
             </Select>
           </div>
 
-          {config.type === 'structured' && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Structured Format</Label>
-                <RadioGroup
-                  value={config.structuredFormat || 'json'}
-                  onValueChange={(value: 'json' | 'yaml' | 'xml') =>
-                    onChange({ ...config, structuredFormat: value })
-                  }
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="json" id="json" />
-                    <Label htmlFor="json" className="font-normal cursor-pointer">
-                      JSON
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yaml" id="yaml" />
-                    <Label htmlFor="yaml" className="font-normal cursor-pointer">
-                      YAML
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="xml" id="xml" />
-                    <Label htmlFor="xml" className="font-normal cursor-pointer">
-                      XML
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="include-examples"
-                  checked={config.includeExamples || false}
-                  onCheckedChange={(includeExamples: boolean) =>
-                    onChange({ ...config, includeExamples })
-                  }
-                />
-                <Label htmlFor="include-examples" className="font-normal cursor-pointer">
-                  Include example values
-                </Label>
-              </div>
-            </div>
-          )}
-
-          {config.type === 'custom' && (
+          {config.structure === 'custom' && (
             <div className="space-y-2">
               <Label htmlFor="custom-format">Custom Format Specification</Label>
               <Textarea
@@ -117,6 +71,116 @@ export function FormatController({ config, onChange }: FormatControllerProps) {
               />
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="length-spec-type">Length Specification Type</Label>
+            <Select
+              value={config.lengthSpec.type}
+              onValueChange={(type: FormatControlType['lengthSpec']['type']) =>
+                onChange({ ...config, lengthSpec: { ...config.lengthSpec, type } })
+              }
+            >
+              <SelectTrigger id="length-spec-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LENGTH_SPEC_TYPES.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {config.lengthSpec.type && (
+            <div className="grid grid-cols-3 gap-2">
+              {config.lengthSpec.min !== undefined && (
+                <div className="space-y-2">
+                  <Label htmlFor="length-min">Min</Label>
+                  <Input
+                    id="length-min"
+                    type="number"
+                    min="0"
+                    value={config.lengthSpec.min || ''}
+                    onChange={(e) =>
+                      onChange({
+                        ...config,
+                        lengthSpec: {
+                          ...config.lengthSpec,
+                          min: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              )}
+              {config.lengthSpec.target !== undefined && (
+                <div className="space-y-2">
+                  <Label htmlFor="length-target">Target</Label>
+                  <Input
+                    id="length-target"
+                    type="number"
+                    min="0"
+                    value={config.lengthSpec.target || ''}
+                    onChange={(e) =>
+                      onChange({
+                        ...config,
+                        lengthSpec: {
+                          ...config.lengthSpec,
+                          target: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              )}
+              {config.lengthSpec.max !== undefined && (
+                <div className="space-y-2">
+                  <Label htmlFor="length-max">Max</Label>
+                  <Input
+                    id="length-max"
+                    type="number"
+                    min="0"
+                    value={config.lengthSpec.max || ''}
+                    onChange={(e) =>
+                      onChange({
+                        ...config,
+                        lengthSpec: {
+                          ...config.lengthSpec,
+                          max: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="style-guide">Style Guide</Label>
+            <Select
+              value={config.styleGuide}
+              onValueChange={(styleGuide: FormatControlType['styleGuide']) =>
+                onChange({ ...config, styleGuide })
+              }
+            >
+              <SelectTrigger id="style-guide">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STYLE_GUIDES.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    <div>
+                      <div className="font-medium">{option.label}</div>
+                      <div className="text-xs text-muted-foreground">{option.description}</div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <EnhancementExamples
             before={ENHANCEMENT_HELP.formatController.examples.before}

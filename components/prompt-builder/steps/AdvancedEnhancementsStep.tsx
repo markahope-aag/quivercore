@@ -6,19 +6,24 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Info, AlertCircle, CheckCircle2 } from 'lucide-react'
-import { RoleEnhancement } from '../enhancements/RoleEnhancement'
-import { FormatController } from '../enhancements/FormatController'
-import { SmartConstraints } from '../enhancements/SmartConstraints'
-import { ReasoningScaffolds } from '../enhancements/ReasoningScaffolds'
-import { ConversationFlow } from '../enhancements/ConversationFlow'
+import { RoleEnhancement as RoleEnhancementComponent } from '../enhancements/RoleEnhancement'
+import { FormatController as FormatControllerComponent } from '../enhancements/FormatController'
+import { SmartConstraints as SmartConstraintsComponent } from '../enhancements/SmartConstraints'
+import { ReasoningScaffolds as ReasoningScaffoldsComponent } from '../enhancements/ReasoningScaffolds'
+import { ConversationFlow as ConversationFlowComponent } from '../enhancements/ConversationFlow'
 import { usePromptBuilder } from '@/contexts/PromptBuilderContext'
 import { ENHANCEMENT_PRESETS, validateEnhancementConflicts } from '@/lib/constants/enhancement-help'
-import type { AdvancedEnhancements } from '@/src/types/index'
+import type { AdvancedEnhancements, RoleEnhancement, FormatControl, SmartConstraints, ReasoningScaffolds, ConversationFlow } from '@/src/types/index'
 
 export function AdvancedEnhancementsStep() {
   const { state, updateAdvancedEnhancements } = usePromptBuilder()
   const [selectedPreset, setSelectedPreset] = useState<string>('')
-  const [conflicts, setConflicts] = useState<any[]>([])
+  interface Conflict {
+    type: 'error' | 'warning'
+    message: string
+    suggestion?: string
+  }
+  const [conflicts, setConflicts] = useState<Conflict[]>([])
 
   // Validate enhancements whenever they change
   useEffect(() => {
@@ -39,27 +44,27 @@ export function AdvancedEnhancementsStep() {
     }
   }
 
-  const handleRoleChange = (roleEnhancement: AdvancedEnhancements['roleEnhancement']) => {
+  const handleRoleChange = (roleEnhancement: RoleEnhancement) => {
     setSelectedPreset('') // Clear preset when manually changing
     updateAdvancedEnhancements({ roleEnhancement })
   }
 
-  const handleFormatChange = (formatControl: AdvancedEnhancements['formatControl']) => {
+  const handleFormatChange = (formatControl: FormatControl) => {
     setSelectedPreset('') // Clear preset when manually changing
     updateAdvancedEnhancements({ formatControl })
   }
 
-  const handleConstraintsChange = (smartConstraints: AdvancedEnhancements['smartConstraints']) => {
+  const handleConstraintsChange = (smartConstraints: SmartConstraints) => {
     setSelectedPreset('') // Clear preset when manually changing
     updateAdvancedEnhancements({ smartConstraints })
   }
 
-  const handleReasoningChange = (reasoningScaffolds: AdvancedEnhancements['reasoningScaffolds']) => {
+  const handleReasoningChange = (reasoningScaffolds: ReasoningScaffolds) => {
     setSelectedPreset('') // Clear preset when manually changing
     updateAdvancedEnhancements({ reasoningScaffolds })
   }
 
-  const handleFlowChange = (conversationFlow: AdvancedEnhancements['conversationFlow']) => {
+  const handleFlowChange = (conversationFlow: ConversationFlow) => {
     setSelectedPreset('') // Clear preset when manually changing
     updateAdvancedEnhancements({ conversationFlow })
   }
@@ -181,37 +186,37 @@ export function AdvancedEnhancementsStep() {
 
       <div className="space-y-6">
         {state.advancedEnhancements.roleEnhancement && (
-          <RoleEnhancement
-            config={state.advancedEnhancements.roleEnhancement as any}
-            onChange={handleRoleChange as any}
+          <RoleEnhancementComponent
+            config={state.advancedEnhancements.roleEnhancement}
+            onChange={handleRoleChange}
           />
         )}
 
         {state.advancedEnhancements.formatControl && (
-          <FormatController
-            config={state.advancedEnhancements.formatControl as any}
-            onChange={handleFormatChange as any}
+          <FormatControllerComponent
+            config={state.advancedEnhancements.formatControl}
+            onChange={handleFormatChange}
           />
         )}
 
         {state.advancedEnhancements.smartConstraints && (
-          <SmartConstraints
-            config={state.advancedEnhancements.smartConstraints as any}
-            onChange={handleConstraintsChange as any}
+          <SmartConstraintsComponent
+            config={state.advancedEnhancements.smartConstraints}
+            onChange={handleConstraintsChange}
           />
         )}
 
         {state.advancedEnhancements.reasoningScaffolds && (
-          <ReasoningScaffolds
-            config={state.advancedEnhancements.reasoningScaffolds as any}
-            onChange={handleReasoningChange as any}
+          <ReasoningScaffoldsComponent
+            config={state.advancedEnhancements.reasoningScaffolds}
+            onChange={handleReasoningChange}
           />
         )}
 
         {state.advancedEnhancements.conversationFlow && (
-          <ConversationFlow
-            config={state.advancedEnhancements.conversationFlow as any}
-            onChange={handleFlowChange as any}
+          <ConversationFlowComponent
+            config={state.advancedEnhancements.conversationFlow}
+            onChange={handleFlowChange}
           />
         )}
       </div>

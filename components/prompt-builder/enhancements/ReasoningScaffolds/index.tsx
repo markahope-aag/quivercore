@@ -6,14 +6,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tooltip } from '@/components/ui/tooltip'
-import { REASONING_SCAFFOLD_TYPES } from '@/lib/constants/enhancements'
+import { REASONING_STYLES } from '@/src/constants/enhancements'
 import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
 import { EnhancementExamples } from '../EnhancementExamples'
-import type { ReasoningScaffold as ReasoningScaffoldType } from '@/lib/utils/enhancementGenerators'
+import type { ReasoningScaffolds as ReasoningScaffoldsType } from '@/src/types/index'
 
 interface ReasoningScaffoldsProps {
-  config: ReasoningScaffoldType
-  onChange: (config: ReasoningScaffoldType) => void
+  config: ReasoningScaffoldsType
+  onChange: (config: ReasoningScaffoldsType) => void
 }
 
 export function ReasoningScaffolds({ config, onChange }: ReasoningScaffoldsProps) {
@@ -37,16 +37,18 @@ export function ReasoningScaffolds({ config, onChange }: ReasoningScaffoldsProps
       {config.enabled && (
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="scaffold-type">Reasoning Framework</Label>
+            <Label htmlFor="reasoning-style">Reasoning Style</Label>
             <Select
-              value={config.type}
-              onValueChange={(type: any) => onChange({ ...config, type })}
+              value={config.reasoningStyle}
+              onValueChange={(reasoningStyle: ReasoningScaffoldsType['reasoningStyle']) =>
+                onChange({ ...config, reasoningStyle })
+              }
             >
-              <SelectTrigger id="scaffold-type">
+              <SelectTrigger id="reasoning-style">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {REASONING_SCAFFOLD_TYPES.map((option) => (
+                {REASONING_STYLES.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     <div>
                       <div className="font-medium">{option.label}</div>
@@ -58,31 +60,53 @@ export function ReasoningScaffolds({ config, onChange }: ReasoningScaffoldsProps
             </Select>
           </div>
 
-          {config.type !== 'none' && (
-            <>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="show-working"
-                  checked={config.showWorking || false}
-                  onCheckedChange={(showWorking: boolean) => onChange({ ...config, showWorking })}
-                />
-                <Label htmlFor="show-working" className="font-normal cursor-pointer">
-                  Show reasoning process step-by-step
-                </Label>
-              </div>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="show-work"
+              checked={config.showWork}
+              onCheckedChange={(showWork: boolean) => onChange({ ...config, showWork })}
+            />
+            <Label htmlFor="show-work" className="font-normal cursor-pointer">
+              Show your reasoning process clearly
+            </Label>
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="custom-framework">Additional Framework Instructions (Optional)</Label>
-                <Textarea
-                  id="custom-framework"
-                  placeholder="Add any specific reasoning guidelines or steps..."
-                  value={config.customFramework || ''}
-                  onChange={(e) => onChange({ ...config, customFramework: e.target.value })}
-                  rows={3}
-                />
-              </div>
-            </>
-          )}
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="step-by-step"
+              checked={config.stepByStep}
+              onCheckedChange={(stepByStep: boolean) => onChange({ ...config, stepByStep })}
+            />
+            <Label htmlFor="step-by-step" className="font-normal cursor-pointer">
+              Break down your approach step-by-step
+            </Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="explore-alternatives"
+              checked={config.exploreAlternatives}
+              onCheckedChange={(exploreAlternatives: boolean) =>
+                onChange({ ...config, exploreAlternatives })
+              }
+            />
+            <Label htmlFor="explore-alternatives" className="font-normal cursor-pointer">
+              Consider alternative approaches and explain why you chose your method
+            </Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="confidence-scoring"
+              checked={config.confidenceScoring}
+              onCheckedChange={(confidenceScoring: boolean) =>
+                onChange({ ...config, confidenceScoring })
+              }
+            />
+            <Label htmlFor="confidence-scoring" className="font-normal cursor-pointer">
+              Provide confidence scores (0-100%) for your key assertions
+            </Label>
+          </div>
 
           <EnhancementExamples
             before={ENHANCEMENT_HELP.reasoningScaffold.examples.before}

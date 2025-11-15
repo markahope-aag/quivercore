@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { Star, Edit, Trash2, Copy, TestTube } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,12 +14,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Prompt } from '@/lib/types/database'
 import { format } from 'date-fns'
+import { sanitizeForDisplay } from '@/lib/utils/sanitize'
 
 interface PromptListItemProps {
   prompt: Prompt
 }
 
-export function PromptListItem({ prompt }: PromptListItemProps) {
+export const PromptListItem = memo(function PromptListItem({ prompt }: PromptListItemProps) {
   const router = useRouter()
   const [isFavorite, setIsFavorite] = useState(prompt.is_favorite)
 
@@ -87,32 +88,32 @@ export function PromptListItem({ prompt }: PromptListItemProps) {
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
             <Link href={`/prompts/${prompt.id}`} className="hover:underline">
-              <h3 className="font-semibold line-clamp-1">{prompt.title}</h3>
+              <h3 className="font-semibold line-clamp-1">{sanitizeForDisplay(prompt.title)}</h3>
             </Link>
             {prompt.description && (
               <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                {prompt.description}
+                {sanitizeForDisplay(prompt.description)}
               </p>
             )}
             <div className="flex flex-wrap gap-2 mt-2">
               {prompt.use_case && (
                 <Badge variant="default" className="text-xs bg-blue-500">
-                  {prompt.use_case}
+                  {sanitizeForDisplay(prompt.use_case)}
                 </Badge>
               )}
               {prompt.framework && (
                 <Badge variant="default" className="text-xs bg-purple-500">
-                  {prompt.framework}
+                  {sanitizeForDisplay(prompt.framework)}
                 </Badge>
               )}
               {prompt.enhancement_technique && (
                 <Badge variant="default" className="text-xs bg-green-600">
-                  {prompt.enhancement_technique}
+                  {sanitizeForDisplay(prompt.enhancement_technique)}
                 </Badge>
               )}
               {prompt.tags?.slice(0, 3).map((tag) => (
                 <Badge key={tag} variant="outline" className="text-xs">
-                  {tag}
+                  {sanitizeForDisplay(tag)}
                 </Badge>
               ))}
             </div>
@@ -158,5 +159,5 @@ export function PromptListItem({ prompt }: PromptListItemProps) {
       </div>
     </div>
   )
-}
+})
 

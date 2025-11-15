@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/utils/logger'
 
 export default async function Home() {
   try {
@@ -7,7 +8,7 @@ export default async function Home() {
     const { data: { user }, error } = await supabase.auth.getUser()
 
     if (error) {
-      console.error('Auth error:', error)
+      logger.warn('Auth error on home page', error)
       redirect('/login')
     }
 
@@ -16,8 +17,8 @@ export default async function Home() {
     } else {
       redirect('/login')
     }
-  } catch (error: any) {
-    console.error('Home page error:', error)
+  } catch (error: unknown) {
+    logger.error('Home page error', error)
     redirect('/login')
   }
 }

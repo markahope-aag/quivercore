@@ -7,14 +7,11 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Tooltip } from '@/components/ui/tooltip'
 import { X, Plus } from 'lucide-react'
-import { TONE_OPTIONS, AUDIENCE_OPTIONS, COMPLEXITY_LEVELS } from '@/lib/constants/enhancements'
 import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
 import { EnhancementExamples } from '../EnhancementExamples'
-import type { SmartConstraints as SmartConstraintsType } from '@/lib/utils/enhancementGenerators'
+import type { SmartConstraints as SmartConstraintsType } from '@/src/types/index'
 
 interface SmartConstraintsProps {
   config: SmartConstraintsType
@@ -22,322 +19,253 @@ interface SmartConstraintsProps {
 }
 
 export function SmartConstraints({ config, onChange }: SmartConstraintsProps) {
-  const [exclusionInput, setExclusionInput] = useState('')
-  const [requirementInput, setRequirementInput] = useState('')
+  const [positiveInput, setPositiveInput] = useState('')
+  const [negativeInput, setNegativeInput] = useState('')
+  const [boundaryInput, setBoundaryInput] = useState('')
+  const [qualityInput, setQualityInput] = useState('')
 
-  const addExclusion = () => {
-    if (exclusionInput.trim()) {
+  const addPositive = () => {
+    if (positiveInput.trim()) {
       onChange({
         ...config,
-        exclusions: {
-          ...config.exclusions,
-          items: [...config.exclusions.items, exclusionInput.trim()],
-        },
+        positiveConstraints: [...config.positiveConstraints, positiveInput.trim()],
       })
-      setExclusionInput('')
+      setPositiveInput('')
     }
   }
 
-  const removeExclusion = (index: number) => {
+  const removePositive = (index: number) => {
     onChange({
       ...config,
-      exclusions: {
-        ...config.exclusions,
-        items: config.exclusions.items.filter((_, i) => i !== index),
-      },
+      positiveConstraints: config.positiveConstraints.filter((_, i) => i !== index),
     })
   }
 
-  const addRequirement = () => {
-    if (requirementInput.trim()) {
+  const addNegative = () => {
+    if (negativeInput.trim()) {
       onChange({
         ...config,
-        requirements: {
-          ...config.requirements,
-          items: [...config.requirements.items, requirementInput.trim()],
-        },
+        negativeConstraints: [...config.negativeConstraints, negativeInput.trim()],
       })
-      setRequirementInput('')
+      setNegativeInput('')
     }
   }
 
-  const removeRequirement = (index: number) => {
+  const removeNegative = (index: number) => {
     onChange({
       ...config,
-      requirements: {
-        ...config.requirements,
-        items: config.requirements.items.filter((_, i) => i !== index),
-      },
+      negativeConstraints: config.negativeConstraints.filter((_, i) => i !== index),
     })
   }
 
-  const toggleTone = (tone: string) => {
-    const tones = config.tone.tones.includes(tone)
-      ? config.tone.tones.filter((t) => t !== tone)
-      : [...config.tone.tones, tone]
-    onChange({ ...config, tone: { ...config.tone, tones } })
+  const addBoundary = () => {
+    if (boundaryInput.trim()) {
+      onChange({
+        ...config,
+        boundaryConditions: [...config.boundaryConditions, boundaryInput.trim()],
+      })
+      setBoundaryInput('')
+    }
+  }
+
+  const removeBoundary = (index: number) => {
+    onChange({
+      ...config,
+      boundaryConditions: config.boundaryConditions.filter((_, i) => i !== index),
+    })
+  }
+
+  const addQuality = () => {
+    if (qualityInput.trim()) {
+      onChange({
+        ...config,
+        qualityGates: [...config.qualityGates, qualityInput.trim()],
+      })
+      setQualityInput('')
+    }
+  }
+
+  const removeQuality = (index: number) => {
+    onChange({
+      ...config,
+      qualityGates: config.qualityGates.filter((_, i) => i !== index),
+    })
   }
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <CardTitle>Smart Constraints</CardTitle>
-          <Tooltip content={ENHANCEMENT_HELP.smartConstraints.tooltip} />
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <CardTitle>Smart Constraints</CardTitle>
+              <Tooltip content={ENHANCEMENT_HELP.smartConstraints.tooltip} />
+            </div>
+            <CardDescription>{ENHANCEMENT_HELP.smartConstraints.description}</CardDescription>
+          </div>
+          <Switch
+            checked={config.enabled}
+            onCheckedChange={(enabled: boolean) => onChange({ ...config, enabled })}
+          />
         </div>
-        <CardDescription>{ENHANCEMENT_HELP.smartConstraints.description}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Length Constraints */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label>Length Constraints</Label>
-            <Switch
-              checked={config.length.enabled}
-              onCheckedChange={(enabled: boolean) =>
-                onChange({ ...config, length: { ...config.length, enabled } })
-              }
-            />
-          </div>
-          {config.length.enabled && (
-            <div className="space-y-3 pl-4 border-l-2">
-              <RadioGroup
-                value={config.length.unit}
-                onValueChange={(unit: 'words' | 'characters') =>
-                  onChange({ ...config, length: { ...config.length, unit } })
-                }
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="words" id="words" />
-                  <Label htmlFor="words" className="font-normal cursor-pointer">
-                    Words
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="characters" id="characters" />
-                  <Label htmlFor="characters" className="font-normal cursor-pointer">
-                    Characters
-                  </Label>
-                </div>
-              </RadioGroup>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="min-length">Minimum</Label>
-                  <Input
-                    id="min-length"
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    value={config.length.min || ''}
-                    onChange={(e) =>
-                      onChange({
-                        ...config,
-                        length: { ...config.length, min: parseInt(e.target.value) || 0 },
-                      })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="max-length">Maximum</Label>
-                  <Input
-                    id="max-length"
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    value={config.length.max || ''}
-                    onChange={(e) =>
-                      onChange({
-                        ...config,
-                        length: { ...config.length, max: parseInt(e.target.value) || 0 },
-                      })
-                    }
-                  />
-                </div>
-              </div>
+      {config.enabled && (
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="positive-constraints">Must Include (Positive Constraints)</Label>
+            <div className="flex gap-2">
+              <Input
+                id="positive-constraints"
+                placeholder="e.g., include statistics, cite sources"
+                value={positiveInput}
+                onChange={(e) => setPositiveInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addPositive()
+                  }
+                }}
+              />
+              <Button type="button" onClick={addPositive} size="sm">
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
-          )}
-        </div>
-
-        {/* Tone & Style */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label>Tone & Style</Label>
-            <Switch
-              checked={config.tone.enabled}
-              onCheckedChange={(enabled: boolean) =>
-                onChange({ ...config, tone: { ...config.tone, enabled } })
-              }
-            />
-          </div>
-          {config.tone.enabled && (
-            <div className="pl-4 border-l-2">
-              <div className="flex flex-wrap gap-2">
-                {TONE_OPTIONS.map((tone) => (
-                  <Badge
-                    key={tone}
-                    variant={config.tone.tones.includes(tone) ? 'default' : 'outline'}
-                    className="cursor-pointer"
-                    onClick={() => toggleTone(tone)}
-                  >
-                    {tone}
+            {config.positiveConstraints.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {config.positiveConstraints.map((constraint, index) => (
+                  <Badge key={index} variant="default" className="flex items-center gap-1">
+                    {constraint}
+                    <button
+                      type="button"
+                      onClick={() => removePositive(index)}
+                      className="ml-1 hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
                   </Badge>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Target Audience */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label>Target Audience</Label>
-            <Switch
-              checked={config.audience.enabled}
-              onCheckedChange={(enabled: boolean) =>
-                onChange({ ...config, audience: { ...config.audience, enabled } })
-              }
-            />
+            )}
           </div>
-          {config.audience.enabled && (
-            <div className="pl-4 border-l-2">
-              <Select
-                value={config.audience.target}
-                onValueChange={(target) =>
-                  onChange({ ...config, audience: { ...config.audience, target } })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select target audience" />
-                </SelectTrigger>
-                <SelectContent>
-                  {AUDIENCE_OPTIONS.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
 
-        {/* Content Exclusions */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label>Content Exclusions</Label>
-            <Switch
-              checked={config.exclusions.enabled}
-              onCheckedChange={(enabled: boolean) =>
-                onChange({ ...config, exclusions: { ...config.exclusions, enabled } })
-              }
-            />
-          </div>
-          {config.exclusions.enabled && (
-            <div className="space-y-3 pl-4 border-l-2">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="What to avoid..."
-                  value={exclusionInput}
-                  onChange={(e) => setExclusionInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && addExclusion()}
-                />
-                <Button type="button" size="icon" onClick={addExclusion}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {config.exclusions.items.map((item, idx) => (
-                  <Badge key={idx} variant="secondary">
-                    {item}
-                    <X
-                      className="ml-1 h-3 w-3 cursor-pointer"
-                      onClick={() => removeExclusion(idx)}
-                    />
+          <div className="space-y-2">
+            <Label htmlFor="negative-constraints">Must Avoid (Negative Constraints)</Label>
+            <div className="flex gap-2">
+              <Input
+                id="negative-constraints"
+                placeholder="e.g., avoid jargon, no personal opinions"
+                value={negativeInput}
+                onChange={(e) => setNegativeInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addNegative()
+                  }
+                }}
+              />
+              <Button type="button" onClick={addNegative} size="sm">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            {config.negativeConstraints.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {config.negativeConstraints.map((constraint, index) => (
+                  <Badge key={index} variant="destructive" className="flex items-center gap-1">
+                    {constraint}
+                    <button
+                      type="button"
+                      onClick={() => removeNegative(index)}
+                      className="ml-1 hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
                   </Badge>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Must Include */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label>Must Include</Label>
-            <Switch
-              checked={config.requirements.enabled}
-              onCheckedChange={(enabled: boolean) =>
-                onChange({ ...config, requirements: { ...config.requirements, enabled } })
-              }
-            />
+            )}
           </div>
-          {config.requirements.enabled && (
-            <div className="space-y-3 pl-4 border-l-2">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Required element..."
-                  value={requirementInput}
-                  onChange={(e) => setRequirementInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && addRequirement()}
-                />
-                <Button type="button" size="icon" onClick={addRequirement}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {config.requirements.items.map((item, idx) => (
-                  <Badge key={idx} variant="secondary">
-                    {item}
-                    <X
-                      className="ml-1 h-3 w-3 cursor-pointer"
-                      onClick={() => removeRequirement(idx)}
-                    />
+
+          <div className="space-y-2">
+            <Label htmlFor="boundary-conditions">Boundary Conditions</Label>
+            <div className="flex gap-2">
+              <Input
+                id="boundary-conditions"
+                placeholder="e.g., focus on 2020-2024, US market only"
+                value={boundaryInput}
+                onChange={(e) => setBoundaryInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addBoundary()
+                  }
+                }}
+              />
+              <Button type="button" onClick={addBoundary} size="sm">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            {config.boundaryConditions.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {config.boundaryConditions.map((condition, index) => (
+                  <Badge key={index} variant="outline" className="flex items-center gap-1">
+                    {condition}
+                    <button
+                      type="button"
+                      onClick={() => removeBoundary(index)}
+                      className="ml-1 hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
                   </Badge>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Complexity Level */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label>Complexity Level</Label>
-            <Switch
-              checked={config.complexity.enabled}
-              onCheckedChange={(enabled: boolean) =>
-                onChange({ ...config, complexity: { ...config.complexity, enabled } })
-              }
-            />
+            )}
           </div>
-          {config.complexity.enabled && (
-            <div className="pl-4 border-l-2">
-              <RadioGroup
-                value={config.complexity.level}
-                onValueChange={(level: any) =>
-                  onChange({ ...config, complexity: { ...config.complexity, level } })
-                }
-              >
-                {COMPLEXITY_LEVELS.map((option) => (
-                  <div key={option.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option.value} id={option.value} />
-                    <Label htmlFor={option.value} className="font-normal cursor-pointer flex-1">
-                      <div className="font-medium">{option.label}</div>
-                      <div className="text-xs text-muted-foreground">{option.description}</div>
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-          )}
-        </div>
 
-        <EnhancementExamples
-          before={ENHANCEMENT_HELP.smartConstraints.examples.before}
-          after={ENHANCEMENT_HELP.smartConstraints.examples.after}
-          title="Example: Smart Constraints"
-        />
-      </CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="quality-gates">Quality Gates</Label>
+            <div className="flex gap-2">
+              <Input
+                id="quality-gates"
+                placeholder="e.g., fact-check all claims, verify sources"
+                value={qualityInput}
+                onChange={(e) => setQualityInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addQuality()
+                  }
+                }}
+              />
+              <Button type="button" onClick={addQuality} size="sm">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            {config.qualityGates.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {config.qualityGates.map((gate, index) => (
+                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                    {gate}
+                    <button
+                      type="button"
+                      onClick={() => removeQuality(index)}
+                      className="ml-1 hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <EnhancementExamples
+            before={ENHANCEMENT_HELP.smartConstraints.examples.before}
+            after={ENHANCEMENT_HELP.smartConstraints.examples.after}
+            title="Example: Smart Constraints"
+          />
+        </CardContent>
+      )}
     </Card>
   )
 }

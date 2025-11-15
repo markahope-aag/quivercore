@@ -277,7 +277,7 @@ interface PromptBuilderContextType {
   updateConversationFlow: (flow: Partial<ConversationFlow>) => void
   validateEnhancements: () => Promise<void>
   generatePrompt: () => void
-  executePrompt: (apiKey: string) => Promise<void>
+  executePrompt: () => Promise<void>
   saveTemplate: (name: string, description: string, tags: string[]) => void
   loadTemplate: (template: PromptTemplate) => void
   deleteTemplate: (id: string) => void
@@ -368,20 +368,33 @@ export function PromptBuilderProvider({ children }: { children: React.ReactNode 
   }, [state.baseConfig, state.vsEnhancement, state.advancedEnhancements])
 
   const executePrompt = useCallback(
-    async (apiKey: string) => {
+    async () => {
       if (!state.generatedPrompt) return
 
       dispatch({ type: 'SET_EXECUTING', payload: true })
       dispatch({ type: 'CLEAR_ERRORS' })
 
       try {
-        const { executePrompt: execute } = await import('@/lib/utils/api-client')
+        // Call server-side API route instead of client-side API
+        const response = await fetch('/api/prompts/execute', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            promptText: state.generatedPrompt.finalPrompt,
+            systemPrompt: state.generatedPrompt.systemPrompt,
+            model: 'claude-3-sonnet-20240229',
+            maxTokens: 4096,
+          }),
+        })
 
-        const data = await execute(
-          state.generatedPrompt.finalPrompt,
-          state.generatedPrompt.systemPrompt,
-          { apiKey }
-        )
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+          throw new Error(errorData.error || `HTTP error: ${response.status}`)
+        }
+
+        const data = await response.json()
 
         const result: ExecutionResult = {
           id: crypto.randomUUID(),
@@ -393,12 +406,17 @@ export function PromptBuilderProvider({ children }: { children: React.ReactNode 
         }
 
         dispatch({ type: 'ADD_EXECUTION_RESULT', payload: result })
-      } catch (error: any) {
-        console.error('Execution error:', error)
+        dispatch({ type: 'SET_EXECUTING', payload: false })
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to execute prompt'
+        // Only log in development to avoid exposing errors to users
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Execution error:', error)
+        }
         dispatch({ type: 'SET_EXECUTING', payload: false })
         dispatch({
           type: 'SET_ERROR',
-          payload: { field: 'execution', message: error.message || 'Failed to execute prompt' },
+          payload: { field: 'execution', message: errorMessage },
         })
       }
     },

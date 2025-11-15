@@ -3,14 +3,13 @@
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tooltip } from '@/components/ui/tooltip'
-import { ROLE_ENHANCEMENT_TYPES } from '@/lib/constants/enhancements'
+import { EXPERTISE_LEVELS, AUTHORITY_LEVELS } from '@/src/constants/enhancements'
 import { ENHANCEMENT_HELP } from '@/lib/constants/enhancement-help'
 import { EnhancementExamples } from '../EnhancementExamples'
-import type { RoleEnhancement as RoleEnhancementType } from '@/lib/utils/enhancementGenerators'
+import type { RoleEnhancement as RoleEnhancementType } from '@/src/types/index'
 
 interface RoleEnhancementProps {
   config: RoleEnhancementType
@@ -38,16 +37,16 @@ export function RoleEnhancement({ config, onChange }: RoleEnhancementProps) {
       {config.enabled && (
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="role-type">Role Type</Label>
+            <Label htmlFor="expertise-level">Expertise Level</Label>
             <Select
-              value={config.type}
-              onValueChange={(type: any) => onChange({ ...config, type })}
+              value={config.expertiseLevel}
+              onValueChange={(expertiseLevel: RoleEnhancementType['expertiseLevel']) => onChange({ ...config, expertiseLevel })}
             >
-              <SelectTrigger id="role-type">
+              <SelectTrigger id="expertise-level">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {ROLE_ENHANCEMENT_TYPES.map((option) => (
+                {EXPERTISE_LEVELS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     <div>
                       <div className="font-medium">{option.label}</div>
@@ -59,42 +58,67 @@ export function RoleEnhancement({ config, onChange }: RoleEnhancementProps) {
             </Select>
           </div>
 
-          {config.type === 'expert' && (
+          <div className="space-y-2">
+            <Label htmlFor="domain-specialty">Domain Specialty</Label>
+            <Input
+              id="domain-specialty"
+              placeholder="e.g., software engineering, legal compliance, marketing strategy"
+              value={config.domainSpecialty}
+              onChange={(e) => onChange({ ...config, domainSpecialty: e.target.value })}
+            />
+          </div>
+
+          {config.experienceYears !== undefined && (
             <div className="space-y-2">
-              <Label htmlFor="expertise">Area of Expertise</Label>
+              <Label htmlFor="experience-years">Years of Experience (optional)</Label>
               <Input
-                id="expertise"
-                placeholder="e.g., software engineering, legal compliance, marketing strategy"
-                value={config.expertise || ''}
-                onChange={(e) => onChange({ ...config, expertise: e.target.value })}
+                id="experience-years"
+                type="number"
+                min="0"
+                max="50"
+                placeholder="e.g., 10"
+                value={config.experienceYears || ''}
+                onChange={(e) => {
+                  const years = e.target.value ? parseInt(e.target.value, 10) : undefined
+                  onChange({ ...config, experienceYears: years })
+                }}
               />
             </div>
           )}
 
-          {config.type === 'persona' && (
+          {config.contextSetting !== undefined && (
             <div className="space-y-2">
-              <Label htmlFor="custom-role">Persona Description</Label>
-              <Textarea
-                id="custom-role"
-                placeholder="Describe the persona in detail (e.g., 'a seasoned tech startup founder who has raised $50M in funding')"
-                value={config.customRole || ''}
-                onChange={(e) => onChange({ ...config, customRole: e.target.value })}
-                rows={3}
+              <Label htmlFor="context-setting">Context Setting (optional)</Label>
+              <Input
+                id="context-setting"
+                placeholder="e.g., working in a fast-paced startup environment"
+                value={config.contextSetting || ''}
+                onChange={(e) => onChange({ ...config, contextSetting: e.target.value })}
               />
             </div>
           )}
 
-          {config.type === 'perspective' && (
-            <div className="space-y-2">
-              <Label htmlFor="perspective">Perspective</Label>
-              <Input
-                id="perspective"
-                placeholder="e.g., a user experience designer, a financial analyst, a sustainability advocate"
-                value={config.perspective || ''}
-                onChange={(e) => onChange({ ...config, perspective: e.target.value })}
-              />
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="authority-level">Authority Level</Label>
+            <Select
+              value={config.authorityLevel}
+              onValueChange={(authorityLevel: RoleEnhancementType['authorityLevel']) => onChange({ ...config, authorityLevel })}
+            >
+              <SelectTrigger id="authority-level">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {AUTHORITY_LEVELS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    <div>
+                      <div className="font-medium">{option.label}</div>
+                      <div className="text-xs text-muted-foreground">{option.description}</div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <EnhancementExamples
             before={ENHANCEMENT_HELP.roleEnhancement.examples.before}

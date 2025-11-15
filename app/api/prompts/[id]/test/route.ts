@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createOpenAIClient } from '@/lib/openai/client'
 import { substituteVariables } from '@/lib/utils/prompt'
+import { handleError, ErrorCodes, ApplicationError } from '@/lib/utils/error-handler'
+import { logger } from '@/lib/utils/logger'
 
 export async function POST(
   request: NextRequest,
@@ -12,23 +14,38 @@ export async function POST(
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw new ApplicationError('Unauthorized', ErrorCodes.UNAUTHORIZED, 401)
     }
 
     const { id } = await params
+
+    // Validate ID format
+    if (!id || typeof id !== 'string' || id.trim().length === 0) {
+      throw new ApplicationError('Invalid prompt ID', ErrorCodes.VALIDATION_ERROR, 400)
+    }
+
     const body = await request.json()
     const { variables, model = 'gpt-3.5-turbo' } = body
 
     // Get prompt
     const { data: prompt, error: promptError } = await supabase
       .from('prompts')
-      .select('*')
-      .eq('id', id)
+      .select('id, content, user_id, usage_count')
+      .eq('id', id.trim())
       .eq('user_id', user.id)
       .single()
 
     if (promptError || !prompt) {
-      return NextResponse.json({ error: 'Prompt not found' }, { status: 404 })
+      if (promptError?.code === 'PGRST116') {
+        throw new ApplicationError('Prompt not found', ErrorCodes.NOT_FOUND, 404)
+      }
+      logger.error('Supabase query error in POST /api/prompts/[id]/test', promptError)
+      throw new ApplicationError(
+        'Failed to fetch prompt',
+        ErrorCodes.DATABASE_ERROR,
+        500,
+        promptError
+      )
     }
 
     // Substitute variables
@@ -64,10 +81,12 @@ export async function POST(
       .eq('id', id)
 
     return NextResponse.json({ response })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const appError = handleError(error)
+    logger.error('POST /api/prompts/[id]/test error', appError)
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
+      { error: appError.message, code: appError.code },
+      { status: appError.statusCode || 500 }
     )
   }
 }
