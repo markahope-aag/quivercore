@@ -19,7 +19,7 @@ import Link from 'next/link'
 import { 
   Star, Edit, Copy, FileText, TrendingUp, Users, 
   CheckCircle, Lightbulb, AlertTriangle, Clock,
-  ChevronUp, ChevronDown
+  ChevronUp, ChevronDown, X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button-v2'
 import { Badge } from '@/components/ui/badge-v2'
@@ -28,6 +28,7 @@ import type { PromptTemplate } from '@/lib/types/templates'
 import { TemplateReviewForm } from './template-review-form'
 import { TemplateReviewList } from './template-review-list'
 import { RelatedTemplates } from './related-templates'
+import { TemplateMetadataForm } from './template-metadata-form'
 
 interface TemplateDetailProps {
   template: PromptTemplate
@@ -38,6 +39,7 @@ interface TemplateDetailProps {
 export function TemplateDetail({ template, onUse, onEdit }: TemplateDetailProps) {
   const [showReviews, setShowReviews] = useState(false)
   const [showRelated, setShowRelated] = useState(false)
+  const [isEditingMetadata, setIsEditingMetadata] = useState(false)
 
   const difficultyColors = {
     Beginner: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-500/30',
@@ -106,19 +108,61 @@ export function TemplateDetail({ template, onUse, onEdit }: TemplateDetailProps)
 
       {/* Tags and Categories */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Tags & Categories</h3>
-        <div className="flex flex-wrap gap-2">
-          {template.metadata.industry && (
-            <Badge variant="default" className="bg-blue-50 text-blue-700 border-2 border-blue-200 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/30">
-              {template.metadata.industry}
-            </Badge>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Tags & Categories</h3>
+          {onEdit && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditingMetadata(!isEditingMetadata)}
+              className="text-xs"
+            >
+              {isEditingMetadata ? (
+                <>
+                  <X className="mr-1 h-3 w-3" />
+                  Cancel Edit
+                </>
+              ) : (
+                <>
+                  <Edit className="mr-1 h-3 w-3" />
+                  Edit Metadata
+                </>
+              )}
+            </Button>
           )}
-          {template.metadata.useCaseTags.map(tag => (
-            <Badge key={tag} variant="secondary" className="border-2 border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-700">
-              {tag}
-            </Badge>
-          ))}
         </div>
+        {!isEditingMetadata ? (
+          <div className="flex flex-wrap gap-2">
+            {template.metadata.industry && (
+              <Badge variant="default" className="bg-blue-50 text-blue-700 border-2 border-blue-200 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/30">
+                {template.metadata.industry}
+              </Badge>
+            )}
+            {template.metadata.useCaseTags.map(tag => (
+              <Badge key={tag} variant="secondary" className="border-2 border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-700">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <Card className="border-2 border-blue-200 bg-white shadow-sm dark:border-blue-800 dark:bg-slate-800">
+            <CardHeader>
+              <CardTitle className="text-lg text-slate-900 dark:text-white">Edit Template Metadata</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
+                Update metadata to improve discoverability and provide guidance
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TemplateMetadataForm
+                template={template}
+                onSave={() => {
+                  setIsEditingMetadata(false)
+                  // Optionally refresh the template data
+                }}
+              />
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Quick Info Grid */}

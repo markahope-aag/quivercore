@@ -63,9 +63,16 @@ export function Sidebar() {
     <div className="flex h-screen w-64 flex-col border-r border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-slate-200 px-6 dark:border-slate-800">
-        <Link href="/prompts" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-blue-500">
-            <Sparkles className="h-5 w-5 text-white" />
+        <Link href="/prompts" className="flex items-center gap-3">
+          <div className="relative flex h-9 w-9 items-center justify-center">
+            {/* Outer ring */}
+            <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 opacity-20"></div>
+            {/* Inner icon */}
+            <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 to-blue-500 shadow-sm">
+              <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
           </div>
           <span className="text-lg font-semibold text-slate-900 dark:text-white">QuiverCore</span>
         </Link>
