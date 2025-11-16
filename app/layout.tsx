@@ -3,6 +3,7 @@ import { PT_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Toaster } from "sonner";
 
 const ptSans = PT_Sans({
   weight: ['400', '700'],
