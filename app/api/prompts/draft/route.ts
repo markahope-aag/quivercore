@@ -74,7 +74,7 @@ Generate only the prompt text, no explanations or meta-commentary.`
       const message = await executeWithRetry(
         async () => {
           return anthropic.messages.create({
-            model: 'claude-3-5-sonnet-20240620' as Anthropic.MessageCreateParams['model'],
+            model: 'claude-3-sonnet-20240229' as Anthropic.MessageCreateParams['model'],
             max_tokens: 2000,
             messages: [
               {
