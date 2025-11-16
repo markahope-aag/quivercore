@@ -202,10 +202,10 @@ export function PromptBuilder() {
         <AnimatePresence mode="wait">
           <motion.div
             key={state.currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
           >
             <div className="mb-12">
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">
