@@ -123,8 +123,20 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-        throw new Error(errorData.error || `HTTP error: ${response.status}`)
+        let errorMessage = `Failed to generate draft (${response.status})`
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || errorData.message || errorMessage
+        } catch {
+          // If response is not JSON, try to get text
+          try {
+            const text = await response.text()
+            if (text) errorMessage = text
+          } catch {
+            // Fall back to status-based message
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
@@ -409,7 +421,7 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
                 className="text-xs border-2 border-purple-200 bg-purple-100 text-purple-700 hover:bg-purple-200 dark:border-purple-700 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
               >
                 <Wand2 className="mr-1.5 h-3.5 w-3.5" />
-                {isGeneratingDraft ? 'Generating...' : '✨ Generate Draft'}
+                {isGeneratingDraft ? 'Generating...' : 'Generate Draft'}
               </Button>
             )}
             {selectedFramework && (
