@@ -107,10 +107,24 @@ export function PricingCard({ plan, index, currentPlanName }: PricingCardProps) 
     return `$${(cents / 100).toFixed(0)}`
   }
 
+  // Determine storage limit based on plan
+  const getStorageLimit = () => {
+    switch (plan.name) {
+      case 'explorer':
+        return '100 prompts/templates'
+      case 'researcher':
+        return '250 prompts/templates'
+      case 'strategist':
+        return '500 prompts/templates'
+      default:
+        return '100 prompts/templates'
+    }
+  }
+
   const features = [
     {
       label: 'Prompt Storage',
-      value: 'Unlimited',
+      value: getStorageLimit(),
     },
     {
       label: 'AI Prompt Builder',
