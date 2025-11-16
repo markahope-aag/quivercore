@@ -6,7 +6,6 @@ import { exportPrompt, copyToClipboard, exportVSResponsesAsCSV } from '@/lib/uti
 import { parseVSResponse } from '@/lib/utils/api-client'
 import type { ExportFormat } from '@/lib/utils/export'
 import type { AdvancedEnhancements } from '@/lib/types/enhancements'
-import { EnhancementTestRunner } from '../EnhancementTestRunner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 // Helper function to get list of enabled advanced enhancements
@@ -269,7 +268,6 @@ export function PreviewExecuteStep() {
 
   const latestResult = state.executionResults[0]
   const parsedVS = latestResult && state.vsEnhancement.enabled ? parseVSResponse(latestResult.response) : null
-  const [showTests, setShowTests] = useState(false)
 
   return (
     <div className="space-y-6">
@@ -279,29 +277,6 @@ export function PreviewExecuteStep() {
           Review your generated prompt, execute it with Claude, and export or save as a template.
         </p>
       </div>
-
-      {/* Test Runner Toggle */}
-      <div className="flex items-center justify-between rounded-md border border-gray-300 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800">
-        <div>
-          <h3 className="text-sm font-medium text-gray-900 dark:text-white">Enhancement Testing</h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Validate your advanced enhancements and test prompt quality
-          </p>
-        </div>
-        <button
-          onClick={() => setShowTests(!showTests)}
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
-        >
-          {showTests ? 'Hide Tests' : 'Show Tests'}
-        </button>
-      </div>
-
-      {/* Test Runner */}
-      {showTests && (
-        <div className="rounded-md border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20">
-          <EnhancementTestRunner />
-        </div>
-      )}
 
       {/* Model Selector */}
       <div className="rounded-md border border-gray-300 bg-white p-4 dark:border-gray-600 dark:bg-gray-800">
