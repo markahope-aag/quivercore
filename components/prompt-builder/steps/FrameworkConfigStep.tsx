@@ -3,6 +3,18 @@
 import { useState } from 'react'
 import { usePromptBuilder } from '@/contexts/PromptBuilderContext'
 import { FrameworkType, ReasoningStructure } from '@/lib/types/prompt-builder'
+import { Input } from '@/components/ui/input-v2'
+import { Textarea } from '@/components/ui/textarea-v2'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select-v2'
+import { Button } from '@/components/ui/button-v2'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card-v2'
+import { X, Plus, Trash2 } from 'lucide-react'
 
 export function FrameworkConfigStep() {
   const { state, updateBaseConfig } = usePromptBuilder()
@@ -191,20 +203,14 @@ export function FrameworkConfigStep() {
       {/* Role-Based */}
       {framework === FrameworkType.ROLE_BASED && (
         <div>
-          <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Role / Expertise
-          </label>
-          <input
-            type="text"
+          <Input
             id="role"
+            label="Role / Expertise"
             value={config.roleBasedRole || ''}
             onChange={handleRoleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white sm:text-sm"
             placeholder="e.g., an expert software architect, a professional copywriter"
+            helperText="Define the role or expertise the AI should assume"
           />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Define the role or expertise the AI should assume
-          </p>
         </div>
       )}
 

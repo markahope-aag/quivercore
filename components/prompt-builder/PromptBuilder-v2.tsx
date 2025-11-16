@@ -8,7 +8,7 @@
 import { usePromptBuilder } from '@/contexts/PromptBuilderContext'
 import { BuilderStep } from '@/lib/types/prompt-builder'
 import { BasePromptStep } from './steps/BasePromptStep'
-import { FrameworkConfigStep } from './steps/FrameworkConfigStep'
+import { FrameworkConfigStep } from './steps/FrameworkConfigStep-v2'
 import { VSEnhancementStep } from './steps/VSEnhancementStep'
 import { AdvancedEnhancementsStep } from './steps/AdvancedEnhancementsStep'
 import { PreviewExecuteStep } from './steps/PreviewExecuteStep'
