@@ -16,10 +16,7 @@ const ptSans = PT_Sans({
 export const metadata: Metadata = {
   title: "QuiverCore",
   description: "Organize and manage your AI prompts, email templates, and snippets",
-  icons: {
-    icon: '/favicon-32x32.svg',
-    apple: '/logo.svg',
-  },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

@@ -1,7 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import { usePromptBuilder } from '@/contexts/PromptBuilderContext'
 import { DOMAIN_CATEGORIES, FRAMEWORK_OPTIONS } from '@/lib/constants/prompt-builder'
+import { FRAMEWORKS_DETAILED, getRecommendedFrameworks } from '@/lib/constants/frameworks-detailed'
 import { DomainCategory, FrameworkType } from '@/lib/types/prompt-builder'
 import { Input } from '@/components/ui/input-v2'
 import { Textarea } from '@/components/ui/textarea-v2'
@@ -13,8 +15,12 @@ import {
   SelectValue,
 } from '@/components/ui/select-v2'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card-v2'
-import { Info } from 'lucide-react'
+import { Badge } from '@/components/ui/badge-v2'
+import { Button } from '@/components/ui/button-v2'
+import { Info, HelpCircle, Sparkles } from 'lucide-react'
 import { StepHeader } from './StepHeader'
+import { FrameworkGuideModal } from '../FrameworkGuideModal'
+import { cn } from '@/lib/utils'
 
 interface BasePromptStepProps {
   onNext?: () => void
@@ -26,6 +32,23 @@ interface BasePromptStepProps {
 
 export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
   const { state, updateBaseConfig, setError, clearErrors } = usePromptBuilder()
+  const [showFrameworkGuide, setShowFrameworkGuide] = useState(false)
+
+  // Get recommended frameworks based on domain and target outcome
+  const recommendedFrameworks = getRecommendedFrameworks(
+    state.baseConfig.domain,
+    state.baseConfig.targetOutcome
+  )
+
+  const selectedFrameworkInfo = state.baseConfig.framework
+    ? FRAMEWORKS_DETAILED[state.baseConfig.framework]
+    : null
+
+  const difficultyColors = {
+    Beginner: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-500/30',
+    Intermediate: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-500/30',
+    Advanced: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-500/30',
+  }
 
 
   const handleBasePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -127,13 +150,54 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
         </div>
 
         {/* Framework Selection */}
-        <div className="space-y-2">
-          <label htmlFor="framework" className="text-sm font-medium text-slate-900 dark:text-white">
-            Framework <span className="text-red-500">*</span>
-          </label>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Select the prompt engineering pattern to use
-          </p>
+        <div className="space-y-4">
+          {/* Framework Label with Help */}
+          <div className="flex items-center gap-2">
+            <label htmlFor="framework" className="text-sm font-medium text-slate-900 dark:text-white">
+              Framework <span className="text-red-500">*</span>
+            </label>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowFrameworkGuide(true)}
+              className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              title="Learn about frameworks"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* Smart Recommendations */}
+          {state.baseConfig.domain && state.baseConfig.targetOutcome && recommendedFrameworks.length > 0 && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <p className="text-sm text-blue-800 dark:text-blue-300 font-medium">
+                  Recommended for your use case:
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {recommendedFrameworks.map((fw) => {
+                  const frameworkInfo = FRAMEWORKS_DETAILED[fw]
+                  if (!frameworkInfo) return null
+                  return (
+                    <button
+                      key={fw}
+                      onClick={() => {
+                        updateBaseConfig({ framework: fw as FrameworkType })
+                        clearErrors()
+                      }}
+                      className="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs rounded-full hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors border border-blue-300 dark:border-blue-700"
+                    >
+                      {frameworkInfo.name} ✨
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Framework Selection Dropdown */}
           <Select
             value={state.baseConfig.framework || undefined}
             onValueChange={(value) => {
@@ -142,21 +206,36 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
             }}
           >
             <SelectTrigger
-              className={`w-full h-11 bg-slate-50 border-slate-300 hover:border-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 ${
-                state.errors.framework ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''
-              }`}
+              className={cn(
+                'w-full h-11 bg-slate-50 border-slate-300 hover:border-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200',
+                state.errors.framework && 'border-red-300 focus:border-red-500 focus:ring-red-200'
+              )}
               aria-invalid={!!state.errors.framework}
             >
               <SelectValue placeholder="Select a framework *" />
             </SelectTrigger>
-            <SelectContent className="bg-white shadow-lg border-blue-300">
-              {FRAMEWORK_OPTIONS.map((framework) => (
-                <SelectItem key={framework.value} value={framework.value} className="hover:bg-blue-50">
-                  {framework.label}
-                </SelectItem>
-              ))}
+            <SelectContent className="bg-white shadow-lg border-blue-300 dark:bg-slate-800 dark:border-slate-600">
+              {FRAMEWORK_OPTIONS.map((framework) => {
+                const frameworkInfo = FRAMEWORKS_DETAILED[framework.value]
+                const IconComponent = frameworkInfo?.icon
+                return (
+                  <SelectItem
+                    key={framework.value}
+                    value={framework.value}
+                    className="hover:bg-blue-50 dark:hover:bg-blue-950"
+                  >
+                    <div className="flex items-center gap-2">
+                      {IconComponent && (
+                        <IconComponent className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      )}
+                      <span>{framework.label}</span>
+                    </div>
+                  </SelectItem>
+                )
+              })}
             </SelectContent>
           </Select>
+
           {state.errors.framework && (
             <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1.5" role="alert">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -165,13 +244,57 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
               {state.errors.framework}
             </p>
           )}
-          {state.baseConfig.framework && !state.errors.framework && (
-            <div className="flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span>Framework selected</span>
-            </div>
+
+          {/* Selected Framework Info */}
+          {selectedFrameworkInfo && !state.errors.framework && (
+            <Card className="border-2 border-slate-200 bg-slate-50 dark:bg-slate-900/50 dark:border-slate-700">
+              <CardContent className="pt-4">
+                <div className="flex items-start gap-3">
+                  <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg flex-shrink-0">
+                    {(() => {
+                      const IconComponent = selectedFrameworkInfo.icon
+                      return <IconComponent className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    })()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="font-semibold text-slate-900 dark:text-white">
+                        {selectedFrameworkInfo.name}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className={cn('text-xs border-2', difficultyColors[selectedFrameworkInfo.difficulty])}
+                      >
+                        {selectedFrameworkInfo.difficulty}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                      {selectedFrameworkInfo.description}
+                    </p>
+                    <div className="space-y-2">
+                      <div>
+                        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                          Best for:{' '}
+                        </span>
+                        <span className="text-xs text-slate-600 dark:text-slate-400">
+                          {selectedFrameworkInfo.bestFor.join(', ')}
+                        </span>
+                      </div>
+                      {selectedFrameworkInfo.worksWellWith.length > 0 && (
+                        <div>
+                          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                            Works well with:{' '}
+                          </span>
+                          <span className="text-xs text-slate-600 dark:text-slate-400">
+                            {selectedFrameworkInfo.worksWellWith.join(', ')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
@@ -237,6 +360,16 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
           </div>
         </div>
       </div>
+
+      {/* Framework Guide Modal */}
+      <FrameworkGuideModal
+        open={showFrameworkGuide}
+        onOpenChange={setShowFrameworkGuide}
+        onSelectFramework={(framework) => {
+          updateBaseConfig({ framework: framework as FrameworkType })
+          clearErrors()
+        }}
+      />
     </div>
   )
 }
