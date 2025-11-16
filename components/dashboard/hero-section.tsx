@@ -54,7 +54,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Prompts</p>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Assets</p>
                 <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                   {stats?.totalPrompts || 0}
                 </p>

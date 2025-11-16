@@ -303,22 +303,18 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
             variant="default"
             size="sm"
             onClick={handleUsePrompt}
-            className="bg-blue-600 text-white hover:bg-blue-700"
+            className="bg-blue-600 text-white hover:bg-blue-700 w-36"
           >
-            <Star className="mr-2 h-4 w-4" />
-            Use Prompt
-          </Button>
-          <Button variant="secondary" size="sm" onClick={handleCopy} className="border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700">
             <Copy className="mr-2 h-4 w-4" />
-            Copy
+            Copy to Use
           </Button>
-          <Button variant="secondary" size="sm" asChild className="border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700">
+          <Button variant="secondary" size="sm" asChild className="border-2 border-slate-400 bg-slate-600 text-white hover:bg-slate-700 dark:border-slate-500 dark:bg-slate-600 dark:hover:bg-slate-500 w-36">
             <Link href={`/prompts/${prompt.id}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </Link>
           </Button>
-          <Button variant="destructive" size="sm" onClick={handleDelete}>
+          <Button variant="destructive" size="sm" onClick={handleDelete} className="w-36">
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
           </Button>
