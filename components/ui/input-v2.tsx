@@ -37,6 +37,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               'placeholder:text-transparent',
               'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0',
               'disabled:cursor-not-allowed disabled:opacity-50',
+              'aria-invalid:border-red-500 aria-invalid:focus:ring-red-500',
               leftIcon && 'pl-10',
               rightIcon && 'pr-10',
               error
@@ -54,6 +55,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               setFocused(false)
               props.onBlur?.(e)
             }}
+            aria-invalid={error ? 'true' : undefined}
+            aria-describedby={error ? `${props.id}-error` : helperText ? `${props.id}-helper` : undefined}
             {...props}
           />
           {label && (
@@ -78,10 +81,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>
+          <p id={props.id ? `${props.id}-error` : undefined} className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
+            {error}
+          </p>
         )}
         {helperText && !error && (
-          <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{helperText}</p>
+          <p id={props.id ? `${props.id}-helper` : undefined} className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+            {helperText}
+          </p>
         )}
       </div>
     )

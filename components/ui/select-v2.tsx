@@ -27,6 +27,7 @@ const SelectTrigger = React.forwardRef<
       'placeholder:text-slate-500',
       'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0',
       'disabled:cursor-not-allowed disabled:opacity-50',
+      'aria-invalid:border-red-500 aria-invalid:focus:ring-red-500',
       'dark:bg-slate-800 dark:border-slate-700 dark:text-white',
       className
     )}

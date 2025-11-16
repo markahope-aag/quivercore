@@ -78,10 +78,12 @@ export function Sidebar() {
               href={item.href}
               className={cn(
                 'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
                 isActive
                   ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400'
                   : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
               )}
+              aria-current={isActive ? 'page' : undefined}
             >
               <item.icon
                 className={cn(
@@ -104,6 +106,7 @@ export function Sidebar() {
             <Button
               variant="ghost"
               className="w-full justify-start gap-3 px-3"
+              aria-label="User menu"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-500 text-sm font-medium text-white">
                 {user?.email?.charAt(0).toUpperCase() || 'U'}
