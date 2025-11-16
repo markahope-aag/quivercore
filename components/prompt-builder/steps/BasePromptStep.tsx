@@ -48,8 +48,15 @@ export function BasePromptStep() {
 
   return (
     <div className="space-y-6">
+      {/* Section Header */}
+      <div className="mb-6 border-b border-slate-200 pb-4 dark:border-slate-800">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Prompt Configuration</h3>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          Define the foundation of your prompt by selecting a domain and framework, then providing your core instructions.
+        </p>
+      </div>
       {/* Domain Category */}
-      <div>
+      <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
         <Select
           value={state.baseConfig.domain || undefined}
           onValueChange={(value) => {
@@ -74,7 +81,7 @@ export function BasePromptStep() {
       </div>
 
       {/* Framework Selection */}
-      <div>
+      <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
         <Select
           value={state.baseConfig.framework || undefined}
           onValueChange={(value) => {
@@ -104,7 +111,7 @@ export function BasePromptStep() {
       </div>
 
       {/* Base Prompt */}
-      <div>
+      <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
         <Textarea
           id="basePrompt"
           label="Base Prompt"
@@ -131,7 +138,7 @@ export function BasePromptStep() {
       </div>
 
       {/* Target Outcome */}
-      <div>
+      <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
         <Textarea
           id="targetOutcome"
           label="Target Outcome (Optional)"
@@ -146,7 +153,7 @@ export function BasePromptStep() {
       </div>
 
       {/* Helpful Tips */}
-      <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
+      <Card className="border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100/50 shadow-sm dark:border-blue-700 dark:from-blue-900/30 dark:to-blue-800/20">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
