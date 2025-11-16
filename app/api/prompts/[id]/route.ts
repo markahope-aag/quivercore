@@ -35,7 +35,7 @@ export async function GET(
       async () => {
         const { data, error } = await supabase
           .from('prompts')
-          .select('id, title, content, description, tags, created_at, updated_at, is_favorite, use_case, framework, enhancement_technique')
+          .select('id, title, content, description, tags, created_at, updated_at, is_favorite, use_case, framework, enhancement_technique, is_template, builder_config, variables')
           .eq('id', id.trim())
           .eq('user_id', user.id)
           .single()

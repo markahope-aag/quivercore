@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { PromptBuilderProvider } from '@/contexts/PromptBuilderContext'
 import { PromptBuilder } from '@/components/prompt-builder/PromptBuilder-v2'
 import { TemplateLibrary } from '@/components/prompt-builder/TemplateLibrary'
@@ -8,7 +9,10 @@ import { motion } from 'framer-motion'
 import { Pencil, List, Check, Sparkles } from 'lucide-react'
 
 export default function BuilderPage() {
+  const searchParams = useSearchParams()
+  const templateId = searchParams.get('template')
   const [activeView, setActiveView] = useState<'builder' | 'templates'>('builder')
+  const [templateToLoad, setTemplateToLoad] = useState<string | null>(templateId)
 
   return (
     <PromptBuilderProvider>
@@ -65,7 +69,7 @@ export default function BuilderPage() {
 
         {/* Content */}
         <div className="pb-12">
-          {activeView === 'builder' ? <PromptBuilder /> : <TemplateLibrary />}
+          {activeView === 'builder' ? <PromptBuilder templateId={templateToLoad} /> : <TemplateLibrary />}
         </div>
 
         {/* Info Panel */}

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, memo } from 'react'
-import { Star, Edit, Trash2, Copy, TestTube, Archive, ArchiveRestore, Files } from 'lucide-react'
+import { Star, Edit, Trash2, Copy, TestTube, Archive, ArchiveRestore, Files, Wand2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card-v2'
 import { Button } from '@/components/ui/button-v2'
 import { Badge } from '@/components/ui/badge-v2'
@@ -250,16 +250,30 @@ export const PromptCard = memo(function PromptCard({ prompt }: PromptCardProps) 
         </div>
       </CardContent>
       <CardFooter className="flex gap-2 border-t border-slate-200 dark:border-slate-700">
-        <Button
-          variant="secondary"
-          size="sm"
-          asChild
-          className="flex-1 border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700"
-        >
-          <Link href={`/prompts/${prompt.id}`}>
-            View
-          </Link>
-        </Button>
+        {prompt.is_template && prompt.builder_config ? (
+          <Button
+            variant="default"
+            size="sm"
+            asChild
+            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white border-0"
+          >
+            <Link href={`/builder?template=${prompt.id}`}>
+              <Wand2 className="mr-1.5 h-4 w-4" />
+              Load in Builder
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            size="sm"
+            asChild
+            className="flex-1 border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700"
+          >
+            <Link href={`/prompts/${prompt.id}`}>
+              View
+            </Link>
+          </Button>
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="sm" className="border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700">

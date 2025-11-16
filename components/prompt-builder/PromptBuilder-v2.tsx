@@ -5,8 +5,9 @@
 
 'use client'
 
+import { useEffect, useState } from 'react'
 import { usePromptBuilder } from '@/contexts/PromptBuilderContext'
-import { BuilderStep } from '@/lib/types/prompt-builder'
+import { BuilderStep, PromptTemplate } from '@/lib/types/prompt-builder'
 import { BasePromptStep } from './steps/BasePromptStep'
 import { FrameworkConfigStep } from './steps/FrameworkConfigStep-v2'
 import { VSEnhancementStep } from './steps/VSEnhancementStep'
@@ -50,8 +51,57 @@ const STEPS: { id: BuilderStep; label: string; description: string; icon: React.
   },
 ]
 
-export function PromptBuilder() {
-  const { state, setStep } = usePromptBuilder()
+interface PromptBuilderProps {
+  templateId?: string | null
+}
+
+export function PromptBuilder({ templateId }: PromptBuilderProps = {}) {
+  const { state, setStep, loadTemplate } = usePromptBuilder()
+  const [isLoadingTemplate, setIsLoadingTemplate] = useState(false)
+
+  // Load template when templateId is provided
+  useEffect(() => {
+    if (!templateId) return
+
+    const fetchAndLoadTemplate = async () => {
+      setIsLoadingTemplate(true)
+      try {
+        const response = await fetch(`/api/prompts/${templateId}`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch template')
+        }
+
+        const prompt = await response.json()
+
+        // Check if it has builder_config
+        if (!prompt.builder_config) {
+          console.warn('Template does not have builder_config')
+          return
+        }
+
+        // Convert database format to PromptTemplate format
+        const template: PromptTemplate = {
+          id: prompt.id,
+          name: prompt.title,
+          description: prompt.description || '',
+          config: prompt.builder_config.baseConfig,
+          vsEnhancement: prompt.builder_config.vsEnhancement,
+          advancedEnhancements: prompt.builder_config.advancedEnhancements,
+          createdAt: prompt.created_at,
+          updatedAt: prompt.updated_at,
+          tags: prompt.tags || [],
+        }
+
+        loadTemplate(template)
+      } catch (error) {
+        console.error('Failed to load template:', error)
+      } finally {
+        setIsLoadingTemplate(false)
+      }
+    }
+
+    fetchAndLoadTemplate()
+  }, [templateId, loadTemplate])
 
   const currentStepIndex = STEPS.findIndex((step) => step.id === state.currentStep)
 
@@ -115,6 +165,18 @@ export function PromptBuilder() {
       default:
         return null
     }
+  }
+
+  // Show loading indicator while template is being loaded
+  if (isLoadingTemplate) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+          <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">Loading template...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
