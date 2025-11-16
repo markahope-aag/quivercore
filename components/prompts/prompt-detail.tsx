@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Star, Edit, Trash2, Copy, TestTube, History, ChevronDown, ChevronUp } from 'lucide-react'
+import { Star, Edit, Trash2, Copy, TestTube, History, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { Button } from '@/components/ui/button-v2'
 import { Badge } from '@/components/ui/badge-v2'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card-v2'
@@ -13,6 +13,8 @@ import { format } from 'date-fns'
 import { TestPanel } from './test-panel'
 import { VersionHistory } from './version-history'
 import { sanitizeForDisplay } from '@/lib/utils/sanitize'
+import { TemplateMetadataForm } from '@/components/templates/template-metadata-form'
+import { promptToTemplate } from '@/lib/utils/prompt-to-template'
 
 interface PromptDetailProps {
   prompt: Prompt
@@ -23,6 +25,64 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
   const [isFavorite, setIsFavorite] = useState(prompt.is_favorite)
   const [showTestPanel, setShowTestPanel] = useState(false)
   const [showVersionHistory, setShowVersionHistory] = useState(false)
+  const [showMetadataForm, setShowMetadataForm] = useState(false)
+  const [templateData, setTemplateData] = useState(() => promptToTemplate(prompt))
+  const [metadataLoaded, setMetadataLoaded] = useState(false)
+
+  // Load existing metadata if available
+  useEffect(() => {
+    const loadMetadata = async () => {
+      try {
+        const response = await fetch(`/api/templates/${prompt.id}/metadata`)
+        if (response.ok) {
+          const metadata = await response.json()
+          // Convert metadata row to template format
+          const converted = promptToTemplate(prompt, {
+            metadata: {
+              useCaseTags: metadata.use_case_tags || [],
+              industry: metadata.industry || '',
+              difficultyLevel: metadata.difficulty_level || 'Beginner',
+              estimatedTime: metadata.estimated_time || '',
+              outputLength: metadata.output_length || '',
+              businessImpact: metadata.business_impact || '',
+              teamUsage: metadata.team_usage || [],
+            },
+            guidance: {
+              prerequisites: metadata.prerequisites || [],
+              bestPractices: metadata.best_practices || [],
+              commonPitfalls: metadata.common_pitfalls || [],
+              followUpPrompts: metadata.follow_up_prompts || [],
+              successMetrics: metadata.success_metrics || [],
+            },
+            recommendations: {
+              vsSettings: metadata.vs_settings || '',
+              compatibleFrameworks: metadata.compatible_frameworks || [],
+              advancedEnhancements: metadata.advanced_enhancements || [],
+            },
+            quality: {
+              userRating: metadata.user_rating || 0,
+              usageCount: metadata.usage_count || 0,
+              author: metadata.author || '',
+              lastUpdated: new Date(metadata.updated_at),
+              exampleOutputs: metadata.example_outputs || [],
+            },
+            social: {
+              comments: [],
+              variations: metadata.variations || [],
+              relatedTemplates: metadata.related_templates || [],
+            },
+          })
+          setTemplateData(converted)
+        }
+      } catch (error) {
+        console.error('Failed to load metadata:', error)
+      } finally {
+        setMetadataLoaded(true)
+      }
+    }
+
+    loadMetadata()
+  }, [prompt])
 
   const handleToggleFavorite = async () => {
     const newFavorite = !isFavorite
@@ -169,6 +229,49 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Template Metadata Section */}
+      <Card className="border-2 border-slate-200 bg-white shadow-sm dark:border-slate-600 dark:bg-slate-800">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-slate-900 dark:text-white">Template Metadata</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
+                Add rich metadata to improve discoverability and provide usage guidance
+              </CardDescription>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowMetadataForm(!showMetadataForm)}
+              className="border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700"
+            >
+              {showMetadataForm ? (
+                <>
+                  <X className="mr-2 h-4 w-4" />
+                  Hide
+                </>
+              ) : (
+                <>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Metadata
+                </>
+              )}
+            </Button>
+          </div>
+        </CardHeader>
+        {showMetadataForm && metadataLoaded && (
+          <CardContent>
+            <TemplateMetadataForm
+              template={templateData}
+              onSave={() => {
+                // Refresh metadata after save
+                router.refresh()
+              }}
+            />
+          </CardContent>
+        )}
+      </Card>
 
       <Card className="border-2 border-slate-200 bg-white shadow-sm dark:border-slate-600 dark:bg-slate-800">
         <CardHeader>
