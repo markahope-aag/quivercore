@@ -13,7 +13,7 @@ export default async function Home() {
     }
 
     if (user) {
-      redirect('/prompts')
+      redirect('/dashboard')
     } else {
       redirect('/login')
     }

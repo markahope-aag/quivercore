@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     // Build query with specific fields (not select *)
     let query = supabase
       .from('prompts')
-      .select('id, title, description, tags, use_case, framework, enhancement_technique, is_favorite, usage_count, is_template, builder_config, created_at, updated_at, archived', { count: 'exact' })
+      .select('id, title, content, description, tags, use_case, framework, enhancement_technique, is_favorite, usage_count, last_used_at, is_template, builder_config, created_at, updated_at, archived', { count: 'exact' })
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1) // Pagination
@@ -151,12 +151,23 @@ export async function POST(request: NextRequest) {
       throw new ApplicationError('Content is required', ErrorCodes.VALIDATION_ERROR, 400)
     }
 
-    // Extract variables from content
-    const variables = extractVariables(content)
-    const variablesObj = variables.reduce((acc, v) => {
-      acc[v] = ''
-      return acc
-    }, {} as Record<string, string>)
+    // Use provided variables or extract from content
+    let variablesObj: Record<string, string> | null = null
+    if (body.variables && typeof body.variables === 'object') {
+      // Use provided variables (with default/example values)
+      variablesObj = body.variables as Record<string, string>
+    } else {
+      // Extract variables from content and create empty object
+      const variables = extractVariables(content)
+      variablesObj = variables.reduce((acc, v) => {
+        acc[v] = ''
+        return acc
+      }, {} as Record<string, string>)
+      // Only set if there are variables
+      if (Object.keys(variablesObj).length === 0) {
+        variablesObj = null
+      }
+    }
 
     // Generate embedding for semantic search
     const searchableText = generateSearchableText(title, content, description, tags)
@@ -188,7 +199,7 @@ export async function POST(request: NextRequest) {
             enhancement_technique: enhancement_technique || null,
             tags: tags || [],
             description: description || null,
-            variables: Object.keys(variablesObj).length > 0 ? variablesObj : null,
+            variables: variablesObj,
             embedding: embedding || null,
           })
           .select('id, title, content, description, tags, use_case, framework, enhancement_technique, variables, is_template, builder_config, created_at, updated_at')

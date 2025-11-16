@@ -58,8 +58,12 @@ export default function PromptsPage() {
           params.set('tag', tag)
         }
 
-        // Fetch from API route
-        const response = await fetch(`/api/prompts?${params.toString()}`)
+        // Fetch from API route with cache-busting if refresh param is present
+        const refreshParam = searchParams.get('refresh')
+        const fetchUrl = `/api/prompts?${params.toString()}${refreshParam ? `&_t=${refreshParam}` : ''}`
+        const response = await fetch(fetchUrl, {
+          cache: refreshParam ? 'no-store' : 'default',
+        })
         
         if (!response.ok) {
           if (response.status === 401) {

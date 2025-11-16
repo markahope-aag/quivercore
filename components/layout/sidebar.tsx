@@ -18,6 +18,7 @@ import {
   LogOut,
   User,
   Shield,
+  Zap,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -32,11 +33,13 @@ import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 
 const navigation = [
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Prompt Builder', href: '/builder', icon: Sparkles },
   { name: 'Prompt Library', href: '/prompts', icon: FileText },
 ]
 
 const bottomNavigation = [
+  { name: 'Plans', href: '/pricing', icon: Zap },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
@@ -45,6 +48,7 @@ export function Sidebar() {
   const router = useRouter()
   const [user, setUser] = React.useState<any>(null)
   const [isAdmin, setIsAdmin] = React.useState(false)
+  const [planName, setPlanName] = React.useState<string>('Free')
 
   React.useEffect(() => {
     async function getUser() {
@@ -61,6 +65,29 @@ export function Sidebar() {
           .single()
 
         setIsAdmin(!!data)
+
+        // Fetch user's subscription plan
+        const { data: subscription } = await supabase
+          .from('user_subscriptions')
+          .select('plan_id, status')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .single()
+
+        if (subscription?.plan_id) {
+          // Map plan_id to display name
+          const planNames: Record<string, string> = {
+            'price_starter': 'Starter',
+            'price_professional': 'Professional',
+            'price_enterprise': 'Enterprise',
+            'starter': 'Starter',
+            'professional': 'Professional',
+            'enterprise': 'Enterprise',
+          }
+          setPlanName(planNames[subscription.plan_id] || 'Pro')
+        } else {
+          setPlanName('Free')
+        }
       }
     }
     getUser()
@@ -200,7 +227,7 @@ export function Sidebar() {
                 <p className="text-sm font-medium text-slate-900 dark:text-white">
                   {user?.email?.split('@')[0] || 'User'}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Free Plan</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{planName} Plan</p>
               </div>
             </Button>
           </DropdownMenuTrigger>

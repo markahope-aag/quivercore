@@ -11,17 +11,20 @@ export function PricingPageContent() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [currentPlanName, setCurrentPlanName] = useState<string | null>(null)
 
   useEffect(() => {
-    async function fetchPlans() {
+    async function fetchData() {
       try {
-        const response = await fetch('/api/subscriptions/plans')
-        if (!response.ok) {
+        // Fetch plans
+        const plansResponse = await fetch('/api/subscriptions/plans')
+        if (!plansResponse.ok) {
           throw new Error('Failed to fetch plans')
         }
-        const data = await response.json()
+        const plansData = await plansResponse.json()
+
         // Only show the 3 paid plans: explorer, researcher, strategist
-        const allPlans = data.plans || []
+        const allPlans = plansData.plans || []
         const allowedPlans = ['explorer', 'researcher', 'strategist']
         const seen = new Set<string>()
         const paidPlans = allPlans
@@ -35,6 +38,16 @@ export function PricingPageContent() {
           })
           .sort((a: SubscriptionPlan, b: SubscriptionPlan) => a.price_monthly - b.price_monthly)
         setPlans(paidPlans)
+
+        // Fetch current subscription
+        const subscriptionResponse = await fetch('/api/subscriptions/current')
+        if (subscriptionResponse.ok) {
+          const subscriptionData = await subscriptionResponse.json()
+          // The API returns the subscription object directly, with plan nested inside
+          if (subscriptionData?.plan?.name && subscriptionData.plan.name !== 'free') {
+            setCurrentPlanName(subscriptionData.plan.name)
+          }
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load plans')
       } finally {
@@ -42,7 +55,7 @@ export function PricingPageContent() {
       }
     }
 
-    fetchPlans()
+    fetchData()
   }, [])
 
   if (loading) {
@@ -69,7 +82,12 @@ export function PricingPageContent() {
   return (
     <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto items-stretch">
       {plans.map((plan, index) => (
-        <PricingCard key={plan.id} plan={plan} index={index} />
+        <PricingCard
+          key={plan.id}
+          plan={plan}
+          index={index}
+          currentPlanName={currentPlanName}
+        />
       ))}
     </div>
   )

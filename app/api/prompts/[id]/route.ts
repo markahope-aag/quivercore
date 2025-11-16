@@ -149,12 +149,28 @@ export async function PATCH(
       })
     }
 
-    // Extract variables from content
-    const variables = extractVariables(content || currentPrompt?.content || '')
-    const variablesObj = variables.reduce((acc, v) => {
-      acc[v] = ''
-      return acc
-    }, {} as Record<string, string>)
+    // Use provided variables or extract from content
+    let variablesObj: Record<string, string> | null = null
+    if (body.variables !== undefined) {
+      if (body.variables && typeof body.variables === 'object') {
+        // Use provided variables (with default/example values)
+        variablesObj = Object.keys(body.variables).length > 0 ? (body.variables as Record<string, string>) : null
+      } else {
+        // Explicitly set to null
+        variablesObj = null
+      }
+    } else {
+      // Extract variables from content if not provided
+      const variables = extractVariables(content || currentPrompt?.content || '')
+      variablesObj = variables.reduce((acc, v) => {
+        acc[v] = ''
+        return acc
+      }, {} as Record<string, string>)
+      // Only set if there are variables
+      if (Object.keys(variablesObj).length === 0) {
+        variablesObj = null
+      }
+    }
 
     // Generate new embedding if content changed
     let embedding: number[] | null = null
@@ -183,10 +199,8 @@ export async function PATCH(
     if (description !== undefined) updateData.description = description
     if (is_favorite !== undefined) updateData.is_favorite = is_favorite
     if (embedding) updateData.embedding = embedding
-    if (Object.keys(variablesObj).length > 0) {
+    if (variablesObj !== undefined) {
       updateData.variables = variablesObj
-    } else if (variables.length === 0) {
-      updateData.variables = null
     }
 
     const data = await withQueryPerformance(

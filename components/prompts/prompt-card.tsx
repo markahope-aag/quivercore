@@ -19,6 +19,10 @@ import { format, formatDistanceToNow } from 'date-fns'
 import { sanitizeForDisplay } from '@/lib/utils/sanitize'
 import { toast } from 'sonner'
 import { getFrameworkDetail } from '@/lib/constants/framework-details'
+import {
+  UserCheck, List, GitBranch, FileText, Lock,
+  RefreshCw, Scale, Sparkles, BarChart3, ArrowRightLeft, FileType
+} from 'lucide-react'
 
 interface PromptCardProps {
   prompt: Prompt
@@ -139,29 +143,58 @@ export const PromptCard = memo(function PromptCard({ prompt }: PromptCardProps) 
   // Get framework details for icon
   const frameworkDetail = prompt.framework ? getFrameworkDetail(prompt.framework) : null
 
+  // Map icon string to component
+  const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    'UserCheck': UserCheck,
+    'List': List,
+    'GitBranch': GitBranch,
+    'FileText': FileText,
+    'Lock': Lock,
+    'RefreshCw': RefreshCw,
+    'Scale': Scale,
+    'Sparkles': Sparkles,
+    'BarChart3': BarChart3,
+    'ArrowRightLeft': ArrowRightLeft,
+    'FileTemplate': FileType, // FileTemplate doesn't exist in lucide-react, using FileType instead
+  }
+  
+  const IconComponent = frameworkDetail?.icon ? iconMap[frameworkDetail.icon] : null
+
   // Generate content preview (first 150 characters)
-  const contentPreview = prompt.content.length > 150
+  const contentPreview = prompt.content && prompt.content.length > 150
     ? `${prompt.content.substring(0, 150)}...`
-    : prompt.content
+    : (prompt.content || 'No content available')
 
   return (
-    <Card className="flex flex-col h-full border-2 border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow dark:border-slate-600 dark:bg-slate-800">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <CardTitle className="line-clamp-1">
-                <Link href={`/prompts/${prompt.id}`} className="hover:underline">
+    <Card className="group flex flex-col h-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-xl hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 overflow-hidden">
+      {/* Gradient Top Border */}
+      <div className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              {/* Framework Icon */}
+              {IconComponent && (
+                <div className="flex-shrink-0 text-xl" title={prompt.framework || undefined}>
+                  <IconComponent className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+              )}
+              <CardTitle className="line-clamp-1 text-lg font-bold text-slate-900 dark:text-white">
+                <Link
+                  href={`/prompts/${prompt.id}`}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
                   {sanitizeForDisplay(prompt.title)}
                 </Link>
               </CardTitle>
               {prompt.is_template && (
-                <Badge variant="default" className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-2 border-purple-300 dark:border-purple-700 text-xs font-semibold shrink-0">
+                <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-semibold px-2 py-0.5 shrink-0 border-0">
                   Template
                 </Badge>
               )}
             </div>
-            <CardDescription className="line-clamp-2 mt-1">
+            <CardDescription className="line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
               {prompt.description ? sanitizeForDisplay(prompt.description) : 'No description'}
             </CardDescription>
           </div>
@@ -169,41 +202,32 @@ export const PromptCard = memo(function PromptCard({ prompt }: PromptCardProps) 
             variant="ghost"
             size="icon"
             onClick={handleToggleFavorite}
-            className="flex-shrink-0 hover:bg-slate-50 dark:hover:bg-slate-700"
+            className="flex-shrink-0 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-full transition-colors"
           >
             <Star
-              className={`h-4 w-4 ${isFavorite ? 'fill-yellow-500 text-yellow-500' : 'text-slate-400'}`}
+              className={`h-5 w-5 transition-all ${isFavorite ? 'fill-yellow-400 text-yellow-500 scale-110' : 'text-slate-300 dark:text-slate-600'}`}
             />
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="flex-1">
-        <div className="space-y-3">
-          {/* Content Preview */}
-          <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
-            {sanitizeForDisplay(contentPreview)}
-          </p>
-
+      <CardContent className="flex-1 pt-0">
+        <div className="space-y-4">
           {/* Framework, Use Case, Enhancement Technique */}
           {(prompt.use_case || prompt.framework || prompt.enhancement_technique) && (
             <div className="flex flex-wrap gap-2">
               {prompt.framework && (
-                <Badge
-                  variant="default"
-                  className="bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300 border-2 border-blue-200 dark:border-blue-500/30"
-                >
-                  {frameworkDetail?.icon && <span className="mr-1">{frameworkDetail.icon}</span>}
+                <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-sm">
                   {sanitizeForDisplay(prompt.framework)}
                 </Badge>
               )}
               {prompt.use_case && (
-                <Badge variant="secondary" className="border-2 border-slate-200 text-slate-700 dark:border-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700">
+                <Badge className="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 dark:from-slate-700 dark:to-slate-600 dark:text-slate-200 border-0 shadow-sm">
                   {sanitizeForDisplay(prompt.use_case)}
                 </Badge>
               )}
               {prompt.enhancement_technique && (
-                <Badge variant="secondary" className="border-2 border-emerald-200 text-emerald-700 dark:border-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20">
-                  {sanitizeForDisplay(prompt.enhancement_technique)}
+                <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-0 shadow-sm">
+                  ✨ {sanitizeForDisplay(prompt.enhancement_technique)}
                 </Badge>
               )}
             </div>
@@ -213,23 +237,23 @@ export const PromptCard = memo(function PromptCard({ prompt }: PromptCardProps) 
           {prompt.tags && prompt.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {prompt.tags.slice(0, 3).map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-xs font-normal border-2 border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-700">
-                  {sanitizeForDisplay(tag)}
+                <Badge key={tag} className="text-xs font-normal bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                  #{sanitizeForDisplay(tag)}
                 </Badge>
               ))}
               {prompt.tags.length > 3 && (
-                <Badge variant="secondary" className="text-xs font-normal border-2 border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-700">
-                  +{prompt.tags.length - 3}
+                <Badge className="text-xs font-normal bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 border-0">
+                  +{prompt.tags.length - 3} more
                 </Badge>
               )}
             </div>
           )}
 
           {/* Usage Stats */}
-          <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-700">
-            <span className="flex items-center gap-1">
-              <Copy className="h-3 w-3" />
-              {prompt.usage_count} use{prompt.usage_count !== 1 ? 's' : ''}
+          <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 pt-3 border-t border-slate-200 dark:border-slate-700">
+            <span className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700/50 px-2 py-1 rounded-md">
+              <Copy className="h-3.5 w-3.5 text-blue-500" />
+              <span className="font-medium">{prompt.usage_count}</span> use{prompt.usage_count !== 1 ? 's' : ''}
             </span>
             {prompt.last_used_at ? (
               <span className="flex items-center gap-1">
@@ -242,20 +266,20 @@ export const PromptCard = memo(function PromptCard({ prompt }: PromptCardProps) 
 
           {/* Archived Badge */}
           {isArchived && (
-            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded border border-amber-200 dark:border-amber-800">
-              <Archive className="h-3 w-3" />
+            <div className="flex items-center gap-2 text-xs font-medium text-amber-700 dark:text-amber-400 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 px-3 py-2 rounded-lg border border-amber-300 dark:border-amber-700">
+              <Archive className="h-4 w-4" />
               Archived
             </div>
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex gap-2 border-t border-slate-200 dark:border-slate-700">
+      <CardFooter className="flex gap-2 pt-4 bg-slate-50/50 dark:bg-slate-900/30 border-t border-slate-200 dark:border-slate-700">
         {prompt.is_template && prompt.builder_config ? (
           <Button
             variant="default"
             size="sm"
             asChild
-            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white border-0"
+            className="flex-1 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white border-0 shadow-md hover:shadow-lg transition-all"
           >
             <Link href={`/builder?template=${prompt.id}`}>
               <Wand2 className="mr-1.5 h-4 w-4" />
@@ -267,16 +291,20 @@ export const PromptCard = memo(function PromptCard({ prompt }: PromptCardProps) 
             variant="secondary"
             size="sm"
             asChild
-            className="flex-1 border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700"
+            className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white border-0 shadow-md hover:shadow-lg transition-all"
           >
             <Link href={`/prompts/${prompt.id}`}>
-              View
+              View Details
             </Link>
           </Button>
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="sm" className="border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 shadow-sm hover:shadow transition-all"
+            >
               ⋮
             </Button>
           </DropdownMenuTrigger>
