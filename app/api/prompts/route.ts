@@ -6,6 +6,7 @@ import { handleError, ErrorCodes, ApplicationError } from '@/lib/utils/error-han
 import { logger } from '@/lib/utils/logger'
 import { sanitizeInput, sanitizeStringArray } from '@/lib/utils/sanitize'
 import { unstable_cache } from 'next/cache'
+import { withQueryPerformance } from '@/lib/utils/query-performance'
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,12 +23,19 @@ export async function GET(request: NextRequest) {
     const framework = searchParams.get('framework')
     const enhancementTechnique = searchParams.get('enhancement_technique')
     const tag = searchParams.get('tag')
+    
+    // Pagination parameters
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)))
+    const offset = (page - 1) * limit
 
+    // Build query with specific fields (not select *)
     let query = supabase
       .from('prompts')
-      .select('*')
+      .select('id, title, description, tags, use_case, framework, enhancement_technique, is_favorite, usage_count, is_template, builder_config, created_at, updated_at, archived', { count: 'exact' })
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1) // Pagination
 
     if (favorite === 'true') {
       query = query.eq('is_favorite', true)
@@ -49,17 +57,24 @@ export async function GET(request: NextRequest) {
       query = query.contains('tags', [tag])
     }
 
-    // Create cache key based on user and filters
-    const cacheKey = `prompts:${user.id}:${favorite || ''}:${useCase || ''}:${framework || ''}:${enhancementTechnique || ''}:${tag || ''}`
+    // Create cache key based on user, filters, and pagination
+    const cacheKey = `prompts:${user.id}:${favorite || ''}:${useCase || ''}:${framework || ''}:${enhancementTechnique || ''}:${tag || ''}:${page}:${limit}`
     
     // Use Next.js cache for read operations (30 seconds TTL)
     const getCachedPrompts = unstable_cache(
       async () => {
-        const { data, error } = await query
-        if (error) {
-          throw error
-        }
-        return data || []
+        return await withQueryPerformance(
+          'GET /api/prompts',
+          'select',
+          'prompts',
+          async () => {
+            const { data, error, count } = await query
+            if (error) {
+              throw error
+            }
+            return { data: data || [], count: count || 0 }
+          }
+        )
       },
       [cacheKey],
       {
@@ -69,8 +84,20 @@ export async function GET(request: NextRequest) {
     )
 
     try {
-      const data = await getCachedPrompts()
-      return NextResponse.json(data, {
+      const { data, count } = await getCachedPrompts()
+      const totalPages = Math.ceil((count || 0) / limit)
+      
+      return NextResponse.json({
+        data,
+        pagination: {
+          page,
+          limit,
+          total: count || 0,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      }, {
         headers: {
           'Cache-Control': 'private, s-maxage=30, stale-while-revalidate=60',
         },
@@ -104,7 +131,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    
+
     // Sanitize all user inputs
     const title = sanitizeInput(body.title || '', 500)
     const content = sanitizeInput(body.content || '', 50000)
@@ -113,6 +140,8 @@ export async function POST(request: NextRequest) {
     const enhancement_technique = body.enhancement_technique ? sanitizeInput(body.enhancement_technique, 200) : null
     const description = body.description ? sanitizeInput(body.description, 2000) : null
     const tags = body.tags ? sanitizeStringArray(Array.isArray(body.tags) ? body.tags : body.tags.split(',').map((t: string) => t.trim()), 100) : []
+    const is_template = body.is_template === true
+    const builder_config = body.builder_config || null
     
     // Validate required fields after sanitization
     if (!title || title.length === 0) {
@@ -140,31 +169,50 @@ export async function POST(request: NextRequest) {
       // Continue without embedding - user can still use keyword search
     }
 
-    // Create prompt
-    const { data: prompt, error: promptError } = await supabase
-      .from('prompts')
-      .insert({
-        user_id: user.id,
-        title,
-        content,
-        use_case: use_case || null,
-        framework: framework || null,
-        enhancement_technique: enhancement_technique || null,
-        tags: tags || [],
-        description: description || null,
-        variables: Object.keys(variablesObj).length > 0 ? variablesObj : null,
-        embedding: embedding || null,
-      })
-      .select()
-      .single()
+    // Create prompt with performance monitoring
+    const prompt = await withQueryPerformance(
+      'POST /api/prompts',
+      'insert',
+      'prompts',
+      async () => {
+        const { data, error } = await supabase
+          .from('prompts')
+          .insert({
+            user_id: user.id,
+            title,
+            content,
+            is_template,
+            builder_config,
+            use_case: use_case || null,
+            framework: framework || null,
+            enhancement_technique: enhancement_technique || null,
+            tags: tags || [],
+            description: description || null,
+            variables: Object.keys(variablesObj).length > 0 ? variablesObj : null,
+            embedding: embedding || null,
+          })
+          .select('id, title, content, description, tags, use_case, framework, enhancement_technique, variables, is_template, builder_config, created_at, updated_at')
+          .single()
+        
+        if (error) {
+          logger.error('Supabase insert error in POST /api/prompts', error)
+          throw new ApplicationError(
+            'Failed to create prompt',
+            ErrorCodes.DATABASE_ERROR,
+            500,
+            error
+          )
+        }
+        
+        return data
+      }
+    )
 
-    if (promptError) {
-      logger.error('Supabase insert error in POST /api/prompts', promptError)
+    if (!prompt) {
       throw new ApplicationError(
         'Failed to create prompt',
         ErrorCodes.DATABASE_ERROR,
-        500,
-        promptError
+        500
       )
     }
 

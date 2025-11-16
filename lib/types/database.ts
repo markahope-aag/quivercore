@@ -3,6 +3,9 @@ export interface Prompt {
   user_id: string
   title: string
   content: string
+  // Template vs Prompt distinction
+  is_template: boolean
+  builder_config: Record<string, any> | null
   // New fields (primary)
   use_case: string | null
   framework: string | null

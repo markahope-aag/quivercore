@@ -113,6 +113,7 @@ export function PreviewExecuteStep() {
   const [libraryTitle, setLibraryTitle] = useState('')
   const [libraryDescription, setLibraryDescription] = useState('')
   const [libraryTags, setLibraryTags] = useState('')
+  const [saveAsTemplate, setSaveAsTemplate] = useState(false)
   const [isSavingToLibrary, setIsSavingToLibrary] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -204,6 +205,13 @@ export function PreviewExecuteStep() {
         return acc
       }, {} as Record<string, any>) || null
 
+      // Build complete builder config for reconstruction
+      const builderConfig = {
+        baseConfig: state.baseConfig,
+        vsEnhancement: state.vsEnhancement,
+        advancedEnhancements: state.advancedEnhancements,
+      }
+
       const response = await fetch('/api/prompts', {
         method: 'POST',
         headers: {
@@ -213,6 +221,8 @@ export function PreviewExecuteStep() {
           title: libraryTitle,
           content: fullPrompt,
           description: libraryDescription || null,
+          is_template: saveAsTemplate,
+          builder_config: builderConfig,
           use_case: state.baseConfig.domain || null,
           framework: state.baseConfig.framework || null,
           enhancement_technique: state.vsEnhancement.enabled
@@ -235,6 +245,7 @@ export function PreviewExecuteStep() {
       setLibraryTitle('')
       setLibraryDescription('')
       setLibraryTags('')
+      setSaveAsTemplate(false)
 
       // Show success message (you could add a toast notification here)
       alert('Prompt saved to library successfully!')
@@ -815,6 +826,26 @@ export function PreviewExecuteStep() {
                 />
               </div>
 
+              <div className="flex items-start">
+                <div className="flex h-5 items-center">
+                  <input
+                    id="saveAsTemplate"
+                    type="checkbox"
+                    checked={saveAsTemplate}
+                    onChange={(e) => setSaveAsTemplate(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                  />
+                </div>
+                <div className="ml-3 text-sm">
+                  <label htmlFor="saveAsTemplate" className="font-medium text-gray-700 dark:text-gray-300">
+                    Save as Template
+                  </label>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Templates are reusable patterns that can be loaded back into the builder with all configurations intact
+                  </p>
+                </div>
+              </div>
+
               <div className="rounded-md bg-blue-50 p-3 dark:bg-blue-900/20">
                 <p className="text-xs text-blue-700 dark:text-blue-300">
                   <strong>Auto-filled:</strong> Domain: {state.baseConfig.domain || 'None'},
@@ -836,6 +867,7 @@ export function PreviewExecuteStep() {
                   setLibraryTitle('')
                   setLibraryDescription('')
                   setLibraryTags('')
+                  setSaveAsTemplate(false)
                 }}
                 className="flex-1 rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
                 disabled={isSavingToLibrary}

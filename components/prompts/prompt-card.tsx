@@ -149,11 +149,18 @@ export const PromptCard = memo(function PromptCard({ prompt }: PromptCardProps) 
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="line-clamp-1">
-              <Link href={`/prompts/${prompt.id}`} className="hover:underline">
-                {sanitizeForDisplay(prompt.title)}
-              </Link>
-            </CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="line-clamp-1">
+                <Link href={`/prompts/${prompt.id}`} className="hover:underline">
+                  {sanitizeForDisplay(prompt.title)}
+                </Link>
+              </CardTitle>
+              {prompt.is_template && (
+                <Badge variant="default" className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-2 border-purple-300 dark:border-purple-700 text-xs font-semibold shrink-0">
+                  Template
+                </Badge>
+              )}
+            </div>
             <CardDescription className="line-clamp-2 mt-1">
               {prompt.description ? sanitizeForDisplay(prompt.description) : 'No description'}
             </CardDescription>
