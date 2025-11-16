@@ -1,14 +1,14 @@
-import { Suspense } from 'react'
 import { CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-export default function BillingSuccessPage({
+export default async function BillingSuccessPage({
   searchParams,
 }: {
   searchParams: Promise<{ session_id?: string }>
 }) {
+  const params = await searchParams
   return (
     <div className="container max-w-2xl mx-auto py-12">
       <Card>
