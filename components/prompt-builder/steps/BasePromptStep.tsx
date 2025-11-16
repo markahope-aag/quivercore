@@ -51,7 +51,7 @@ export function BasePromptStep() {
       {/* Domain Category */}
       <div>
         <Select
-          value={state.baseConfig.domain || ''}
+          value={state.baseConfig.domain || undefined}
           onValueChange={(value) => {
             updateBaseConfig({ domain: value as DomainCategory })
             clearErrors()
@@ -61,7 +61,6 @@ export function BasePromptStep() {
             <SelectValue placeholder="Select a domain (optional)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">None (Optional)</SelectItem>
             {DOMAIN_CATEGORIES.map((category) => (
               <SelectItem key={category.value} value={category.value}>
                 {category.label}
@@ -77,7 +76,7 @@ export function BasePromptStep() {
       {/* Framework Selection */}
       <div>
         <Select
-          value={state.baseConfig.framework || ''}
+          value={state.baseConfig.framework || undefined}
           onValueChange={(value) => {
             updateBaseConfig({ framework: value as FrameworkType })
             clearErrors()
