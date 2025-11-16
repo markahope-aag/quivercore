@@ -5,7 +5,7 @@ import { PromptBuilderProvider } from '@/contexts/PromptBuilderContext'
 import { PromptBuilder } from '@/components/prompt-builder/PromptBuilder-v2'
 import { TemplateLibrary } from '@/components/prompt-builder/TemplateLibrary'
 import { motion } from 'framer-motion'
-import { Pencil, List, Check } from 'lucide-react'
+import { Pencil, List, Check, Sparkles } from 'lucide-react'
 
 export default function BuilderPage() {
   const [activeView, setActiveView] = useState<'builder' | 'templates'>('builder')
