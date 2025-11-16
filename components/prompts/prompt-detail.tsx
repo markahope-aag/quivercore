@@ -26,6 +26,8 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
   const [showTestPanel, setShowTestPanel] = useState(false)
   const [showVersionHistory, setShowVersionHistory] = useState(false)
   const [showMetadataForm, setShowMetadataForm] = useState(false)
+  const [showUsePromptModal, setShowUsePromptModal] = useState(false)
+  const [enhancedPrompt, setEnhancedPrompt] = useState('')
   const [templateData, setTemplateData] = useState(() => promptToTemplate(prompt))
   const [metadataLoaded, setMetadataLoaded] = useState(false)
 
@@ -118,6 +120,93 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
     navigator.clipboard.writeText(prompt.content)
   }
 
+  const handleUsePrompt = async () => {
+    // Build the enhanced prompt with framework and enhancement instructions
+    let fullPrompt = prompt.content
+    let systemInstructions = ''
+
+    // Add framework-specific instructions
+    if (prompt.framework) {
+      switch (prompt.framework.toLowerCase()) {
+        case 'chain-of-thought':
+          systemInstructions += 'Use chain-of-thought reasoning. Break down your thinking step-by-step before providing the final answer.\n\n'
+          break
+        case 'few-shot':
+          systemInstructions += 'Follow the pattern from the examples provided in the prompt.\n\n'
+          break
+        case 'role-based':
+          systemInstructions += 'Adopt the role and expertise level specified in the prompt.\n\n'
+          break
+        case 'constraint-based':
+          systemInstructions += 'Strictly adhere to all constraints and requirements specified.\n\n'
+          break
+        case 'iterative/multi-turn':
+          systemInstructions += 'Engage in iterative refinement. Ask clarifying questions if needed.\n\n'
+          break
+        case 'comparative':
+          systemInstructions += 'Provide comparative analysis highlighting similarities and differences.\n\n'
+          break
+        case 'analytical':
+          systemInstructions += 'Provide deep analytical insights with supporting evidence.\n\n'
+          break
+        case 'transformation':
+          systemInstructions += 'Transform the input according to the specified format or structure.\n\n'
+          break
+      }
+    }
+
+    // Add enhancement technique instructions
+    if (prompt.enhancement_technique) {
+      const technique = prompt.enhancement_technique.toLowerCase()
+
+      if (technique.includes('vs:') || technique.includes('verbalized sampling')) {
+        const vsType = technique.includes('broad_spectrum') ? 'broad spectrum (mix of common to rare)' :
+                       technique.includes('rarity_hunt') ? 'rarity hunt (unconventional only)' :
+                       technique.includes('balanced') ? 'balanced categories' : 'verbalized sampling'
+
+        systemInstructions += `Use Verbalized Sampling with ${vsType} distribution. Provide multiple diverse responses with probability reasoning.\n\n`
+      }
+
+      if (technique.includes('role enhancement')) {
+        systemInstructions += 'Apply role enhancement with specified expertise level.\n\n'
+      }
+
+      if (technique.includes('format control')) {
+        systemInstructions += 'Follow the specified format and structure requirements.\n\n'
+      }
+
+      if (technique.includes('smart constraints')) {
+        systemInstructions += 'Apply smart constraints - include required elements and avoid specified items.\n\n'
+      }
+
+      if (technique.includes('reasoning scaffolds')) {
+        systemInstructions += 'Show your reasoning process and explore alternatives.\n\n'
+      }
+    }
+
+    // Combine system instructions with prompt content
+    const enhanced = systemInstructions
+      ? `SYSTEM INSTRUCTIONS:\n${systemInstructions}---\n\nPROMPT:\n${fullPrompt}`
+      : fullPrompt
+
+    setEnhancedPrompt(enhanced)
+    setShowUsePromptModal(true)
+
+    // Track usage
+    try {
+      await fetch(`/api/prompts/${prompt.id}/use`, {
+        method: 'POST',
+      })
+    } catch (error) {
+      console.error('Failed to track usage:', error)
+    }
+  }
+
+  const handleCopyEnhanced = () => {
+    navigator.clipboard.writeText(enhancedPrompt)
+    alert('Enhanced prompt copied to clipboard!')
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
@@ -169,6 +258,15 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
           )}
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleUsePrompt}
+            className="bg-blue-600 text-white hover:bg-blue-700"
+          >
+            <Star className="mr-2 h-4 w-4" />
+            Use Prompt
+          </Button>
           <Button variant="secondary" size="sm" onClick={handleCopy} className="border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700">
             <Copy className="mr-2 h-4 w-4" />
             Copy
@@ -344,6 +442,86 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
           </CardContent>
         )}
       </Card>
+
+      {/* Use Prompt Modal */}
+      {showUsePromptModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="w-full max-w-3xl rounded-lg bg-white p-6 dark:bg-slate-800 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+                {prompt.framework || prompt.enhancement_technique ? 'Enhanced Prompt (Ready to Use)' : 'Use Prompt'}
+              </h3>
+              <button
+                onClick={() => setShowUsePromptModal(false)}
+                className="text-slate-400 hover:text-slate-500"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {(prompt.framework || prompt.enhancement_technique) && (
+              <div className="mb-4 rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
+                <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
+                  Applied Enhancements:
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {prompt.framework && (
+                    <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-800/50 dark:text-blue-200">
+                      Framework: {prompt.framework}
+                    </span>
+                  )}
+                  {prompt.enhancement_technique && (
+                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800 dark:bg-emerald-800/50 dark:text-emerald-200">
+                      {prompt.enhancement_technique}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-2 text-xs text-blue-700 dark:text-blue-400">
+                  This prompt has been configured with the enhancements shown above. Copy the enhanced version below to use with any AI tool.
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  {prompt.framework || prompt.enhancement_technique ? 'Enhanced Prompt:' : 'Prompt:'}
+                </label>
+                <div className="rounded-md bg-slate-900 p-4 max-h-96 overflow-y-auto">
+                  <pre className="text-sm text-slate-100 whitespace-pre-wrap font-mono">
+                    {enhancedPrompt}
+                  </pre>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleCopyEnhanced}
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+                >
+                  <Copy className="h-4 w-4" />
+                  Copy to Clipboard
+                </button>
+                <button
+                  onClick={() => setShowUsePromptModal(false)}
+                  className="rounded-md bg-slate-200 px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-300 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="rounded-md bg-yellow-50 p-3 dark:bg-yellow-900/20">
+                <p className="text-xs text-yellow-700 dark:text-yellow-400">
+                  <strong>Tip:</strong> Copy this enhanced prompt and paste it into ChatGPT, Claude, or any other AI tool.
+                  The system instructions ensure the AI follows the configured framework and enhancements.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
