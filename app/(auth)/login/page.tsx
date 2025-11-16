@@ -1,19 +1,42 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const [oauthLoading, setOauthLoading] = useState<string | null>(null)
+
+  // Handle OAuth callback code if redirected to login page instead of callback route
+  const code = searchParams.get('code')
+  useEffect(() => {
+    if (code) {
+      // Redirect immediately to the callback route with the code
+      // Use window.location for immediate redirect (doesn't wait for React)
+      window.location.href = `/auth/callback?code=${code}`
+    }
+  }, [code])
+
+  // Show loading state while redirecting
+  if (code) {
+    return (
+      <div className="relative flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400">Completing sign in...</p>
+        </div>
+      </div>
+    )
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
