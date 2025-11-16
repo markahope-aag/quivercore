@@ -46,6 +46,12 @@ export function TopNav() {
           >
             Builder
           </Link>
+          <Link
+            href="/pricing"
+            className="transition-colors hover:text-foreground/80 text-foreground"
+          >
+            Pricing
+          </Link>
         </nav>
 
         {/* Right side actions */}

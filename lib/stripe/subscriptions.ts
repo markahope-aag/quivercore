@@ -77,6 +77,7 @@ export async function createCheckoutSession(
   return {
     sessionId: session.id,
     clientSecret: session.client_secret || '',
+    url: session.url || '', // Checkout session URL for redirect
   }
 }
 

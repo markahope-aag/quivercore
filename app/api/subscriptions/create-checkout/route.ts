@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       priceId,
     })
 
-    const { sessionId, clientSecret } = await createCheckoutSession(
+    const { sessionId, clientSecret, url } = await createCheckoutSession(
       user.id,
       priceId,
       successUrl,
@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       sessionId,
       clientSecret,
+      url,
     })
   } catch (error: unknown) {
     const appError = handleError(error)
