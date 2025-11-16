@@ -151,24 +151,24 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
 
         {/* Framework Selection */}
         <div className="space-y-4">
-          {/* Framework Label with Help */}
-          <div className="flex items-center gap-2">
+          {/* Framework Label with Recommendations Button */}
+          <div className="flex items-center justify-between">
             <label htmlFor="framework" className="text-sm font-medium text-slate-900 dark:text-white">
               Framework <span className="text-red-500">*</span>
             </label>
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               onClick={() => setShowFrameworkGuide(true)}
-              className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-              title="Learn about frameworks"
+              className="text-xs border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700"
             >
-              <HelpCircle className="h-4 w-4" />
+              <HelpCircle className="mr-1.5 h-3.5 w-3.5" />
+              Recommendations
             </Button>
           </div>
 
-          {/* Smart Recommendations */}
-          {state.baseConfig.domain && state.baseConfig.targetOutcome && recommendedFrameworks.length > 0 && (
+          {/* Smart Recommendations - Show if domain OR target outcome provided */}
+          {(state.baseConfig.domain || state.baseConfig.targetOutcome) && recommendedFrameworks.length > 0 && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -183,11 +183,12 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
                   return (
                     <button
                       key={fw}
+                      type="button"
                       onClick={() => {
                         updateBaseConfig({ framework: fw as FrameworkType })
                         clearErrors()
                       }}
-                      className="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs rounded-full hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors border border-blue-300 dark:border-blue-700"
+                      className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-full hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors border border-blue-300 dark:border-blue-700 shadow-sm"
                     >
                       {frameworkInfo.name} ✨
                     </button>

@@ -182,12 +182,13 @@ export function getRecommendedFrameworks(
 ): string[] {
   const recommendations: string[] = []
 
-  if (!domain && !targetOutcome) {
-    return ['Role-Based', 'Chain-of-Thought', 'Analytical'] // Default recommendations
-  }
-
   const outcome = (targetOutcome || '').toLowerCase()
   const domainLower = (domain || '').toLowerCase()
+
+  // If no inputs, return default recommendations
+  if (!domain && !targetOutcome) {
+    return ['Role-Based', 'Chain-of-Thought', 'Analytical']
+  }
 
   // Analysis-related outcomes
   if (
@@ -240,25 +241,85 @@ export function getRecommendedFrameworks(
     recommendations.push('Template/Fill-in', 'Few-Shot')
   }
 
-  // Domain-specific recommendations
-  if (domainLower.includes('technical') || domainLower.includes('software')) {
+  // Domain-specific recommendations (check against actual domain values)
+  if (
+    domainLower.includes('code') ||
+    domainLower.includes('development') ||
+    domainLower.includes('technical') ||
+    domainLower.includes('software') ||
+    domainLower.includes('tech')
+  ) {
     if (!recommendations.includes('Role-Based')) recommendations.push('Role-Based')
     if (!recommendations.includes('Chain-of-Thought')) recommendations.push('Chain-of-Thought')
   }
 
-  if (domainLower.includes('medical') || domainLower.includes('healthcare')) {
+  if (
+    domainLower.includes('medical') ||
+    domainLower.includes('healthcare') ||
+    domainLower.includes('health')
+  ) {
     if (!recommendations.includes('Template/Fill-in')) recommendations.push('Template/Fill-in')
     if (!recommendations.includes('Analytical')) recommendations.push('Analytical')
   }
 
-  if (domainLower.includes('education') || domainLower.includes('teaching')) {
+  if (
+    domainLower.includes('education') ||
+    domainLower.includes('teaching') ||
+    domainLower.includes('training') ||
+    domainLower.includes('learning')
+  ) {
     if (!recommendations.includes('Few-Shot')) recommendations.push('Few-Shot')
     if (!recommendations.includes('Generative')) recommendations.push('Generative')
   }
 
-  if (domainLower.includes('legal') || domainLower.includes('compliance')) {
+  if (
+    domainLower.includes('legal') ||
+    domainLower.includes('compliance') ||
+    domainLower.includes('law')
+  ) {
     if (!recommendations.includes('Constraint-Based')) recommendations.push('Constraint-Based')
     if (!recommendations.includes('Template/Fill-in')) recommendations.push('Template/Fill-in')
+  }
+
+  if (
+    domainLower.includes('business') ||
+    domainLower.includes('strategy') ||
+    domainLower.includes('marketing') ||
+    domainLower.includes('sales')
+  ) {
+    if (!recommendations.includes('Role-Based')) recommendations.push('Role-Based')
+    if (!recommendations.includes('Generative')) recommendations.push('Generative')
+  }
+
+  if (
+    domainLower.includes('writing') ||
+    domainLower.includes('content') ||
+    domainLower.includes('creative') ||
+    domainLower.includes('design')
+  ) {
+    if (!recommendations.includes('Generative')) recommendations.push('Generative')
+    if (!recommendations.includes('Role-Based')) recommendations.push('Role-Based')
+  }
+
+  if (
+    domainLower.includes('data') ||
+    domainLower.includes('analysis') ||
+    domainLower.includes('research')
+  ) {
+    if (!recommendations.includes('Analytical')) recommendations.push('Analytical')
+    if (!recommendations.includes('Chain-of-Thought')) recommendations.push('Chain-of-Thought')
+  }
+
+  // If still no recommendations, provide defaults based on what we have
+  if (recommendations.length === 0) {
+    if (domain) {
+      // Domain provided but no matches - return general defaults
+      return ['Role-Based', 'Chain-of-Thought', 'Analytical']
+    }
+    if (targetOutcome) {
+      // Target outcome provided but no matches - return general defaults
+      return ['Role-Based', 'Chain-of-Thought', 'Generative']
+    }
   }
 
   // Remove duplicates and return
