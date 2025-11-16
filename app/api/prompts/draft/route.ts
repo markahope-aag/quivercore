@@ -143,7 +143,14 @@ Generate only the prompt text, no explanations or meta-commentary.`
       throw error
     }
   } catch (error: unknown) {
-    return handleError(error)
+    const appError = handleError(error)
+    return NextResponse.json(
+      {
+        error: appError.message,
+        code: appError.code,
+      },
+      { status: appError.statusCode || 500 }
+    )
   }
 }
 
