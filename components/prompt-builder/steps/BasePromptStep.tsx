@@ -370,6 +370,8 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
           updateBaseConfig({ framework: framework as FrameworkType })
           clearErrors()
         }}
+        domain={state.baseConfig.domain}
+        targetOutcome={state.baseConfig.targetOutcome}
       />
     </div>
   )
