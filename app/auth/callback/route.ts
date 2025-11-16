@@ -34,7 +34,13 @@ export async function GET(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
             request.cookies.set(name, value)
-            response.cookies.set(name, value, options)
+            // Ensure cookies are set with proper options for cross-domain support
+            response.cookies.set(name, value, {
+              ...options,
+              path: '/',
+              sameSite: 'lax',
+              secure: requestUrl.protocol === 'https:',
+            })
           })
         },
       },
@@ -44,37 +50,59 @@ export async function GET(request: NextRequest) {
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)
       
       if (error) {
-        logger.error('OAuth callback error', error)
+        logger.error('OAuth callback error', { error: error.message, code: error.code })
         return NextResponse.redirect(
           new URL(`/login?error=${encodeURIComponent(error.message)}`, requestUrl.origin)
         )
       }
 
       if (!data.session) {
-        logger.error('OAuth callback: No session created')
+        logger.error('OAuth callback: No session created', { data })
         return NextResponse.redirect(
           new URL('/login?error=Failed to create session', requestUrl.origin)
         )
       }
 
-      // Verify user was created/retrieved
+      logger.info('OAuth callback: Session created', { 
+        sessionId: data.session.access_token?.substring(0, 20),
+        userId: data.user?.id 
+      })
+
+      // Verify user was created/retrieved after session exchange
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       
       if (userError || !user) {
-        logger.error('OAuth callback: Failed to get user', userError)
+        logger.error('OAuth callback: Failed to get user after session exchange', { 
+          error: userError?.message,
+          hasSession: !!data.session 
+        })
         return NextResponse.redirect(
           new URL('/login?error=Failed to retrieve user', requestUrl.origin)
         )
       }
 
-      logger.info('OAuth callback: Successfully authenticated user', { userId: user.id })
+      logger.info('OAuth callback: Successfully authenticated user', { 
+        userId: user.id,
+        email: user.email 
+      })
+
+      // Ensure cookies are properly set before redirecting
+      // The cookies should already be set by the setAll callback, but let's verify
+      const allCookies = response.cookies.getAll()
+      logger.info('OAuth callback: Cookies in response', { 
+        cookieCount: allCookies.length,
+        cookieNames: allCookies.map(c => c.name)
+      })
 
       // Return response with cookies set
       return response
-    } catch (error) {
-      logger.error('OAuth callback exception', error)
+    } catch (error: any) {
+      logger.error('OAuth callback exception', { 
+        error: error?.message,
+        stack: error?.stack 
+      })
       return NextResponse.redirect(
-        new URL('/login?error=Authentication failed', requestUrl.origin)
+        new URL(`/login?error=${encodeURIComponent(error?.message || 'Authentication failed')}`, requestUrl.origin)
       )
     }
   }
