@@ -34,8 +34,8 @@ export default function BuilderPage() {
               onClick={() => setActiveView('builder')}
               className={`whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors ${
                 activeView === 'builder'
-                  ? 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                  : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:text-slate-300'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -54,8 +54,8 @@ export default function BuilderPage() {
               onClick={() => setActiveView('templates')}
               className={`whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium ${
                 activeView === 'templates'
-                  ? 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                  : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:text-slate-300'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -83,11 +83,11 @@ export default function BuilderPage() {
         </div>
 
         {/* Info Panel */}
-        <div className="mt-12 rounded-lg border border-indigo-200 bg-indigo-50 p-6 dark:border-indigo-800 dark:bg-indigo-900/20">
-          <h3 className="text-lg font-semibold text-indigo-900 dark:text-indigo-300">
+        <div className="mt-12 rounded-lg border border-blue-200 bg-blue-50 p-6 dark:border-blue-800 dark:bg-blue-900/20">
+          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-300">
             About the Prompt Builder
           </h3>
-          <div className="mt-4 space-y-3 text-sm text-indigo-700 dark:text-indigo-400">
+          <div className="mt-4 space-y-3 text-sm text-blue-700 dark:text-blue-400">
             <div className="flex items-start gap-3">
               <svg
                 className="mt-0.5 h-5 w-5 flex-shrink-0"
