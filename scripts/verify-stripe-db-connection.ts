@@ -105,13 +105,22 @@ async function verifyDatabaseConnection() {
       const dbAmount = (plan as any).price_monthly / 100 // Convert from cents
       const stripeAmount = stripePrice.unit_amount ? stripePrice.unit_amount / 100 : 0
 
+      // Check for overage price
+      const overagePriceId = (plan as any).stripe_price_id_overage
+      const overagePrice = overagePriceId
+        ? monthlyPrices.find((p) => p.id === overagePriceId)
+        : null
+
       if (dbAmount !== stripeAmount) {
         console.log(
           `⚠️  ${displayName}: Amount mismatch - DB: $${dbAmount}, Stripe: $${stripeAmount}`
         )
       } else {
+        const overageInfo = overagePrice
+          ? ` | Overage: ${overagePriceId} ($${overagePrice.unit_amount! / 100}/prompt)`
+          : ' | ⚠️  Overage price not configured'
         console.log(
-          `✅ ${displayName}: Connected to ${priceId} ($${stripeAmount}/month)`
+          `✅ ${displayName}: Subscription ${priceId} ($${stripeAmount}/month)${overageInfo}`
         )
       }
     }

@@ -35,6 +35,7 @@ export interface SubscriptionPlan {
   price_yearly: number | null // in cents
   stripe_price_id_monthly: string | null
   stripe_price_id_yearly: string | null
+  stripe_price_id_overage: string | null // Price ID for prompt overages
   features: SubscriptionFeatures
   is_active: boolean
   created_at: string

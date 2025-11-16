@@ -156,7 +156,11 @@ VALUES (
   features = EXCLUDED.features,
   updated_at = NOW();
 
--- Step 3: Update with Stripe Price IDs (from your actual Stripe account)
+-- Step 3: Add overage price ID column (if migration hasn't been run)
+ALTER TABLE subscription_plans
+ADD COLUMN IF NOT EXISTS stripe_price_id_overage TEXT;
+
+-- Step 4: Update with Stripe Subscription Price IDs
 UPDATE subscription_plans
 SET stripe_price_id_monthly = 'price_1STshaAjII6lIBnkmV4yR35n'
 WHERE name = 'explorer';
@@ -169,15 +173,32 @@ UPDATE subscription_plans
 SET stripe_price_id_monthly = 'price_1STslRAjII6lIBnkWxwAXEWJ'
 WHERE name = 'strategist';
 
--- Step 4: Verify everything
+-- Step 5: Update with Stripe Overage Price IDs
+UPDATE subscription_plans
+SET stripe_price_id_overage = 'price_1STsfkAjII6lIBnkpdiBfQRl'
+WHERE name = 'explorer';
+
+UPDATE subscription_plans
+SET stripe_price_id_overage = 'price_1STskXAjII6lIBnkTfNDe7TH'
+WHERE name = 'researcher';
+
+UPDATE subscription_plans
+SET stripe_price_id_overage = 'price_1STsn1AjII6lIBnk60vPpusj'
+WHERE name = 'strategist';
+
+-- Step 6: Verify everything
 SELECT 
   name, 
   display_name, 
-  price_monthly / 100.0 as price_dollars,
-  stripe_price_id_monthly,
+  price_monthly / 100.0 as subscription_price_dollars,
+  stripe_price_id_monthly as subscription_price_id,
+  stripe_price_id_overage as overage_price_id,
   CASE 
-    WHEN stripe_price_id_monthly IS NOT NULL THEN '✅ Configured'
-    ELSE '❌ Missing Price ID'
+    WHEN stripe_price_id_monthly IS NOT NULL AND stripe_price_id_overage IS NOT NULL 
+    THEN '✅ Complete'
+    WHEN stripe_price_id_monthly IS NOT NULL 
+    THEN '⚠️ Missing Overage'
+    ELSE '❌ Missing'
   END as status
 FROM subscription_plans
 WHERE name IN ('explorer', 'researcher', 'strategist')
