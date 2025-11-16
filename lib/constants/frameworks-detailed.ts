@@ -354,6 +354,19 @@ export function getRecommendedFrameworks(
     if (!recommendations.includes('Chain-of-Thought')) recommendations.push('Chain-of-Thought')
   }
 
+  // Consumer products and retail
+  if (
+    domainLower.includes('retail') ||
+    domainLower.includes('consumer') ||
+    domainLower.includes('product') ||
+    domainLower.includes('food') ||
+    domainLower.includes('beverage')
+  ) {
+    if (!recommendations.includes('Role-Based')) recommendations.push('Role-Based')
+    if (!recommendations.includes('Generative')) recommendations.push('Generative')
+    if (!recommendations.includes('Few-Shot')) recommendations.push('Few-Shot')
+  }
+
   // If still no recommendations, provide defaults based on what we have
   if (recommendations.length === 0) {
     if (domain) {
