@@ -67,7 +67,7 @@ export function PricingPageContent() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-3 max-w-6xl mx-auto">
+    <div className="grid gap-6 md:grid-cols-3 max-w-6xl mx-auto items-stretch">
       {plans.map((plan) => (
         <PricingCard key={plan.id} plan={plan} />
       ))}

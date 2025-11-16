@@ -117,7 +117,7 @@ export function PricingCard({ plan }: PricingCardProps) {
   const isPopular = plan.name === 'researcher'
 
   return (
-    <Card className={`relative flex flex-col ${isPopular ? 'border-primary shadow-lg scale-105' : ''}`}>
+    <Card className={`relative flex flex-col h-full ${isPopular ? 'border-primary shadow-lg scale-105' : ''}`}>
       {isPopular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <Badge className="bg-primary text-primary-foreground">
