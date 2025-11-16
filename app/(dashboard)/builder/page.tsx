@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { PromptBuilderProvider } from '@/contexts/PromptBuilderContext'
-import { PromptBuilder } from '@/components/prompt-builder/PromptBuilder'
+import { PromptBuilder } from '@/components/prompt-builder/PromptBuilder-v2'
 import { TemplateLibrary } from '@/components/prompt-builder/TemplateLibrary'
 import { motion } from 'framer-motion'
 import { Pencil, List, Check } from 'lucide-react'
