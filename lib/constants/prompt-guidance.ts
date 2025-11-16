@@ -170,6 +170,24 @@ export const PROMPT_GUIDANCE: Record<string, PromptGuidance> = {
       'Making the initial request too complex',
     ],
   },
+
+  Transformation: {
+    structure: 'Source Format + Target Format + Transformation Rules',
+    length: 'Medium (100-300 words)',
+    tips: [
+      'Clearly describe the source format',
+      'Specify the desired target format',
+      'List any transformation rules or constraints',
+      'Include examples if format is complex',
+    ],
+    example:
+      "Transform this customer feedback into a structured product requirements document. The feedback is in free-form text with complaints and suggestions. Convert it into: Problem Statement, User Impact, Proposed Solution, Priority Level (High/Medium/Low), and Estimated Effort. Maintain all specific details from the original feedback. Here's the feedback: [paste feedback here]",
+    avoid: [
+      'Not specifying the target format clearly',
+      'Losing important information during transformation',
+      'Being vague about transformation rules',
+    ],
+  },
 }
 
 /**
@@ -195,6 +213,8 @@ export function getPlaceholderText(framework?: FrameworkType | string): string {
       'Describe your goal, then list all constraints, requirements, and limitations that must be followed.',
     'Iterative/Multi-Turn':
       'Start with your initial request, provide context, and specify how you want to iterate and refine.',
+    Transformation:
+      'Describe the source format, specify the target format, and list any transformation rules or constraints.',
   }
 
   return (
