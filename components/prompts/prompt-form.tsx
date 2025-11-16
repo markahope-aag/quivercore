@@ -51,9 +51,10 @@ type PromptFormValues = z.infer<typeof promptFormSchema>
 
 interface PromptFormProps {
   prompt?: Prompt
+  isTemplate?: boolean
 }
 
-export function PromptForm({ prompt }: PromptFormProps) {
+export function PromptForm({ prompt, isTemplate }: PromptFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [detectedVariables, setDetectedVariables] = useState<string[]>([])
