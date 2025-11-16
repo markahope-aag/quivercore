@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { PricingCard } from './pricing-card'
+import { PricingCard } from './pricing-card-v2'
 import { PricingPageSkeleton } from './pricing-page-skeleton'
 import { SubscriptionPlan } from '@/lib/types/subscriptions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -67,9 +67,9 @@ export function PricingPageContent() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-3 max-w-6xl mx-auto items-stretch">
-      {plans.map((plan) => (
-        <PricingCard key={plan.id} plan={plan} />
+    <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto items-stretch">
+      {plans.map((plan, index) => (
+        <PricingCard key={plan.id} plan={plan} index={index} />
       ))}
     </div>
   )

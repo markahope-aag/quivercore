@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Quiver (Arrow Container) - vertical lines -->
+  <path d="M50 20 L50 80 M40 25 L40 75 M60 25 L60 75"
+        stroke="#6366f1"
+        stroke-width="5"
+        stroke-linecap="round"/>
+
+  <!-- Arrow 1 - center, tallest -->
+  <g>
+    <path d="M50 25 L50 60 M42 52 L50 60 L58 52"
+          stroke="#8b5cf6"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"/>
+  </g>
+
+  <!-- Arrow 2 - left -->
+  <g>
+    <path d="M40 30 L40 58 M34 50 L40 58 L46 50"
+          stroke="#a78bfa"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"/>
+  </g>
+
+  <!-- Arrow 3 - right -->
+  <g>
+    <path d="M60 28 L60 60 M54 52 L60 60 L66 52"
+          stroke="#c4b5fd"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"/>
+  </g>
+
+  <!-- AI sparkle at top center -->
+  <circle cx="50" cy="15" r="4" fill="#6366f1"/>
+  <path d="M50 8 L50 22 M43 15 L57 15"
+        stroke="#6366f1"
+        stroke-width="2"
+        stroke-linecap="round"/>
+</svg>

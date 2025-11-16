@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Plus, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -23,32 +24,41 @@ export function TopNav() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-14 items-center">
+    <header className="sticky top-0 z-50 w-full border-b border-[rgb(var(--legacy-grey))]/10 bg-background/95 backdrop-blur-sm">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center">
         {/* Logo/Brand */}
         <div className="mr-8">
-          <Link href="/prompts" className="flex items-center space-x-2">
-            <span className="font-bold text-xl">QuiverCore</span>
+          <Link href="/prompts" className="flex items-center space-x-3 group">
+            <Image
+              src="/logo.svg"
+              alt="QuiverCore Logo"
+              width={32}
+              height={32}
+              className="h-8 w-8"
+            />
+            <span className="font-bold text-xl text-[rgb(var(--graphite))] dark:text-white tracking-tight">
+              QuiverCore
+            </span>
           </Link>
         </div>
 
         {/* Main Navigation */}
-        <nav className="flex items-center space-x-6 text-sm font-medium flex-1">
+        <nav className="flex items-center space-x-1 text-sm font-medium flex-1">
           <Link
             href="/prompts"
-            className="transition-colors hover:text-foreground/80 text-foreground"
+            className="px-4 py-2 rounded-sm transition-colors hover:bg-[rgb(var(--gold))]/10 text-[rgb(var(--legacy-grey))] hover:text-[rgb(var(--graphite))] dark:hover:text-white"
           >
             Prompts
           </Link>
           <Link
             href="/builder"
-            className="transition-colors hover:text-foreground/80 text-foreground"
+            className="px-4 py-2 rounded-sm transition-colors hover:bg-[rgb(var(--gold))]/10 text-[rgb(var(--legacy-grey))] hover:text-[rgb(var(--graphite))] dark:hover:text-white"
           >
             Builder
           </Link>
           <Link
             href="/pricing"
-            className="transition-colors hover:text-foreground/80 text-foreground"
+            className="px-4 py-2 rounded-sm transition-colors hover:bg-[rgb(var(--gold))]/10 text-[rgb(var(--legacy-grey))] hover:text-[rgb(var(--graphite))] dark:hover:text-white"
           >
             Pricing
           </Link>

@@ -74,7 +74,7 @@ export const PromptCard = memo(function PromptCard({ prompt }: PromptCardProps) 
   }
 
   return (
-    <Card className="flex flex-col hover:shadow-lg transition-shadow">
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -94,7 +94,7 @@ export const PromptCard = memo(function PromptCard({ prompt }: PromptCardProps) 
             className="flex-shrink-0"
           >
             <Star
-              className={`h-4 w-4 ${isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
+              className={`h-4 w-4 ${isFavorite ? 'fill-[rgb(var(--gold))] text-[rgb(var(--gold))]' : ''}`}
             />
           </Button>
         </div>
@@ -104,13 +104,13 @@ export const PromptCard = memo(function PromptCard({ prompt }: PromptCardProps) 
           {(prompt.use_case || prompt.framework || prompt.enhancement_technique) && (
             <div className="flex flex-wrap gap-2">
               {prompt.use_case && (
-                <Badge variant="default" className="bg-blue-500">{sanitizeForDisplay(prompt.use_case)}</Badge>
+                <Badge variant="default" className="bg-[rgb(var(--legacy-blue))]">{sanitizeForDisplay(prompt.use_case)}</Badge>
               )}
               {prompt.framework && (
-                <Badge variant="default" className="bg-purple-500">{sanitizeForDisplay(prompt.framework)}</Badge>
+                <Badge variant="default" className="bg-[rgb(var(--gold))] text-[rgb(var(--graphite))]">{sanitizeForDisplay(prompt.framework)}</Badge>
               )}
               {prompt.enhancement_technique && (
-                <Badge variant="default" className="bg-green-600">{sanitizeForDisplay(prompt.enhancement_technique)}</Badge>
+                <Badge variant="default" className="bg-[rgb(var(--legacy-grey))]">{sanitizeForDisplay(prompt.enhancement_technique)}</Badge>
               )}
             </div>
           )}

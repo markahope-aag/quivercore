@@ -1,0 +1,93 @@
+/**
+ * Professional Input Component with Floating Labels
+ * Enterprise-grade input with proper focus states and validation
+ */
+
+'use client'
+
+import * as React from 'react'
+import { cn } from '@/lib/utils/cn'
+
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string
+  error?: string
+  helperText?: string
+  leftIcon?: React.ReactNode
+  rightIcon?: React.ReactNode
+}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, label, error, helperText, leftIcon, rightIcon, ...props }, ref) => {
+    const [focused, setFocused] = React.useState(false)
+    const hasValue = Boolean(props.value || props.defaultValue)
+
+    return (
+      <div className="w-full">
+        <div className="relative">
+          {leftIcon && (
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              {leftIcon}
+            </div>
+          )}
+          <input
+            type={type}
+            className={cn(
+              'peer h-11 w-full rounded-lg border bg-white px-4 py-2.5 text-sm',
+              'transition-all duration-200',
+              'placeholder:text-transparent',
+              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0',
+              'disabled:cursor-not-allowed disabled:opacity-50',
+              leftIcon && 'pl-10',
+              rightIcon && 'pr-10',
+              error
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                : 'border-slate-300 focus:border-blue-500',
+              'dark:bg-slate-800 dark:border-slate-700 dark:text-white',
+              className
+            )}
+            ref={ref}
+            onFocus={(e) => {
+              setFocused(true)
+              props.onFocus?.(e)
+            }}
+            onBlur={(e) => {
+              setFocused(false)
+              props.onBlur?.(e)
+            }}
+            {...props}
+          />
+          {label && (
+            <label
+              className={cn(
+                'absolute left-4 top-1/2 -translate-y-1/2 text-sm transition-all duration-200',
+                'pointer-events-none',
+                focused || hasValue
+                  ? 'top-2.5 -translate-y-0 text-xs text-blue-600 dark:text-blue-400'
+                  : 'text-slate-500',
+                leftIcon && 'left-10',
+                error && 'text-red-600 dark:text-red-400'
+              )}
+            >
+              {label}
+            </label>
+          )}
+          {rightIcon && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+              {rightIcon}
+            </div>
+          )}
+        </div>
+        {error && (
+          <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>
+        )}
+        {helperText && !error && (
+          <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{helperText}</p>
+        )}
+      </div>
+    )
+  }
+)
+Input.displayName = 'Input'
+
+export { Input }
+

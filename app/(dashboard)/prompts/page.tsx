@@ -104,12 +104,12 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
     const hasPrevPage = page > 1
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
+    <div className="space-y-8">
+      <div className="space-y-2">
+        <h1 className="text-4xl font-bold tracking-tight text-[rgb(var(--graphite))] dark:text-white">
           {favorite ? 'Favorite Prompts' : recent ? 'Recent Prompts' : 'All Prompts'}
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-lg text-[rgb(var(--legacy-grey))]">
           {totalPrompts} prompt{totalPrompts !== 1 ? 's' : ''}
           {searchQuery && ` matching "${searchQuery}"`}
         </p>

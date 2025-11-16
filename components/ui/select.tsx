@@ -37,7 +37,40 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        // Base - sophisticated select
+        "flex w-fit items-center justify-between gap-3 rounded-sm border bg-white px-4 py-2.5 text-sm font-normal whitespace-nowrap shadow-sm transition-all outline-none",
+        "dark:bg-[rgb(var(--graphite))] dark:border-[rgb(var(--legacy-grey))]/20",
+
+        // Border
+        "border-[rgb(var(--legacy-grey))]/20",
+
+        // Typography
+        "text-[rgb(var(--graphite))] dark:text-white",
+        "data-[placeholder]:text-[rgb(var(--legacy-grey))]/50",
+
+        // Focus state - gold accent
+        "focus:border-[rgb(var(--gold))] focus:ring-1 focus:ring-[rgb(var(--gold))]/20",
+        "focus:shadow-[0_0_0_3px_rgba(184,151,89,0.08)]",
+
+        // Hover
+        "hover:border-[rgb(var(--legacy-grey))]/40 dark:hover:bg-[rgb(var(--graphite))]/80",
+
+        // Disabled
+        "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted",
+
+        // Sizes
+        "data-[size=default]:h-11 data-[size=sm]:h-9",
+
+        // Icons & SVG
+        "[&_svg:not([class*='text-'])]:text-[rgb(var(--legacy-grey))]",
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+
+        // Value display
+        "*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2",
+
+        // Invalid state
+        "aria-invalid:border-[rgb(var(--legacy-red))] aria-invalid:ring-[rgb(var(--legacy-red))]/20",
+
         className
       )}
       {...props}

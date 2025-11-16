@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,10 +49,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="relative flex min-h-screen items-center justify-center p-4 bg-background">
+      {/* Clean, minimal background */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-white via-[rgb(var(--legacy-grey))]/5 to-white dark:from-[rgb(var(--graphite))] dark:via-[rgb(var(--graphite))] dark:to-[rgb(var(--graphite))]/95" />
+        {/* Subtle grid overlay for depth */}
+        <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]" style={{backgroundImage: 'linear-gradient(rgba(102,102,102,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(102,102,102,0.1) 1px, transparent 1px)', backgroundSize: '50px 50px'}} />
+      </div>
+
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Sign In</CardTitle>
+        <CardHeader className="text-center space-y-2">
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/logo.svg"
+              alt="QuiverCore Logo"
+              width={64}
+              height={64}
+              className="h-16 w-16"
+            />
+          </div>
+          <CardTitle className="text-2xl">Welcome Back</CardTitle>
           <CardDescription>Enter your credentials to access QuiverCore</CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
