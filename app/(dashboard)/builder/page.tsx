@@ -4,29 +4,35 @@ import { useState } from 'react'
 import { PromptBuilderProvider } from '@/contexts/PromptBuilderContext'
 import { PromptBuilder } from '@/components/prompt-builder/PromptBuilder'
 import { TemplateLibrary } from '@/components/prompt-builder/TemplateLibrary'
+import { motion } from 'framer-motion'
 
 export default function BuilderPage() {
   const [activeView, setActiveView] = useState<'builder' | 'templates'>('builder')
 
   return (
     <PromptBuilderProvider>
-      <div className="container mx-auto px-4 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-8"
+      >
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
             AI Prompt Builder
           </h1>
-          <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">
+          <p className="text-lg text-slate-600 dark:text-slate-400">
             Create enhanced prompts with Verbalized Sampling and framework-based patterns
           </p>
         </div>
 
         {/* View Tabs */}
-        <div className="mb-8 border-b border-gray-200 dark:border-gray-700">
+        <div className="border-b border-slate-200 dark:border-slate-700">
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">
             <button
               onClick={() => setActiveView('builder')}
-              className={`whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium ${
+              className={`whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors ${
                 activeView === 'builder'
                   ? 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
                   : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
@@ -160,7 +166,7 @@ export default function BuilderPage() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </PromptBuilderProvider>
   )
 }

@@ -88,12 +88,12 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
       logger.error('Error fetching prompts', error)
       return (
         <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">All Prompts</h1>
-            <p className="text-muted-foreground text-destructive">
-              Error loading prompts: {error.message}
-            </p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">All Prompts</h1>
+          <p className="text-red-600 dark:text-red-400">
+            Error loading prompts: {error.message}
+          </p>
+        </div>
         </div>
       )
     }
@@ -106,10 +106,10 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight text-[rgb(var(--graphite))] dark:text-white">
+        <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
           {favorite ? 'Favorite Prompts' : recent ? 'Recent Prompts' : 'All Prompts'}
         </h1>
-        <p className="text-lg text-[rgb(var(--legacy-grey))]">
+        <p className="text-lg text-slate-600 dark:text-slate-400">
           {totalPrompts} prompt{totalPrompts !== 1 ? 's' : ''}
           {searchQuery && ` matching "${searchQuery}"`}
         </p>
@@ -145,8 +145,8 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">All Prompts</h1>
-          <p className="text-muted-foreground text-destructive">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">All Prompts</h1>
+          <p className="text-red-600 dark:text-red-400">
             An error occurred: {errorMessage}
           </p>
         </div>
