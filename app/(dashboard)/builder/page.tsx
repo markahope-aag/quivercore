@@ -5,6 +5,7 @@ import { PromptBuilderProvider } from '@/contexts/PromptBuilderContext'
 import { PromptBuilder } from '@/components/prompt-builder/PromptBuilder'
 import { TemplateLibrary } from '@/components/prompt-builder/TemplateLibrary'
 import { motion } from 'framer-motion'
+import { Pencil, List, Check } from 'lucide-react'
 
 export default function BuilderPage() {
   const [activeView, setActiveView] = useState<'builder' | 'templates'>('builder')
@@ -39,14 +40,7 @@ export default function BuilderPage() {
               }`}
             >
               <div className="flex items-center gap-2">
-                <svg
-                  className="h-5 w-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                </svg>
+                <Pencil className="h-5 w-5" />
                 Prompt Builder
               </div>
             </button>
@@ -59,18 +53,7 @@ export default function BuilderPage() {
               }`}
             >
               <div className="flex items-center gap-2">
-                <svg
-                  className="h-5 w-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <List className="h-5 w-5" />
                 Template Library
               </div>
             </button>
@@ -89,18 +72,7 @@ export default function BuilderPage() {
           </h3>
           <div className="mt-4 space-y-3 text-sm text-blue-700 dark:text-blue-400">
             <div className="flex items-start gap-3">
-              <svg
-                className="mt-0.5 h-5 w-5 flex-shrink-0"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Check className="mt-0.5 h-5 w-5 flex-shrink-0" />
               <div>
                 <strong>10 Framework Patterns:</strong> Choose from Role-Based, Few-Shot,
                 Chain-of-Thought, Template/Fill-in, Constraint-Based, Iterative/Multi-Turn,
@@ -108,18 +80,7 @@ export default function BuilderPage() {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <svg
-                className="mt-0.5 h-5 w-5 flex-shrink-0"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Check className="mt-0.5 h-5 w-5 flex-shrink-0" />
               <div>
                 <strong>Verbalized Sampling:</strong> Generate diverse, probability-weighted
                 responses using three distribution types: Broad Spectrum (mix of common to rare),
@@ -128,36 +89,14 @@ export default function BuilderPage() {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <svg
-                className="mt-0.5 h-5 w-5 flex-shrink-0"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Check className="mt-0.5 h-5 w-5 flex-shrink-0" />
               <div>
                 <strong>Save & Export:</strong> Save your prompts as reusable templates and export
                 in JSON, Text, Markdown, or CSV formats for easy sharing and integration.
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <svg
-                className="mt-0.5 h-5 w-5 flex-shrink-0"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Check className="mt-0.5 h-5 w-5 flex-shrink-0" />
               <div>
                 <strong>Claude API Integration:</strong> Execute prompts directly using the Claude
                 API to test and validate your creations with built-in rate limiting and error
