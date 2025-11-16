@@ -13,7 +13,7 @@ import { VSEnhancementStep } from './steps/VSEnhancementStep'
 import { AdvancedEnhancementsStep } from './steps/AdvancedEnhancementsStep'
 import { PreviewExecuteStep } from './steps/PreviewExecuteStep'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, ChevronRight, Sparkles } from 'lucide-react'
+import { Check, ChevronRight, FileText, Settings, Zap, Sliders, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Card } from '@/components/ui/card-v2'
 
@@ -22,31 +22,31 @@ const STEPS: { id: BuilderStep; label: string; description: string; icon: React.
     id: 'base',
     label: 'Base Prompt',
     description: 'Define your prompt foundation',
-    icon: Sparkles,
+    icon: FileText,
   },
   {
     id: 'framework',
     label: 'Framework',
     description: 'Configure framework options',
-    icon: Sparkles,
+    icon: Settings,
   },
   {
     id: 'enhancement',
     label: 'VS Enhancement',
     description: 'Add Verbalized Sampling',
-    icon: Sparkles,
+    icon: Zap,
   },
   {
     id: 'advanced',
     label: 'Advanced',
     description: 'Fine-tune enhancements',
-    icon: Sparkles,
+    icon: Sliders,
   },
   {
     id: 'preview',
     label: 'Preview & Execute',
     description: 'Review and run your prompt',
-    icon: Sparkles,
+    icon: Eye,
   },
 ]
 
@@ -112,7 +112,7 @@ export function PromptBuilder() {
   return (
     <div className="space-y-8">
       {/* Progress Indicator */}
-      <Card className="border-slate-200 bg-white p-8 shadow-xl rounded-xl dark:border-slate-800 dark:bg-slate-900">
+      <Card className="border-slate-200 bg-white p-6 shadow-xl rounded-xl dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center justify-between">
           {STEPS.map((step, index) => {
             const Icon = step.icon
@@ -127,7 +127,7 @@ export function PromptBuilder() {
                   <button
                     onClick={() => setStep(step.id)}
                     className={cn(
-                      'relative flex h-20 w-20 items-center justify-center rounded-full transition-all duration-200 shadow-md',
+                      'relative flex h-16 w-16 items-center justify-center rounded-full transition-all duration-200 shadow-md',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
                       'hover:scale-105',
                       isActive
@@ -139,11 +139,11 @@ export function PromptBuilder() {
                     aria-label={`Go to ${step.label} step`}
                   >
                     {isCompleted ? (
-                      <Check className="h-8 w-8" />
+                      <Check className="h-6 w-6" />
                     ) : (
                       <Icon
                         className={cn(
-                          'h-8 w-8',
+                          'h-6 w-6',
                           isActive ? '' : ''
                         )}
                       />
@@ -180,7 +180,7 @@ export function PromptBuilder() {
 
                 {/* Connector Line */}
                 {index < STEPS.length - 1 && (
-                  <div className="mx-6 flex-1 h-1 relative -mt-10">
+                  <div className="mx-6 flex-1 h-0.5 relative -mt-8">
                     <div
                       className={cn(
                         'absolute inset-0 rounded-full transition-all duration-300',
@@ -198,7 +198,7 @@ export function PromptBuilder() {
       </Card>
 
       {/* Step Content */}
-      <Card className="border-slate-200 bg-white p-8 shadow-xl rounded-xl dark:border-slate-800 dark:bg-slate-900">
+      <Card className="border border-slate-200 bg-white p-8 shadow-sm rounded-xl dark:border-slate-800 dark:bg-slate-900">
         <AnimatePresence mode="wait">
           <motion.div
             key={state.currentStep}

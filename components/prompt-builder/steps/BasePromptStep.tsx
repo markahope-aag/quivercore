@@ -47,7 +47,7 @@ export function BasePromptStep() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Section Header */}
       <div className="mb-12 border-b border-slate-200 pb-6 dark:border-slate-800">
         <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Prompt Configuration</h3>
@@ -55,8 +55,37 @@ export function BasePromptStep() {
           Define the foundation of your prompt by selecting a domain and framework, then providing your core instructions.
         </p>
       </div>
+
+      {/* Target Outcome - MOVED FIRST */}
+      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="mb-4">
+          <label className="text-sm font-semibold text-slate-900 dark:text-white">
+            Target Outcome <span className="text-slate-400 font-normal">(Optional)</span>
+          </label>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Start by defining what you want to achieve - this helps guide the rest of your prompt creation
+          </p>
+        </div>
+        <Textarea
+          id="targetOutcome"
+          label="What do you want to achieve?"
+          value={state.baseConfig.targetOutcome}
+          onChange={handleTargetOutcomeChange}
+          placeholder="Describe the desired outcome or response format. For example: 'A structured JSON object with...' or 'A markdown document with sections for...'"
+          className="min-h-[160px] rounded-lg"
+        />
+      </div>
+
       {/* Domain Category */}
-      <div className="space-y-3">
+      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="mb-4">
+          <label className="text-sm font-semibold text-slate-900 dark:text-white">
+            Domain Category <span className="text-slate-400 font-normal">(Optional)</span>
+          </label>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Choose the domain that best describes your use case
+          </p>
+        </div>
         <Select
           value={state.baseConfig.domain || undefined}
           onValueChange={(value) => {
@@ -75,13 +104,18 @@ export function BasePromptStep() {
             ))}
           </SelectContent>
         </Select>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Choose the domain that best describes your use case
-        </p>
       </div>
 
       {/* Framework Selection */}
-      <div className="space-y-3">
+      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="mb-4">
+          <label className="text-sm font-semibold text-slate-900 dark:text-white">
+            Framework <span className="text-red-500">*</span>
+          </label>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Select the prompt engineering pattern to use
+          </p>
+        </div>
         <Select
           value={state.baseConfig.framework || undefined}
           onValueChange={(value) => {
@@ -101,17 +135,22 @@ export function BasePromptStep() {
           </SelectContent>
         </Select>
         {state.errors.framework && (
-          <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">
             {state.errors.framework}
           </p>
         )}
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Select the prompt engineering pattern to use
-        </p>
       </div>
 
       {/* Base Prompt */}
-      <div className="space-y-3">
+      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="mb-4">
+          <label className="text-sm font-semibold text-slate-900 dark:text-white">
+            Base Prompt <span className="text-red-500">*</span>
+          </label>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Provide the main instructions for your prompt
+          </p>
+        </div>
         <Textarea
           id="basePrompt"
           label="Base Prompt"
@@ -121,10 +160,7 @@ export function BasePromptStep() {
           placeholder="Enter your core prompt instructions here. Be specific and clear about what you want the AI to do..."
           className="min-h-[160px] rounded-lg"
         />
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Provide the main instructions for your prompt
-          </p>
+        <div className="flex items-center justify-end mt-2">
           <span
             className={`text-xs text-slate-400 dark:text-slate-500 ${
               state.baseConfig.basePrompt.length > 45000
@@ -135,21 +171,6 @@ export function BasePromptStep() {
             {state.baseConfig.basePrompt.length.toLocaleString()} / 50,000
           </span>
         </div>
-      </div>
-
-      {/* Target Outcome */}
-      <div className="space-y-3">
-        <Textarea
-          id="targetOutcome"
-          label="Target Outcome (Optional)"
-          value={state.baseConfig.targetOutcome}
-          onChange={handleTargetOutcomeChange}
-          placeholder="Describe the desired outcome or response format. For example: 'A structured JSON object with...' or 'A markdown document with sections for...'"
-          className="min-h-[160px] rounded-lg"
-        />
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Optional: Describe what you want the AI to produce
-        </p>
       </div>
 
       {/* Helpful Tips */}
