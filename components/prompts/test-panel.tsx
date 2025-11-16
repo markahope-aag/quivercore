@@ -1,9 +1,20 @@
 'use client'
 
+/**
+ * Test Panel Component
+ * 
+ * Functional testing interface - focused solely on execution:
+ * - Template variables input
+ * - Model selection
+ * - Execute/test functionality
+ * 
+ * NOTE: Metadata (difficulty, ratings, reviews, guidance) belongs on the
+ * template detail/browse page, not in this functional testing panel.
+ */
+
 import { useState } from 'react'
 import { Button } from '@/components/ui/button-v2'
 import { Input } from '@/components/ui/input-v2'
-import { Textarea } from '@/components/ui/textarea-v2'
 import {
   Select,
   SelectContent,
@@ -59,6 +70,7 @@ export function TestPanel({ prompt }: TestPanelProps) {
 
   return (
     <div className="space-y-6">
+      {/* Template Variables */}
       {prompt.variables && Object.keys(prompt.variables).length > 0 && (
         <div className="space-y-4">
           <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Template Variables</h4>
@@ -81,9 +93,10 @@ export function TestPanel({ prompt }: TestPanelProps) {
         </div>
       )}
 
+      {/* Model Selection */}
       <div className="space-y-2">
         <label htmlFor="model" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-          Model
+          AI Model
         </label>
         <Select value={model} onValueChange={setModel}>
           <SelectTrigger id="model" className="h-12 border-2 border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-slate-600">
@@ -99,6 +112,7 @@ export function TestPanel({ prompt }: TestPanelProps) {
         </Select>
       </div>
 
+      {/* Execute Button */}
       <Button 
         onClick={handleTest} 
         disabled={isLoading} 

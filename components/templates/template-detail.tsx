@@ -1,5 +1,19 @@
 'use client'
 
+/**
+ * Template Detail Component
+ * 
+ * Comprehensive template browsing/discovery page with rich metadata:
+ * - Tags, difficulty, ratings, reviews
+ * - Usage guidance and best practices
+ * - Enhancement recommendations
+ * - Related templates
+ * - User reviews and ratings
+ * 
+ * This is for browsing the template library and deciding which template to use.
+ * For functional testing, see TestPanel component.
+ */
+
 import { useState } from 'react'
 import Link from 'next/link'
 import { 
