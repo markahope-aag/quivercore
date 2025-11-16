@@ -88,7 +88,7 @@ export const PROMPT_GUIDANCE: Record<string, PromptGuidance> = {
       'Provide all relevant data points',
       'List factors you want analyzed',
       'Be specific about the type of analysis',
-      'Include what decision you're trying to make',
+      "Include what decision you're trying to make",
     ],
     example:
       'Analyze whether we should expand our subscription box service from monthly to weekly deliveries. Current data: 2,500 monthly subscribers at $39/box, 15% churn rate, $18 cost per box, 85% customer satisfaction. Survey showed 40% interest in weekly option at $22/box. Consider: operational complexity (we\'d need 4x inventory), customer lifetime value changes, market positioning vs. competitors, and cash flow impact. Structure your analysis around financial, operational, and strategic factors.',
