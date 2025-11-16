@@ -106,9 +106,14 @@ function formatAdvancedEnhancementDetails(enhancements: AdvancedEnhancements): s
 export function PreviewExecuteStep() {
   const { state, generatePrompt, executePrompt, saveTemplate, setError, setModel } = usePromptBuilder()
   const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [showSaveToLibraryDialog, setShowSaveToLibraryDialog] = useState(false)
   const [templateName, setTemplateName] = useState('')
   const [templateDescription, setTemplateDescription] = useState('')
   const [templateTags, setTemplateTags] = useState('')
+  const [libraryTitle, setLibraryTitle] = useState('')
+  const [libraryDescription, setLibraryDescription] = useState('')
+  const [libraryTags, setLibraryTags] = useState('')
+  const [isSavingToLibrary, setIsSavingToLibrary] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const enabledAdvancedEnhancements = getEnabledAdvancedEnhancements(state.advancedEnhancements)
@@ -169,6 +174,69 @@ export function PreviewExecuteStep() {
     setTemplateName('')
     setTemplateDescription('')
     setTemplateTags('')
+  }
+
+  const handleSaveToLibrary = async () => {
+    if (!libraryTitle.trim()) {
+      setError('library', 'Title is required')
+      return
+    }
+
+    if (!state.generatedPrompt) {
+      setError('library', 'No prompt generated')
+      return
+    }
+
+    setIsSavingToLibrary(true)
+
+    try {
+      const tags = libraryTags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0)
+
+      // Format the full prompt content (system + user)
+      const fullPrompt = `${state.generatedPrompt.systemPrompt}\n\n---\n\n${state.generatedPrompt.finalPrompt}`
+
+      const response = await fetch('/api/prompts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: libraryTitle,
+          content: fullPrompt,
+          description: libraryDescription || null,
+          use_case: state.baseConfig.domain || null,
+          framework: state.baseConfig.framework || null,
+          enhancement_technique: state.vsEnhancement.enabled
+            ? `VS: ${state.vsEnhancement.distributionType}`
+            : (enabledAdvancedEnhancements.length > 0
+                ? enabledAdvancedEnhancements.join(', ')
+                : null),
+          tags: tags.length > 0 ? tags : null,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(errorData.error || `HTTP error: ${response.status}`)
+      }
+
+      // Success - close dialog and reset form
+      setShowSaveToLibraryDialog(false)
+      setLibraryTitle('')
+      setLibraryDescription('')
+      setLibraryTags('')
+
+      // Show success message (you could add a toast notification here)
+      alert('Prompt saved to library successfully!')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save to library'
+      setError('library', errorMessage)
+    } finally {
+      setIsSavingToLibrary(false)
+    }
   }
 
   if (!state.generatedPrompt) {
@@ -331,6 +399,21 @@ export function PreviewExecuteStep() {
             <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
           </svg>
           Save as Template
+        </button>
+
+        <button
+          onClick={() => setShowSaveToLibraryDialog(true)}
+          className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
+        >
+          <svg
+            className="h-4 w-4"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z" />
+          </svg>
+          Save to Library
         </button>
       </div>
 
@@ -650,6 +733,106 @@ export function PreviewExecuteStep() {
                 className="flex-1 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
               >
                 Save Template
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save to Library Dialog */}
+      {showSaveToLibraryDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 dark:bg-gray-800">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Save to Prompt Library</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Save this prompt to your database library for reuse across your account
+            </p>
+
+            <div className="mt-4 space-y-4">
+              <div>
+                <label
+                  htmlFor="libraryTitle"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Title *
+                </label>
+                <input
+                  type="text"
+                  id="libraryTitle"
+                  value={libraryTitle}
+                  onChange={(e) => setLibraryTitle(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+                  placeholder="My Awesome Prompt"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="libraryDescription"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Description
+                </label>
+                <textarea
+                  id="libraryDescription"
+                  value={libraryDescription}
+                  onChange={(e) => setLibraryDescription(e.target.value)}
+                  rows={3}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+                  placeholder="Describe what this prompt does..."
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="libraryTags"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Tags (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  id="libraryTags"
+                  value={libraryTags}
+                  onChange={(e) => setLibraryTags(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+                  placeholder="writing, creative, blog"
+                />
+              </div>
+
+              <div className="rounded-md bg-blue-50 p-3 dark:bg-blue-900/20">
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  <strong>Auto-filled:</strong> Domain: {state.baseConfig.domain || 'None'},
+                  Framework: {state.baseConfig.framework || 'None'},
+                  Enhancements: {state.vsEnhancement.enabled ? `VS (${state.vsEnhancement.distributionType})` : 'None'}
+                  {enabledAdvancedEnhancements.length > 0 && `, ${enabledAdvancedEnhancements.join(', ')}`}
+                </p>
+              </div>
+
+              {state.errors.library && (
+                <p className="text-sm text-red-600 dark:text-red-400">{state.errors.library}</p>
+              )}
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => {
+                  setShowSaveToLibraryDialog(false)
+                  setLibraryTitle('')
+                  setLibraryDescription('')
+                  setLibraryTags('')
+                }}
+                className="flex-1 rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                disabled={isSavingToLibrary}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveToLibrary}
+                disabled={isSavingToLibrary}
+                className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSavingToLibrary ? 'Saving...' : 'Save to Library'}
               </button>
             </div>
           </div>
