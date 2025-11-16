@@ -18,7 +18,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card-v2'
 import { Badge } from '@/components/ui/badge-v2'
 import { Button } from '@/components/ui/button-v2'
-import { Info, HelpCircle, Sparkles, CheckCircle, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { Info, HelpCircle, Sparkles, CheckCircle, X, ChevronDown, ChevronUp, Wand2, XCircle } from 'lucide-react'
 import { StepHeader } from './StepHeader'
 import { FrameworkGuideModal } from '../FrameworkGuideModal'
 import { cn } from '@/lib/utils'
@@ -35,6 +35,10 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
   const { state, updateBaseConfig, setError, clearErrors } = usePromptBuilder()
   const [showFrameworkGuide, setShowFrameworkGuide] = useState(false)
   const [showPromptTips, setShowPromptTips] = useState(false)
+  const [isGeneratingDraft, setIsGeneratingDraft] = useState(false)
+  const [isDraftGenerated, setIsDraftGenerated] = useState(false)
+  const [hasModifiedDraft, setHasModifiedDraft] = useState(false)
+  const [originalDraft, setOriginalDraft] = useState<string>('')
 
   // Get recommended frameworks based on domain and target outcome
   const recommendedFrameworks = getRecommendedFrameworks(
@@ -63,14 +67,75 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
 
 
   const handleBasePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    updateBaseConfig({ basePrompt: e.target.value })
-    if (e.target.value.trim()) {
+    const newValue = e.target.value
+    updateBaseConfig({ basePrompt: newValue })
+    if (newValue.trim()) {
       clearErrors()
+    }
+    // Track if user modified the draft
+    if (isDraftGenerated && newValue !== originalDraft) {
+      setHasModifiedDraft(true)
     }
   }
 
   const handleTargetOutcomeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     updateBaseConfig({ targetOutcome: e.target.value })
+  }
+
+  // Check if draft generation is available
+  const canGenerateDraft = useMemo(() => {
+    return (
+      state.baseConfig.targetOutcome.trim().length > 0 &&
+      state.baseConfig.framework &&
+      state.baseConfig.domain &&
+      (state.baseConfig.basePrompt.trim().length === 0 || state.baseConfig.basePrompt.length < 50)
+    )
+  }, [state.baseConfig.targetOutcome, state.baseConfig.framework, state.baseConfig.domain, state.baseConfig.basePrompt])
+
+  // Generate prompt draft
+  const generatePromptDraft = async () => {
+    if (!canGenerateDraft) return
+
+    setIsGeneratingDraft(true)
+    clearErrors()
+
+    try {
+      const response = await fetch('/api/prompts/draft', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          targetOutcome: state.baseConfig.targetOutcome,
+          domain: state.baseConfig.domain,
+          framework: state.baseConfig.framework,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(errorData.error || `HTTP error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      updateBaseConfig({ basePrompt: data.draft })
+      setIsDraftGenerated(true)
+      setHasModifiedDraft(false)
+      setOriginalDraft(data.draft)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate draft'
+      setError('basePrompt', errorMessage)
+    } finally {
+      setIsGeneratingDraft(false)
+    }
+  }
+
+  // Clear draft and start over
+  const clearDraft = () => {
+    updateBaseConfig({ basePrompt: '' })
+    setIsDraftGenerated(false)
+    setHasModifiedDraft(false)
+    setOriginalDraft('')
   }
 
   const validateStep = (): boolean => {
@@ -322,17 +387,31 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
               Provide your core instructions and context. This is the foundation of your prompt - be as detailed as necessary
             </p>
           </div>
-          {selectedFramework && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setShowPromptTips(!showPromptTips)}
-              className="text-xs border-2 border-blue-200 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-900/30"
-            >
-              <HelpCircle className="mr-1.5 h-3.5 w-3.5" />
-              {selectedFramework} Tips
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {canGenerateDraft && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={generatePromptDraft}
+                disabled={isGeneratingDraft}
+                className="text-xs border-2 border-purple-200 bg-purple-100 text-purple-700 hover:bg-purple-200 dark:border-purple-700 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+              >
+                <Wand2 className="mr-1.5 h-3.5 w-3.5" />
+                {isGeneratingDraft ? 'Generating...' : '✨ Generate Draft'}
+              </Button>
+            )}
+            {selectedFramework && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowPromptTips(!showPromptTips)}
+                className="text-xs border-2 border-blue-200 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-900/30"
+              >
+                <HelpCircle className="mr-1.5 h-3.5 w-3.5" />
+                {selectedFramework} Tips
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Framework-Specific Guidance */}
@@ -392,6 +471,27 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
           </div>
         )}
 
+        {/* Draft Helper Text */}
+        {isDraftGenerated && !hasModifiedDraft && (
+          <div className="bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-200 dark:border-purple-800 rounded-lg p-3 flex items-start justify-between gap-3">
+            <div className="flex items-start gap-2 flex-1">
+              <Info className="h-4 w-4 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-purple-700 dark:text-purple-300">
+                <strong>AI-generated draft:</strong> This is a starting point - customize it to fit your specific needs.
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearDraft}
+              className="text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-100 dark:text-purple-400 dark:hover:bg-purple-900/40"
+            >
+              <XCircle className="mr-1 h-3.5 w-3.5" />
+              Clear
+            </Button>
+          </div>
+        )}
+
         <Textarea
           id="basePrompt"
           label=""
@@ -399,9 +499,13 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
           onChange={handleBasePromptChange}
           error={state.errors.basePrompt}
           placeholder={placeholderText}
-          className={`min-h-[140px] bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 ${
-            state.errors.basePrompt ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''
-          }`}
+          className={cn(
+            'min-h-[140px] border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200',
+            isDraftGenerated && !hasModifiedDraft
+              ? 'bg-purple-50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-700'
+              : 'bg-slate-50 dark:bg-slate-900/50',
+            state.errors.basePrompt && 'border-red-300 focus:border-red-500 focus:ring-red-200'
+          )}
         />
 
         {/* Quality Feedback and Character Count */}
