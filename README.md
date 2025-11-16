@@ -121,6 +121,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 | `UPSTASH_REDIS_REST_TOKEN` | ⚠️ Optional | Upstash Redis authentication token (auto-injected) | Created automatically when you add Upstash Redis from Marketplace |
 | `KV_URL` | ⚠️ Optional | Vercel KV URL (auto-injected, if using Vercel KV) | Created automatically if using Vercel KV (now in Marketplace) |
 | `KV_REST_API_URL` | ⚠️ Optional | Vercel KV REST API URL (auto-injected, if using Vercel KV) | Created automatically if using Vercel KV (now in Marketplace) |
+| `RESEND_API_KEY` | ⚠️ Optional | Resend API key for email sending | [Resend Dashboard](https://resend.com/api-keys) → Create API Key |
+| `RESEND_FROM_EMAIL` | ⚠️ Optional | Default "from" email address | Your verified domain email (e.g., `noreply@yourdomain.com`) |
 
 **Security Note:** The `ANTHROPIC_API_KEY` is only used server-side and is never exposed to the browser. It's safe to add to Vercel environment variables.
 
