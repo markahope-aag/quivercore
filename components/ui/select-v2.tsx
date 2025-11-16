@@ -25,7 +25,9 @@ const SelectTrigger = React.forwardRef<
     className={cn(
       'flex h-12 w-full items-center justify-between rounded-lg border-2 border-slate-200 bg-white px-4 py-3 text-sm transition-all shadow-sm',
       'placeholder:text-slate-500',
-      'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 focus:border-blue-300 hover:border-slate-300 hover:shadow-md',
+      'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 focus:border-blue-300',
+      'hover:border-slate-300 hover:shadow-md',
+      'data-[state=open]:border-blue-300 data-[state=open]:shadow-lg',
       'disabled:cursor-not-allowed disabled:opacity-50',
       'aria-invalid:border-red-500 aria-invalid:focus:ring-red-500',
       'dark:bg-slate-800 dark:border-slate-700 dark:text-white',
