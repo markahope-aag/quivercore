@@ -75,26 +75,26 @@ export function PricingCard({ plan }: PricingCardProps) {
     },
     {
       label: 'Verbalized Sampling',
-      value: plan.features.verbalized_sampling.enabled
-        ? `${plan.features.verbalized_sampling.patterns.length} pattern${plan.features.verbalized_sampling.patterns.length !== 1 ? 's' : ''}`
+      value: plan.features.verbalized_sampling?.enabled
+        ? `${plan.features.verbalized_sampling.patterns?.length || 0} pattern${(plan.features.verbalized_sampling.patterns?.length || 0) !== 1 ? 's' : ''}`
         : 'Not included',
     },
     {
       label: 'Advanced Enhancements',
-      value: plan.features.advanced_enhancements ? 'Included' : 'Not included',
+      value: plan.features?.advanced_enhancements ? 'Included' : 'Not included',
     },
     {
       label: 'Framework Library',
-      value: plan.features.framework_library.included
+      value: plan.features.framework_library?.included
         ? plan.features.framework_library.count === -1
           ? 'Unlimited'
-          : `${plan.features.framework_library.count} frameworks`
+          : `${plan.features.framework_library.count || 0} frameworks`
         : 'Not included',
     },
     {
       label: 'Template Library',
       value:
-        plan.features.template_library.access === 'none'
+        plan.features.template_library?.access === 'none' || !plan.features.template_library?.access
           ? 'Not included'
           : plan.features.template_library.access === 'unlimited'
             ? 'Unlimited access'
@@ -102,15 +102,15 @@ export function PricingCard({ plan }: PricingCardProps) {
     },
     {
       label: 'Export Options',
-      value: `${plan.features.export_options.length} format${plan.features.export_options.length !== 1 ? 's' : ''}`,
+      value: `${plan.features.export_options?.length || 0} format${(plan.features.export_options?.length || 0) !== 1 ? 's' : ''}`,
     },
     {
       label: 'Analytics',
-      value: plan.features.analytics_dashboard === 'none' ? 'Not included' : plan.features.analytics_dashboard,
+      value: plan.features?.analytics_dashboard === 'none' || !plan.features?.analytics_dashboard ? 'Not included' : plan.features.analytics_dashboard,
     },
     {
       label: 'Support',
-      value: plan.features.support,
+      value: plan.features?.support || 'Not specified',
     },
   ]
 
