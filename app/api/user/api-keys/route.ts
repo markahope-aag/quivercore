@@ -76,9 +76,9 @@ export async function POST(request: NextRequest) {
     const { provider, api_key } = body
 
     // Validate input
-    if (!provider || !['openai', 'anthropic'].includes(provider)) {
+    if (!provider || !['openai', 'anthropic', 'google', 'mistral'].includes(provider)) {
       throw new ApplicationError(
-        'Invalid provider. Must be "openai" or "anthropic"',
+        'Invalid provider. Must be "openai", "anthropic", "google", or "mistral"',
         ErrorCodes.VALIDATION_ERROR,
         400
       )
@@ -152,9 +152,9 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const provider = searchParams.get('provider')
 
-    if (!provider || !['openai', 'anthropic'].includes(provider)) {
+    if (!provider || !['openai', 'anthropic', 'google', 'mistral'].includes(provider)) {
       throw new ApplicationError(
-        'Invalid provider. Must be "openai" or "anthropic"',
+        'Invalid provider. Must be "openai", "anthropic", "google", or "mistral"',
         ErrorCodes.VALIDATION_ERROR,
         400
       )

@@ -114,8 +114,22 @@ export function TestPanel({ prompt }: TestPanelProps) {
     }
   }
 
-  const provider = model.startsWith('claude-') ? 'anthropic' : 'openai'
-  const providerName = provider === 'openai' ? 'OpenAI' : 'Anthropic'
+  let provider: string
+  let providerName: string
+
+  if (model.startsWith('claude-')) {
+    provider = 'anthropic'
+    providerName = 'Anthropic'
+  } else if (model.startsWith('gemini-')) {
+    provider = 'google'
+    providerName = 'Google'
+  } else if (model.startsWith('mistral-') || model.startsWith('open-mistral-') || model.startsWith('open-mixtral-')) {
+    provider = 'mistral'
+    providerName = 'Mistral AI'
+  } else {
+    provider = 'openai'
+    providerName = 'OpenAI'
+  }
 
   return (
     <div className="space-y-6">
@@ -162,7 +176,12 @@ export function TestPanel({ prompt }: TestPanelProps) {
                           type={showSessionApiKey ? 'text' : 'password'}
                           value={sessionApiKey}
                           onChange={(e) => setSessionApiKey(e.target.value)}
-                          placeholder={provider === 'openai' ? 'sk-...' : 'sk-ant-...'}
+                          placeholder={
+                            provider === 'openai' ? 'sk-...' :
+                            provider === 'anthropic' ? 'sk-ant-...' :
+                            provider === 'google' ? 'AIza...' :
+                            'Your Mistral API key'
+                          }
                           className="pr-10 font-mono text-sm"
                         />
                         <button
@@ -222,11 +241,25 @@ export function TestPanel({ prompt }: TestPanelProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-white shadow-lg border-blue-300 dark:bg-slate-800 dark:border-slate-600">
+            {/* OpenAI Models */}
             <SelectItem value="gpt-3.5-turbo" className="hover:bg-blue-50 dark:hover:bg-blue-950">GPT-3.5 Turbo</SelectItem>
             <SelectItem value="gpt-4" className="hover:bg-blue-50 dark:hover:bg-blue-950">GPT-4</SelectItem>
             <SelectItem value="gpt-4-turbo-preview" className="hover:bg-blue-50 dark:hover:bg-blue-950">GPT-4 Turbo</SelectItem>
+
+            {/* Anthropic Models */}
             <SelectItem value="claude-3-5-sonnet-20241022" className="hover:bg-blue-50 dark:hover:bg-blue-950">Claude 3.5 Sonnet</SelectItem>
             <SelectItem value="claude-3-opus-20240229" className="hover:bg-blue-50 dark:hover:bg-blue-950">Claude 3 Opus</SelectItem>
+
+            {/* Google Gemini Models */}
+            <SelectItem value="gemini-pro" className="hover:bg-blue-50 dark:hover:bg-blue-950">Gemini Pro</SelectItem>
+            <SelectItem value="gemini-1.5-pro" className="hover:bg-blue-50 dark:hover:bg-blue-950">Gemini 1.5 Pro</SelectItem>
+            <SelectItem value="gemini-1.5-flash" className="hover:bg-blue-50 dark:hover:bg-blue-950">Gemini 1.5 Flash</SelectItem>
+
+            {/* Mistral AI Models */}
+            <SelectItem value="open-mistral-7b" className="hover:bg-blue-50 dark:hover:bg-blue-950">Mistral 7B</SelectItem>
+            <SelectItem value="open-mixtral-8x7b" className="hover:bg-blue-50 dark:hover:bg-blue-950">Mixtral 8x7B</SelectItem>
+            <SelectItem value="mistral-small-latest" className="hover:bg-blue-50 dark:hover:bg-blue-950">Mistral Small</SelectItem>
+            <SelectItem value="mistral-large-latest" className="hover:bg-blue-50 dark:hover:bg-blue-950">Mistral Large</SelectItem>
           </SelectContent>
         </Select>
       </div>

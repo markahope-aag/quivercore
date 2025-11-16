@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS user_api_keys (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  provider TEXT NOT NULL CHECK (provider IN ('openai', 'anthropic')),
+  provider TEXT NOT NULL CHECK (provider IN ('openai', 'anthropic', 'google', 'mistral')),
   encrypted_key TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),

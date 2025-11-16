@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
+import { Mistral } from '@mistralai/mistralai'
 import { substituteVariables } from '@/lib/utils/prompt'
 import { handleError, ErrorCodes, ApplicationError } from '@/lib/utils/error-handler'
 import { logger } from '@/lib/utils/logger'
@@ -30,8 +32,16 @@ export async function POST(
     const { variables, model = 'gpt-3.5-turbo', session_api_key } = body
 
     // Determine which provider is needed based on model
-    const isAnthropicModel = model.startsWith('claude-')
-    const provider = isAnthropicModel ? 'anthropic' : 'openai'
+    let provider: string
+    if (model.startsWith('claude-')) {
+      provider = 'anthropic'
+    } else if (model.startsWith('gemini-')) {
+      provider = 'google'
+    } else if (model.startsWith('mistral-') || model.startsWith('open-mistral-')) {
+      provider = 'mistral'
+    } else {
+      provider = 'openai'
+    }
 
     // Get API key - either from session or database
     let apiKey: string | null = null
@@ -119,7 +129,29 @@ export async function POST(
       response = completion.content[0].type === 'text'
         ? completion.content[0].text
         : ''
+    } else if (provider === 'google') {
+      const genAI = new GoogleGenerativeAI(apiKey)
+      const geminiModel = genAI.getGenerativeModel({ model })
+
+      const result = await geminiModel.generateContent(finalPrompt)
+      const geminiResponse = await result.response
+      response = geminiResponse.text()
+    } else if (provider === 'mistral') {
+      const mistral = new Mistral({ apiKey })
+
+      const completion = await mistral.chat.complete({
+        model,
+        messages: [
+          {
+            role: 'user',
+            content: finalPrompt,
+          },
+        ],
+      })
+
+      response = completion.choices?.[0]?.message?.content || ''
     } else {
+      // OpenAI
       const openai = new OpenAI({ apiKey })
 
       const completion = await openai.chat.completions.create({

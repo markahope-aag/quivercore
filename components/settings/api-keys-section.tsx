@@ -20,8 +20,12 @@ export function ApiKeysSection() {
   const [loading, setLoading] = useState(true)
   const [openaiKey, setOpenaiKey] = useState('')
   const [anthropicKey, setAnthropicKey] = useState('')
+  const [googleKey, setGoogleKey] = useState('')
+  const [mistralKey, setMistralKey] = useState('')
   const [showOpenaiKey, setShowOpenaiKey] = useState(false)
   const [showAnthropicKey, setShowAnthropicKey] = useState(false)
+  const [showGoogleKey, setShowGoogleKey] = useState(false)
+  const [showMistralKey, setShowMistralKey] = useState(false)
   const [saving, setSaving] = useState<string | null>(null)
 
   useEffect(() => {
@@ -42,8 +46,22 @@ export function ApiKeysSection() {
     }
   }
 
-  const handleSaveKey = async (provider: 'openai' | 'anthropic') => {
-    const apiKey = provider === 'openai' ? openaiKey : anthropicKey
+  const handleSaveKey = async (provider: 'openai' | 'anthropic' | 'google' | 'mistral') => {
+    let apiKey = ''
+    switch (provider) {
+      case 'openai':
+        apiKey = openaiKey
+        break
+      case 'anthropic':
+        apiKey = anthropicKey
+        break
+      case 'google':
+        apiKey = googleKey
+        break
+      case 'mistral':
+        apiKey = mistralKey
+        break
+    }
 
     if (!apiKey.trim()) {
       toast.error('Please enter an API key')
@@ -67,12 +85,23 @@ export function ApiKeysSection() {
       toast.success(data.message)
 
       // Clear input and refresh keys
-      if (provider === 'openai') {
-        setOpenaiKey('')
-        setShowOpenaiKey(false)
-      } else {
-        setAnthropicKey('')
-        setShowAnthropicKey(false)
+      switch (provider) {
+        case 'openai':
+          setOpenaiKey('')
+          setShowOpenaiKey(false)
+          break
+        case 'anthropic':
+          setAnthropicKey('')
+          setShowAnthropicKey(false)
+          break
+        case 'google':
+          setGoogleKey('')
+          setShowGoogleKey(false)
+          break
+        case 'mistral':
+          setMistralKey('')
+          setShowMistralKey(false)
+          break
       }
 
       await fetchKeys()
@@ -300,6 +329,177 @@ export function ApiKeysSection() {
               >
                 <Save className="h-4 w-4 mr-2" />
                 {saving === 'anthropic' ? 'Saving...' : 'Save Anthropic Key'}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Google Gemini API Key */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.87-.96-7-5.51-7-10V8.3l7-3.5 7 3.5V10c0 4.49-3.13 9.04-7 10z"/>
+                  <path d="M12 6L6 9v5c0 3.31 2.29 6.42 5 7.16V6z"/>
+                </svg>
+                Google Gemini API Key
+              </CardTitle>
+              <CardDescription>
+                For Gemini Pro, Gemini 1.5 Pro, and Flash models
+              </CardDescription>
+            </div>
+            <a
+              href="https://makersuite.google.com/app/apikey"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1"
+            >
+              Get API Key
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {hasKey('google') ? (
+            <div className="flex items-center justify-between p-4 rounded-lg bg-slate-50 dark:bg-slate-800">
+              <div>
+                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  {getKey('google')?.masked_key}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Added {new Date(getKey('google')!.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleDeleteKey('google')}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Remove
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="google-key">API Key</Label>
+                <div className="relative">
+                  <Input
+                    id="google-key"
+                    type={showGoogleKey ? 'text' : 'password'}
+                    value={googleKey}
+                    onChange={(e) => setGoogleKey(e.target.value)}
+                    placeholder="AIza..."
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowGoogleKey(!showGoogleKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showGoogleKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              <Button
+                onClick={() => handleSaveKey('google')}
+                disabled={saving === 'google'}
+                className="w-full"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {saving === 'google' ? 'Saving...' : 'Save Google Key'}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Mistral AI API Key */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                Mistral AI API Key
+              </CardTitle>
+              <CardDescription>
+                For Mistral Small, Medium, and Large models
+              </CardDescription>
+            </div>
+            <a
+              href="https://console.mistral.ai/api-keys/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1"
+            >
+              Get API Key
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {hasKey('mistral') ? (
+            <div className="flex items-center justify-between p-4 rounded-lg bg-slate-50 dark:bg-slate-800">
+              <div>
+                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  {getKey('mistral')?.masked_key}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Added {new Date(getKey('mistral')!.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleDeleteKey('mistral')}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Remove
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="mistral-key">API Key</Label>
+                <div className="relative">
+                  <Input
+                    id="mistral-key"
+                    type={showMistralKey ? 'text' : 'password'}
+                    value={mistralKey}
+                    onChange={(e) => setMistralKey(e.target.value)}
+                    placeholder="Your Mistral API key"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowMistralKey(!showMistralKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showMistralKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              <Button
+                onClick={() => handleSaveKey('mistral')}
+                disabled={saving === 'mistral'}
+                className="w-full"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {saving === 'mistral' ? 'Saving...' : 'Save Mistral Key'}
               </Button>
             </div>
           )}

@@ -88,7 +88,7 @@ export function decrypt(encryptedHex: string): string {
 
 /**
  * Validate that an API key has a reasonable format
- * @param provider The API provider (openai, anthropic)
+ * @param provider The API provider (openai, anthropic, google, mistral)
  * @param apiKey The API key to validate
  * @returns True if valid format
  */
@@ -99,11 +99,17 @@ export function validateApiKeyFormat(provider: string, apiKey: string): boolean 
 
   switch (provider) {
     case 'openai':
-      // OpenAI keys start with 'sk-' and are ~50 chars
-      return apiKey.startsWith('sk-') && apiKey.length > 20
+      // OpenAI keys start with 'sk-' or 'sk-proj-' and are ~50+ chars
+      return (apiKey.startsWith('sk-') || apiKey.startsWith('sk-proj-')) && apiKey.length > 20
     case 'anthropic':
       // Anthropic keys start with 'sk-ant-' and are ~100+ chars
       return apiKey.startsWith('sk-ant-') && apiKey.length > 20
+    case 'google':
+      // Google API keys are alphanumeric and ~39 chars
+      return /^[A-Za-z0-9_-]{20,}$/.test(apiKey)
+    case 'mistral':
+      // Mistral keys are alphanumeric and ~32+ chars
+      return /^[A-Za-z0-9]{20,}$/.test(apiKey)
     default:
       return false
   }
