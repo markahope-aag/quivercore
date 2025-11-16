@@ -50,7 +50,6 @@ export function BasePromptStep() {
     <div className="space-y-8">
       {/* Section Header */}
       <div className="mb-12 border-b border-slate-200 pb-6 dark:border-slate-800">
-        <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">Base Prompt</h2>
         <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Prompt Configuration</h3>
         <p className="text-base text-slate-600 dark:text-slate-400 leading-relaxed">
           Define the foundation of your prompt by selecting a domain and framework, then providing your core instructions.
