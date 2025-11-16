@@ -138,11 +138,6 @@ export function PricingCard({ plan }: PricingCardProps) {
             <span className="text-4xl font-bold">{formatPrice(plan.price_monthly)}</span>
             <span className="text-muted-foreground">/month</span>
           </div>
-          {plan.features.overage_rate && (
-            <p className="text-sm text-muted-foreground mt-1">
-              {formatOverage(plan.features.overage_rate)} per additional prompt
-            </p>
-          )}
         </div>
 
         <ul className="space-y-3">
