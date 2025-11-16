@@ -221,6 +221,48 @@ export function getRecommendedFrameworks(
     recommendations.push('Generative', 'Role-Based')
   }
 
+  // Product launch and marketing outcomes
+  if (
+    outcome.includes('launch') ||
+    outcome.includes('product') ||
+    outcome.includes('campaign') ||
+    outcome.includes('marketing') ||
+    outcome.includes('brand') ||
+    outcome.includes('market') ||
+    outcome.includes('promote') ||
+    outcome.includes('advertise')
+  ) {
+    recommendations.push('Generative', 'Role-Based', 'Few-Shot')
+  }
+
+  // Food, beverage, and consumer products
+  if (
+    outcome.includes('food') ||
+    outcome.includes('beverage') ||
+    outcome.includes('coffee') ||
+    outcome.includes('restaurant') ||
+    outcome.includes('culinary') ||
+    outcome.includes('recipe') ||
+    outcome.includes('ingredient') ||
+    outcome.includes('consumer product') ||
+    outcome.includes('retail product')
+  ) {
+    recommendations.push('Role-Based', 'Generative', 'Few-Shot')
+  }
+
+  // Business strategy and planning
+  if (
+    outcome.includes('strategy') ||
+    outcome.includes('plan') ||
+    outcome.includes('business') ||
+    outcome.includes('go-to-market') ||
+    outcome.includes('gtm') ||
+    outcome.includes('positioning') ||
+    outcome.includes('competitive')
+  ) {
+    recommendations.push('Role-Based', 'Analytical', 'Chain-of-Thought')
+  }
+
   // Step-by-step or process outcomes
   if (
     outcome.includes('step') ||
@@ -285,10 +327,12 @@ export function getRecommendedFrameworks(
     domainLower.includes('business') ||
     domainLower.includes('strategy') ||
     domainLower.includes('marketing') ||
-    domainLower.includes('sales')
+    domainLower.includes('sales') ||
+    domainLower.includes('product')
   ) {
     if (!recommendations.includes('Role-Based')) recommendations.push('Role-Based')
     if (!recommendations.includes('Generative')) recommendations.push('Generative')
+    if (!recommendations.includes('Chain-of-Thought')) recommendations.push('Chain-of-Thought')
   }
 
   if (
