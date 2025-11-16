@@ -138,7 +138,8 @@ export async function saddKV(key: string, ...members: string[]): Promise<number 
   }
 
   try {
-    const result = await kv.sadd(key, ...members)
+    // TypeScript workaround: cast members array to satisfy sadd signature
+    const result = await kv.sadd(key, ...(members as [string, ...string[]]))
     return result
   } catch (error) {
     logger.warn('Vercel KV sadd error', { key, error })
