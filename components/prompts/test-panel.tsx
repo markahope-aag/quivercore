@@ -1,18 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button-v2'
+import { Input } from '@/components/ui/input-v2'
+import { Textarea } from '@/components/ui/textarea-v2'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+} from '@/components/ui/select-v2'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card-v2'
 import { Prompt } from '@/lib/types/database'
 import { TestTube, Loader2 } from 'lucide-react'
 
@@ -59,13 +58,15 @@ export function TestPanel({ prompt }: TestPanelProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {prompt.variables && Object.keys(prompt.variables).length > 0 && (
         <div className="space-y-4">
-          <Label>Template Variables</Label>
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Template Variables</h4>
           {Object.keys(variables).map((key) => (
             <div key={key} className="space-y-2">
-              <Label htmlFor={`var-${key}`}>{key}</Label>
+              <label htmlFor={`var-${key}`} className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                {key}
+              </label>
               <Input
                 id={`var-${key}`}
                 value={variables[key]}
@@ -73,6 +74,7 @@ export function TestPanel({ prompt }: TestPanelProps) {
                   setVariables({ ...variables, [key]: e.target.value })
                 }
                 placeholder={`Enter value for ${key}`}
+                className="h-12 border-2 border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-slate-600"
               />
             </div>
           ))}
@@ -80,20 +82,29 @@ export function TestPanel({ prompt }: TestPanelProps) {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="model">Model</Label>
+        <label htmlFor="model" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Model
+        </label>
         <Select value={model} onValueChange={setModel}>
-          <SelectTrigger id="model">
+          <SelectTrigger id="model" className="h-12 border-2 border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-slate-600">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-            <SelectItem value="gpt-4">GPT-4</SelectItem>
-            <SelectItem value="gpt-4-turbo-preview">GPT-4 Turbo</SelectItem>
+          <SelectContent className="bg-white shadow-lg border-blue-300 dark:bg-slate-800 dark:border-slate-600">
+            <SelectItem value="gpt-3.5-turbo" className="hover:bg-blue-50 dark:hover:bg-blue-950">GPT-3.5 Turbo</SelectItem>
+            <SelectItem value="gpt-4" className="hover:bg-blue-50 dark:hover:bg-blue-950">GPT-4</SelectItem>
+            <SelectItem value="gpt-4-turbo-preview" className="hover:bg-blue-50 dark:hover:bg-blue-950">GPT-4 Turbo</SelectItem>
+            <SelectItem value="claude-3-5-sonnet-20241022" className="hover:bg-blue-50 dark:hover:bg-blue-950">Claude 3.5 Sonnet</SelectItem>
+            <SelectItem value="claude-3-opus-20240229" className="hover:bg-blue-50 dark:hover:bg-blue-950">Claude 3 Opus</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      <Button onClick={handleTest} disabled={isLoading} className="w-full">
+      <Button 
+        onClick={handleTest} 
+        disabled={isLoading} 
+        variant="default"
+        className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md hover:from-blue-700 hover:to-blue-600 hover:shadow-lg"
+      >
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -108,21 +119,21 @@ export function TestPanel({ prompt }: TestPanelProps) {
       </Button>
 
       {error && (
-        <Card className="border-destructive">
+        <Card className="border-2 border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
           <CardContent className="pt-6">
-            <p className="text-sm text-destructive">{error}</p>
+            <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
           </CardContent>
         </Card>
       )}
 
       {response && (
-        <Card>
+        <Card className="border-2 border-slate-200 bg-white shadow-sm dark:border-slate-600 dark:bg-slate-800">
           <CardHeader>
-            <CardTitle>Response</CardTitle>
+            <CardTitle className="text-slate-900 dark:text-white">Response</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="prose prose-sm dark:prose-invert max-w-none">
-              <pre className="whitespace-pre-wrap font-mono text-sm bg-muted p-4 rounded-lg">
+              <pre className="whitespace-pre-wrap font-mono text-sm bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 max-h-[600px] overflow-y-auto">
                 {response}
               </pre>
             </div>
