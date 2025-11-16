@@ -20,9 +20,18 @@ export function PricingPageContent() {
           throw new Error('Failed to fetch plans')
         }
         const data = await response.json()
-        // Filter out free plan and sort by price
-        const paidPlans = (data.plans || [])
-          .filter((plan: SubscriptionPlan) => plan.name !== 'free')
+        // Filter out free plan, remove duplicates, and sort by price
+        const allPlans = data.plans || []
+        const seen = new Set<string>()
+        const paidPlans = allPlans
+          .filter((plan: SubscriptionPlan) => {
+            // Filter out free plan
+            if (plan.name === 'free') return false
+            // Remove duplicates by name
+            if (seen.has(plan.name)) return false
+            seen.add(plan.name)
+            return true
+          })
           .sort((a: SubscriptionPlan, b: SubscriptionPlan) => a.price_monthly - b.price_monthly)
         setPlans(paidPlans)
       } catch (err) {
