@@ -107,6 +107,16 @@ CREATE TRIGGER trigger_template_metadata_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_template_metadata_updated_at();
 
+-- 8. Function to increment template usage count
+CREATE OR REPLACE FUNCTION increment_template_usage(template_metadata_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE template_metadata
+  SET usage_count = usage_count + 1
+  WHERE id = template_metadata_id;
+END;
+$$ LANGUAGE plpgsql;
+
 -- 8. RLS Policies
 ALTER TABLE template_metadata ENABLE ROW LEVEL SECURITY;
 ALTER TABLE template_comments ENABLE ROW LEVEL SECURITY;
