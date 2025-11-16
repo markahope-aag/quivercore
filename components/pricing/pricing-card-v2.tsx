@@ -109,8 +109,16 @@ export function PricingCard({ plan, index, currentPlanName }: PricingCardProps) 
 
   const features = [
     {
-      label: 'Monthly Prompts',
-      value: plan.features?.monthly_prompts === -1 ? 'Unlimited' : `${plan.features?.monthly_prompts || 0} prompts/month`,
+      label: 'Prompt Storage',
+      value: 'Unlimited',
+    },
+    {
+      label: 'AI Prompt Builder',
+      value: plan.features?.monthly_prompts === -1 ? 'Unlimited uses' : `${plan.features?.monthly_prompts || 0} uses/month`,
+    },
+    {
+      label: 'In-App Testing',
+      value: 'With your API keys',
     },
     {
       label: 'Verbalized Sampling',
