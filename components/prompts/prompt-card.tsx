@@ -217,17 +217,17 @@ export const PromptCard = memo(function PromptCard({ prompt }: PromptCardProps) 
             <div className="flex flex-wrap gap-2">
               {prompt.framework && (
                 <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-sm">
-                  {sanitizeForDisplay(prompt.framework)}
+                  {prompt.framework}
                 </Badge>
               )}
               {prompt.use_case && (
                 <Badge className="bg-gradient-to-r from-slate-100 to-slate-200 text-slate-700 dark:from-slate-700 dark:to-slate-600 dark:text-slate-200 border-0 shadow-sm">
-                  {sanitizeForDisplay(prompt.use_case)}
+                  {prompt.use_case}
                 </Badge>
               )}
               {prompt.enhancement_technique && (
                 <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-0 shadow-sm">
-                  ✨ {sanitizeForDisplay(prompt.enhancement_technique)}
+                  ✨ {prompt.enhancement_technique}
                 </Badge>
               )}
             </div>

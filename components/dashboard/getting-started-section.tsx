@@ -67,12 +67,6 @@ export function GettingStartedSection() {
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
-          <Link href="/prompts?is_template=true">
-            <Button variant="outline" className="gap-2">
-              <FileText className="h-4 w-4" />
-              Browse Templates
-            </Button>
-          </Link>
         </div>
       </CardContent>
     </Card>

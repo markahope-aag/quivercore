@@ -186,10 +186,10 @@ export function HeroSection({ stats }: HeroSectionProps) {
             Open Prompt Builder
           </Button>
         </Link>
-        <Link href="/prompts?is_template=true">
+        <Link href="/prompts">
           <Button size="lg" variant="outline" className="gap-2">
             <FileText className="h-5 w-5" />
-            Browse Templates
+            My Prompts
           </Button>
         </Link>
       </div>

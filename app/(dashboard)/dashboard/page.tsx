@@ -37,6 +37,7 @@ export default function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState<any>(null)
   const [mostUsed, setMostUsed] = useState<any>(null)
   const [news, setNews] = useState<any>(null)
+  const [showWelcome, setShowWelcome] = useState(false)
 
   useEffect(() => {
     async function fetchDashboardData() {

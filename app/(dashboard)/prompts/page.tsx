@@ -5,7 +5,7 @@ import { PromptList } from '@/components/prompts/prompt-list'
 import { PromptFilters } from '@/components/prompts/prompt-filters'
 import { PaginationControls } from '@/components/prompts/pagination-controls'
 import { motion } from 'framer-motion'
-import { FileText, Plus, ChevronDown, Wand2, Edit3, Upload } from 'lucide-react'
+import { FileText, Plus, ChevronDown, Wand2, Edit3, Upload, FileCode } from 'lucide-react'
 import { Prompt } from '@/lib/types/database'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -133,77 +133,109 @@ export default function PromptsPage() {
             <div className="flex items-center gap-3 mb-3">
               <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
-                Prompt Library
+                Library
               </h1>
             </div>
             <p className="text-lg text-slate-600 dark:text-slate-400">
-              {totalPrompts} prompt{totalPrompts !== 1 ? 's' : ''} in your library
+              {(() => {
+                const promptCount = prompts.filter(p => !p.variables || Object.keys(p.variables).length === 0).length
+                const templateCount = prompts.filter(p => p.variables && Object.keys(p.variables).length > 0).length
+
+                if (promptCount === 0 && templateCount === 0) {
+                  return 'Your library is empty'
+                } else if (promptCount > 0 && templateCount > 0) {
+                  return `${promptCount} prompt${promptCount !== 1 ? 's' : ''} and ${templateCount} template${templateCount !== 1 ? 's' : ''} in your library`
+                } else if (promptCount > 0) {
+                  return `${promptCount} prompt${promptCount !== 1 ? 's' : ''} in your library`
+                } else {
+                  return `${templateCount} template${templateCount !== 1 ? 's' : ''} in your library`
+                }
+              })()}
               {searchQuery && ` matching "${searchQuery}"`}
             </p>
           </div>
-          <div className="relative new-prompt-menu-container">
+          <div className="flex gap-2">
+            <Link href="/builder">
+              <Button
+                variant="default"
+                className="bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md hover:from-blue-700 hover:to-blue-600 hover:shadow-lg"
+              >
+                <Wand2 className="mr-2 h-4 w-4" />
+                Use Builder
+              </Button>
+            </Link>
             <Button
-              variant="default"
-              className="bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md hover:from-blue-700 hover:to-blue-600 hover:shadow-lg"
+              variant="outline"
               onClick={() => setShowNewPromptMenu(!showNewPromptMenu)}
             >
               <Plus className="mr-2 h-4 w-4" />
-              Add Prompt
-              <ChevronDown className="ml-2 h-4 w-4" />
+              Create
             </Button>
-
-            {showNewPromptMenu && (
-              <div className="absolute right-0 z-10 mt-2 w-64 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-slate-800">
-                <div className="py-1">
-                  <Link
-                    href="/builder"
-                    className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
-                    onClick={() => setShowNewPromptMenu(false)}
-                  >
-                    <Wand2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    <div>
-                      <div className="font-medium">Use Builder</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Create with AI frameworks & enhancements
-                      </div>
-                    </div>
-                  </Link>
-
-                  <Link
-                    href="/prompts/new"
-                    className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
-                    onClick={() => setShowNewPromptMenu(false)}
-                  >
-                    <Edit3 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    <div>
-                      <div className="font-medium">Create Manually</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Write or paste your own prompt
-                      </div>
-                    </div>
-                  </Link>
-
-                  <button
-                    onClick={() => {
-                      setShowNewPromptMenu(false)
-                      setShowImportDialog(true)
-                    }}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
-                  >
-                    <Upload className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    <div>
-                      <div className="font-medium">Import Template</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        Import from JSON or CSV format
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            )}
+            <Button
+              variant="outline"
+              onClick={() => setShowImportDialog(true)}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Import
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Create Dialog */}
+      {showNewPromptMenu && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
+                What would you like to create?
+              </h2>
+              <div className="space-y-3">
+                <Link
+                  href="/prompts/new"
+                  onClick={() => setShowNewPromptMenu(false)}
+                  className="block p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-950/20 transition-all"
+                >
+                  <div className="flex items-start gap-3">
+                    <Edit3 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-slate-900 dark:text-white">Prompt</div>
+                      <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        Create a specific, ready-to-use prompt without variables
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/prompts/new?template=true"
+                  onClick={() => setShowNewPromptMenu(false)}
+                  className="block p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-all"
+                >
+                  <div className="flex items-start gap-3">
+                    <FileCode className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-slate-900 dark:text-white">Template</div>
+                      <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        Create a reusable template with variables like {`{{topic}}`}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+              <div className="mt-4">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowNewPromptMenu(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <PromptFilters />
@@ -230,132 +262,56 @@ export default function PromptsPage() {
         </>
       )}
 
-      {/* Import Template Dialog */}
+      {/* Import Dialog */}
       {showImportDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="w-full max-w-2xl rounded-lg bg-white p-6 dark:bg-slate-800">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white">Import Prompt Template</h3>
-              <button
-                onClick={() => setShowImportDialog(false)}
-                className="text-slate-400 hover:text-slate-500"
-              >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-              Use these templates to import prompts from other sources. Copy and fill in the template, then paste into the manual creation form.
-            </p>
-
-            <div className="space-y-4">
-              {/* JSON Template */}
-              <div>
-                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">JSON Format</h4>
-                <div className="rounded-md bg-slate-900 p-4">
-                  <pre className="text-xs text-slate-100 overflow-x-auto">
-{`{
-  "title": "Your prompt title",
-  "content": "Your prompt content goes here",
-  "description": "Brief description of what this prompt does",
-  "use_case": "Content Creation",
-  "framework": "Chain-of-Thought",
-  "enhancement_technique": "VS: broad_spectrum",
-  "tags": ["tag1", "tag2", "tag3"]
-}`}
-                  </pre>
-                </div>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(`{
-  "title": "Your prompt title",
-  "content": "Your prompt content goes here",
-  "description": "Brief description of what this prompt does",
-  "use_case": "Content Creation",
-  "framework": "Chain-of-Thought",
-  "enhancement_technique": "VS: broad_spectrum",
-  "tags": ["tag1", "tag2", "tag3"]
-}`)
-                    alert('JSON template copied to clipboard!')
-                  }}
-                  className="mt-2 text-xs text-blue-600 hover:text-blue-500 dark:text-blue-400"
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
+                What are you importing?
+              </h2>
+              <div className="space-y-3">
+                <Link
+                  href="/prompts/import"
+                  onClick={() => setShowImportDialog(false)}
+                  className="block p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-950/20 transition-all"
                 >
-                  Copy JSON Template
-                </button>
-              </div>
+                  <div className="flex items-start gap-3">
+                    <Edit3 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-slate-900 dark:text-white">Prompt</div>
+                      <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        Import a specific prompt without variables
+                      </div>
+                    </div>
+                  </div>
+                </Link>
 
-              {/* CSV Template */}
-              <div>
-                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">CSV Format</h4>
-                <div className="rounded-md bg-slate-900 p-4">
-                  <pre className="text-xs text-slate-100 overflow-x-auto">
-{`title,content,description,use_case,framework,enhancement_technique,tags
-"Your prompt title","Your prompt content","Brief description","Content Creation","Chain-of-Thought","VS: broad_spectrum","tag1,tag2,tag3"`}
-                  </pre>
-                </div>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(`title,content,description,use_case,framework,enhancement_technique,tags
-"Your prompt title","Your prompt content","Brief description","Content Creation","Chain-of-Thought","VS: broad_spectrum","tag1,tag2,tag3"`)
-                    alert('CSV template copied to clipboard!')
-                  }}
-                  className="mt-2 text-xs text-blue-600 hover:text-blue-500 dark:text-blue-400"
+                <Link
+                  href="/prompts/import?template=true"
+                  onClick={() => setShowImportDialog(false)}
+                  className="block p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-all"
                 >
-                  Copy CSV Template
-                </button>
+                  <div className="flex items-start gap-3">
+                    <FileCode className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-slate-900 dark:text-white">Template</div>
+                      <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        Import a reusable template with variables like {`{{topic}}`}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
               </div>
-
-              {/* Field Reference */}
-              <div className="rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
-                <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">Field Reference</h4>
-                <dl className="space-y-1 text-xs text-blue-700 dark:text-blue-400">
-                  <div className="flex gap-2">
-                    <dt className="font-medium min-w-[140px]">title:</dt>
-                    <dd>Required - Name of your prompt</dd>
-                  </div>
-                  <div className="flex gap-2">
-                    <dt className="font-medium min-w-[140px]">content:</dt>
-                    <dd>Required - The actual prompt text</dd>
-                  </div>
-                  <div className="flex gap-2">
-                    <dt className="font-medium min-w-[140px]">description:</dt>
-                    <dd>Optional - What the prompt does</dd>
-                  </div>
-                  <div className="flex gap-2">
-                    <dt className="font-medium min-w-[140px]">use_case:</dt>
-                    <dd>Optional - Domain (e.g., Content Creation, Code, Business)</dd>
-                  </div>
-                  <div className="flex gap-2">
-                    <dt className="font-medium min-w-[140px]">framework:</dt>
-                    <dd>Optional - Framework type (e.g., Chain-of-Thought, Few-Shot)</dd>
-                  </div>
-                  <div className="flex gap-2">
-                    <dt className="font-medium min-w-[140px]">enhancement_technique:</dt>
-                    <dd>Optional - Enhancement used (e.g., VS: broad_spectrum)</dd>
-                  </div>
-                  <div className="flex gap-2">
-                    <dt className="font-medium min-w-[140px]">tags:</dt>
-                    <dd>Optional - Comma-separated keywords</dd>
-                  </div>
-                </dl>
+              <div className="mt-4">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowImportDialog(false)}
+                >
+                  Cancel
+                </Button>
               </div>
-
-              <div className="rounded-md bg-yellow-50 p-3 dark:bg-yellow-900/20">
-                <p className="text-xs text-yellow-700 dark:text-yellow-400">
-                  <strong>Note:</strong> After copying a template, go to "Create Manually" to paste and edit the content before saving.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowImportDialog(false)}
-                className="rounded-md bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-300 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>

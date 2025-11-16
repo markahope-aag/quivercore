@@ -1,8 +1,12 @@
+export type PromptSource = 'user' | 'app' | 'community' | 'third-party'
+
 export interface Prompt {
   id: string
   user_id: string
   title: string
   content: string
+  // Source tracking
+  source: PromptSource
   // Template vs Prompt distinction
   is_template: boolean
   builder_config: Record<string, any> | null
