@@ -174,7 +174,7 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
               className="text-xs border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700"
             >
               <HelpCircle className="mr-1.5 h-3.5 w-3.5" />
-              Recommendations
+              Framework Tips
             </Button>
           </div>
 
