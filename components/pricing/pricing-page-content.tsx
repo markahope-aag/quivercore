@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { PricingCard } from './pricing-card-v2'
-import { PricingPageSkeleton } from './pricing-page-skeleton'
+import { PricingPageSkeleton } from './pricing-page-skeleton-v2'
 import { SubscriptionPlan } from '@/lib/types/subscriptions'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
