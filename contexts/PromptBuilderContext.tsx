@@ -485,6 +485,10 @@ export function PromptBuilderProvider({ children }: { children: React.ReactNode 
     dispatch({ type: 'CLEAR_ERRORS' })
   }, [])
 
+  const setModel = useCallback((model: string) => {
+    dispatch({ type: 'SET_MODEL', payload: model })
+  }, [])
+
   const value = {
     state,
     dispatch,
