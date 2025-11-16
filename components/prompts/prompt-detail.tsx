@@ -27,6 +27,8 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
   const [showVersionHistory, setShowVersionHistory] = useState(false)
   const [showMetadataForm, setShowMetadataForm] = useState(false)
   const [showUsePromptModal, setShowUsePromptModal] = useState(false)
+  const [showVariableInput, setShowVariableInput] = useState(false)
+  const [variableValues, setVariableValues] = useState<Record<string, string>>({})
   const [enhancedPrompt, setEnhancedPrompt] = useState('')
   const [templateData, setTemplateData] = useState(() => promptToTemplate(prompt))
   const [metadataLoaded, setMetadataLoaded] = useState(false)
@@ -121,8 +123,30 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
   }
 
   const handleUsePrompt = async () => {
+    // Check if prompt has variables
+    const variablePattern = /\{\{([^}]+)\}\}/g
+    const matches = Array.from(prompt.content.matchAll(variablePattern))
+    const variables = [...new Set(matches.map(m => m[1].trim()))]
+
+    if (variables.length > 0) {
+      // Initialize variable values if needed
+      const initialValues: Record<string, string> = {}
+      variables.forEach(v => {
+        initialValues[v] = variableValues[v] || ''
+      })
+      setVariableValues(initialValues)
+      setShowVariableInput(true)
+      setShowUsePromptModal(true)
+      return
+    }
+
+    // No variables, proceed directly
+    generateEnhancedPrompt(prompt.content)
+  }
+
+  const generateEnhancedPrompt = (contentWithVariables: string) => {
     // Build the enhanced prompt with framework and enhancement instructions
-    let fullPrompt = prompt.content
+    let fullPrompt = contentWithVariables
     let systemInstructions = ''
 
     // Add framework-specific instructions
@@ -190,9 +214,14 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
       : fullPrompt
 
     setEnhancedPrompt(enhanced)
+    setShowVariableInput(false)
     setShowUsePromptModal(true)
 
     // Track usage
+    trackUsage()
+  }
+
+  const trackUsage = async () => {
     try {
       await fetch(`/api/prompts/${prompt.id}/use`, {
         method: 'POST',
@@ -200,6 +229,18 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
     } catch (error) {
       console.error('Failed to track usage:', error)
     }
+  }
+
+  const handleVariableSubmit = () => {
+    // Replace variables in content with user values
+    let contentWithValues = prompt.content
+    Object.entries(variableValues).forEach(([key, value]) => {
+      const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g')
+      contentWithValues = contentWithValues.replace(regex, value)
+    })
+
+    // Generate enhanced prompt with replaced variables
+    generateEnhancedPrompt(contentWithValues)
   }
 
   const handleCopyEnhanced = () => {
@@ -449,10 +490,15 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
           <div className="w-full max-w-3xl rounded-lg bg-white p-6 dark:bg-slate-800 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
-                {prompt.framework || prompt.enhancement_technique ? 'Enhanced Prompt (Ready to Use)' : 'Use Prompt'}
+                {showVariableInput
+                  ? 'Fill in Variable Values'
+                  : (prompt.framework || prompt.enhancement_technique ? 'Enhanced Prompt (Ready to Use)' : 'Use Prompt')}
               </h3>
               <button
-                onClick={() => setShowUsePromptModal(false)}
+                onClick={() => {
+                  setShowUsePromptModal(false)
+                  setShowVariableInput(false)
+                }}
                 className="text-slate-400 hover:text-slate-500"
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -460,6 +506,64 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
                 </svg>
               </button>
             </div>
+
+            {showVariableInput ? (
+              /* Variable Input Form */
+              <div className="space-y-4">
+                <div className="rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
+                  <p className="text-sm text-blue-700 dark:text-blue-400">
+                    This prompt contains variables that need values. Please fill in the fields below before using the prompt.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  {Object.keys(variableValues).map((variable) => (
+                    <div key={variable}>
+                      <label
+                        htmlFor={`var-${variable}`}
+                        className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+                      >
+                        {variable}
+                      </label>
+                      <input
+                        type="text"
+                        id={`var-${variable}`}
+                        value={variableValues[variable]}
+                        onChange={(e) =>
+                          setVariableValues({
+                            ...variableValues,
+                            [variable]: e.target.value,
+                          })
+                        }
+                        placeholder={`Enter value for ${variable}`}
+                        className="w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white px-3 py-2"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2 pt-4">
+                  <button
+                    onClick={handleVariableSubmit}
+                    disabled={Object.values(variableValues).some(v => !v.trim())}
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Continue
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowUsePromptModal(false)
+                      setShowVariableInput(false)
+                    }}
+                    className="rounded-md bg-slate-200 px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-300 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Enhanced Prompt Display */
+              <div>
 
             {(prompt.framework || prompt.enhancement_technique) && (
               <div className="mb-4 rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
@@ -519,6 +623,8 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
                 </p>
               </div>
             </div>
+              </div>
+            )}
           </div>
         </div>
       )}
