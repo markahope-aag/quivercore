@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { PromptList } from '@/components/prompts/prompt-list'
 import { PromptFilters } from '@/components/prompts/prompt-filters'
 import { PaginationControls } from '@/components/prompts/pagination-controls'
@@ -26,84 +25,75 @@ export default function PromptsPage() {
   useEffect(() => {
     async function fetchPrompts() {
       setLoading(true)
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+      
+      try {
+        // Build query parameters
+        const params = new URLSearchParams()
+        const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
+        params.set('page', String(page))
+        params.set('limit', '20')
 
-      if (!user) {
-        router.push('/login')
-        return
+        const favorite = searchParams.get('favorite') === 'true'
+        if (favorite) {
+          params.set('favorite', 'true')
+        }
+
+        const useCase = searchParams.get('use_case')
+        if (useCase) {
+          params.set('use_case', useCase)
+        }
+
+        const framework = searchParams.get('framework')
+        if (framework) {
+          params.set('framework', framework)
+        }
+
+        const enhancementTechnique = searchParams.get('enhancement_technique')
+        if (enhancementTechnique) {
+          params.set('enhancement_technique', enhancementTechnique)
+        }
+
+        const tag = searchParams.get('tag')
+        if (tag) {
+          params.set('tag', tag)
+        }
+
+        // Fetch from API route
+        const response = await fetch(`/api/prompts?${params.toString()}`)
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            router.push('/login')
+            return
+          }
+          throw new Error('Failed to fetch prompts')
+        }
+
+        const result = await response.json()
+
+        // Handle new paginated response format
+        if (result.data && result.pagination) {
+          setPrompts(result.data)
+          setTotalPrompts(result.pagination.total)
+          setTotalPages(result.pagination.totalPages)
+          setCurrentPage(result.pagination.page)
+        } else {
+          // Fallback for old format (backward compatibility)
+          const promptsArray = Array.isArray(result) ? result : result.data || []
+          setPrompts(promptsArray)
+          setTotalPrompts(promptsArray.length)
+          setTotalPages(1)
+          setCurrentPage(1)
+        }
+      } catch (error) {
+        console.error('Error fetching prompts:', error)
+        setPrompts([])
+        setTotalPrompts(0)
+        setTotalPages(0)
+        setCurrentPage(1)
+      } finally {
+        setLoading(false)
       }
-
-      const favorite = searchParams.get('favorite') === 'true'
-      const recent = searchParams.get('recent') === 'true'
-      const showArchived = searchParams.get('archived') === 'true'
-      const useCase = searchParams.get('use_case')
-      const framework = searchParams.get('framework')
-      const enhancementTechnique = searchParams.get('enhancement_technique')
-      const tag = searchParams.get('tag')
-      const searchQuery = searchParams.get('q')
-      const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
-      const limit = 20
-
-      const offset = (page - 1) * limit
-
-      let query = supabase
-        .from('prompts')
-        .select('*', { count: 'exact' })
-        .eq('user_id', user.id)
-
-      // Apply filters
-      if (favorite) {
-        query = query.eq('is_favorite', true)
-      }
-
-      // Filter by archived status (default: hide archived)
-      if (showArchived) {
-        query = query.eq('archived', true)
-      } else {
-        query = query.eq('archived', false)
-      }
-
-      if (useCase) {
-        query = query.eq('use_case', useCase)
-      }
-
-      if (framework) {
-        query = query.eq('framework', framework)
-      }
-
-      if (enhancementTechnique) {
-        query = query.eq('enhancement_technique', enhancementTechnique)
-      }
-
-      if (tag) {
-        query = query.contains('tags', [tag])
-      }
-
-      if (searchQuery) {
-        query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`)
-      }
-
-      // Ordering
-      if (recent) {
-        query = query.order('updated_at', { ascending: false })
-      } else {
-        query = query.order('created_at', { ascending: false })
-      }
-
-      // Pagination
-      query = query.range(offset, offset + limit - 1)
-
-      const { data, error, count } = await query
-
-      if (!error && data) {
-        setPrompts(data)
-        setTotalPrompts(count || 0)
-        setTotalPages(Math.ceil((count || 0) / limit))
-        setCurrentPage(page)
-      }
-
-      setLoading(false)
     }
 
     fetchPrompts()
@@ -223,14 +213,16 @@ export default function PromptsPage() {
         <>
           <PromptList initialPrompts={prompts} viewMode={viewMode} />
 
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalPrompts={totalPrompts}
-            limit={20}
-            hasNextPage={currentPage < totalPages}
-            hasPrevPage={currentPage > 1}
-          />
+          {totalPages > 0 && (
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalPrompts={totalPrompts}
+              limit={20}
+              hasNextPage={currentPage < totalPages}
+              hasPrevPage={currentPage > 1}
+            />
+          )}
         </>
       )}
 

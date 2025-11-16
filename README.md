@@ -98,7 +98,14 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
      - `ANTHROPIC_API_KEY` (server-side only)
      - `OPENAI_API_KEY` (optional, for embeddings)
 
-4. **Deploy:**
+4. **Set Up Redis for Rate Limiting (Optional but Recommended):**
+   - Go to Vercel Dashboard → Your Project → Storage → Marketplace
+   - Click "Add Integration" on **Upstash** → Select **"Redis"**
+   - Vercel will automatically inject `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`
+   - This enables distributed rate limiting and caching
+   - **Alternative:** Use the "Redis" provider from Marketplace
+
+5. **Deploy:**
    - Vercel will automatically deploy on push
    - Or click "Deploy" in the dashboard
 
@@ -110,6 +117,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ Yes | Supabase anonymous/public key | [Supabase Dashboard](https://app.supabase.com) → Project Settings → API |
 | `ANTHROPIC_API_KEY` | ✅ Yes | Anthropic API key for Claude models | [Anthropic Console](https://console.anthropic.com/settings/keys) |
 | `OPENAI_API_KEY` | ⚠️ Optional | OpenAI API key for embeddings | [OpenAI Platform](https://platform.openai.com/api-keys) |
+| `UPSTASH_REDIS_REST_URL` | ⚠️ Optional | Upstash Redis REST API URL (auto-injected) | Created automatically when you add Upstash Redis from Marketplace |
+| `UPSTASH_REDIS_REST_TOKEN` | ⚠️ Optional | Upstash Redis authentication token (auto-injected) | Created automatically when you add Upstash Redis from Marketplace |
+| `KV_URL` | ⚠️ Optional | Vercel KV URL (auto-injected, if using Vercel KV) | Created automatically if using Vercel KV (now in Marketplace) |
+| `KV_REST_API_URL` | ⚠️ Optional | Vercel KV REST API URL (auto-injected, if using Vercel KV) | Created automatically if using Vercel KV (now in Marketplace) |
 
 **Security Note:** The `ANTHROPIC_API_KEY` is only used server-side and is never exposed to the browser. It's safe to add to Vercel environment variables.
 

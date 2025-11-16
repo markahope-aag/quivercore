@@ -6,6 +6,7 @@ import { handleError, ErrorCodes, ApplicationError } from '@/lib/utils/error-han
 import { logger } from '@/lib/utils/logger'
 import { sanitizeInput, sanitizeStringArray } from '@/lib/utils/sanitize'
 import { unstable_cache } from 'next/cache'
+import { withQueryPerformance } from '@/lib/utils/query-performance'
 
 export async function GET(
   request: NextRequest,
@@ -188,27 +189,36 @@ export async function PATCH(
       updateData.variables = null
     }
 
-    const { data, error } = await supabase
-      .from('prompts')
-      .update(updateData)
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .select()
-      .single()
+    const data = await withQueryPerformance(
+      'PATCH /api/prompts/[id]',
+      'update',
+      'prompts',
+      async () => {
+        const { data, error } = await supabase
+          .from('prompts')
+          .update(updateData)
+          .eq('id', id)
+          .eq('user_id', user.id)
+          .select('id, title, content, description, tags, use_case, framework, enhancement_technique, is_favorite, variables, created_at, updated_at')
+          .single()
 
-    if (error) {
-      logger.error('Supabase update error in PATCH /api/prompts/[id]', error)
-      throw new ApplicationError(
-        'Failed to update prompt',
-        ErrorCodes.DATABASE_ERROR,
-        500,
-        error
-      )
-    }
+        if (error) {
+          logger.error('Supabase update error in PATCH /api/prompts/[id]', error)
+          throw new ApplicationError(
+            'Failed to update prompt',
+            ErrorCodes.DATABASE_ERROR,
+            500,
+            error
+          )
+        }
 
-    if (!data) {
-      throw new ApplicationError('Prompt not found', ErrorCodes.NOT_FOUND, 404)
-    }
+        if (!data) {
+          throw new ApplicationError('Prompt not found', ErrorCodes.NOT_FOUND, 404)
+        }
+
+        return data
+      }
+    )
 
     // Invalidate cache after updating prompt
     // Note: In Next.js 13+, we'd use revalidateTag here

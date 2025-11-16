@@ -1,10 +1,12 @@
 /**
  * Rate limiting middleware for API routes
  * Prevents abuse by limiting requests per IP address
+ * Uses Vercel KV (Redis) for distributed rate limiting across serverless instances
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/utils/logger'
+import { getKV, incrementKV, expireKV, ttlKV, isKVAvailable } from '@/lib/redis/client'
 
 interface RateLimitConfig {
   windowMs: number // Time window in milliseconds
@@ -21,18 +23,20 @@ interface RateLimitStore {
   }
 }
 
-// In-memory store (use Redis in production)
+// Fallback in-memory store (only used if Vercel KV is unavailable)
 const store: RateLimitStore = {}
 
-// Clean up old entries periodically
-setInterval(() => {
-  const now = Date.now()
-  Object.keys(store).forEach((key) => {
-    if (store[key].resetTime < now) {
-      delete store[key]
-    }
-  })
-}, 60000) // Clean up every minute
+// Clean up old entries periodically (only for in-memory fallback)
+if (!isKVAvailable()) {
+  setInterval(() => {
+    const now = Date.now()
+    Object.keys(store).forEach((key) => {
+      if (store[key].resetTime < now) {
+        delete store[key]
+      }
+    })
+  }, 60000) // Clean up every minute
+}
 
 /**
  * Gets the client identifier (IP address)
@@ -50,6 +54,7 @@ function getClientId(request: NextRequest): string {
 
 /**
  * Rate limiting middleware
+ * Uses Vercel KV (Redis) for distributed rate limiting, falls back to in-memory if unavailable
  */
 export function rateLimit(config: RateLimitConfig) {
   const {
@@ -63,9 +68,62 @@ export function rateLimit(config: RateLimitConfig) {
   return async (request: NextRequest): Promise<NextResponse | null> => {
     const clientId = getClientId(request)
     const now = Date.now()
-    const key = `${clientId}:${request.nextUrl.pathname}`
+    const key = `ratelimit:${clientId}:${request.nextUrl.pathname}`
+    const windowSeconds = Math.ceil(windowMs / 1000)
 
-    // Get or create rate limit entry
+    // Try Vercel KV first (distributed rate limiting)
+    if (isKVAvailable()) {
+      try {
+        // Get current count
+        const count = await getKV<number>(key) || 0
+
+        // Check if limit exceeded
+        if (count >= maxRequests) {
+          const ttl = await ttlKV(key)
+          const retryAfter = ttl && ttl > 0 ? ttl : windowSeconds
+
+          logger.warn('Rate limit exceeded (KV)', {
+            clientId,
+            path: request.nextUrl.pathname,
+            count,
+            maxRequests,
+            retryAfter,
+          })
+
+          return NextResponse.json(
+            {
+              error: message,
+              retryAfter,
+            },
+            {
+              status: 429,
+              headers: {
+                'Retry-After': retryAfter.toString(),
+                'X-RateLimit-Limit': maxRequests.toString(),
+                'X-RateLimit-Remaining': '0',
+                'X-RateLimit-Reset': (now + retryAfter * 1000).toString(),
+              },
+            }
+          )
+        }
+
+        // Increment count
+        const newCount = await incrementKV(key, 1) || 1
+
+        // Set expiration if this is the first request
+        if (newCount === 1) {
+          await expireKV(key, windowSeconds)
+        }
+
+        // Return null to continue with the request
+        return null
+      } catch (error) {
+        logger.warn('Vercel KV rate limit error, falling back to in-memory', { error })
+        // Fall through to in-memory fallback
+      }
+    }
+
+    // Fallback to in-memory store (for local development or if KV unavailable)
     let entry = store[key]
 
     if (!entry || entry.resetTime < now) {
@@ -83,8 +141,8 @@ export function rateLimit(config: RateLimitConfig) {
     // Check if limit exceeded
     if (entry.count > maxRequests) {
       const retryAfter = Math.ceil((entry.resetTime - now) / 1000)
-      
-      logger.warn('Rate limit exceeded', {
+
+      logger.warn('Rate limit exceeded (in-memory)', {
         clientId,
         path: request.nextUrl.pathname,
         count: entry.count,
@@ -109,7 +167,6 @@ export function rateLimit(config: RateLimitConfig) {
     }
 
     // Return null to continue with the request
-    // The actual response will be modified by the handler
     return null
   }
 }
@@ -151,7 +208,8 @@ export const rateLimiters = {
 export async function withRateLimit(
   request: NextRequest,
   limiter: (req: NextRequest) => Promise<NextResponse | null>,
-  handler: (req: NextRequest) => Promise<NextResponse>
+  handler: (req: NextRequest) => Promise<NextResponse>,
+  maxRequests: number = 100
 ): Promise<NextResponse> {
   const rateLimitResponse = await limiter(request)
   
@@ -163,13 +221,28 @@ export async function withRateLimit(
 
   // Add rate limit headers to successful responses
   const clientId = getClientId(request)
-  const key = `${clientId}:${request.nextUrl.pathname}`
-  const entry = store[key]
+  const key = `ratelimit:${clientId}:${request.nextUrl.pathname}`
 
-  if (entry) {
-    response.headers.set('X-RateLimit-Limit', entry.count.toString())
-    response.headers.set('X-RateLimit-Remaining', Math.max(0, 100 - entry.count).toString())
-    response.headers.set('X-RateLimit-Reset', entry.resetTime.toString())
+  if (isKVAvailable()) {
+    try {
+      const count = await getKV<number>(key) || 0
+      const ttl = await ttlKV(key)
+      const resetTime = ttl && ttl > 0 ? Date.now() + ttl * 1000 : Date.now()
+
+      response.headers.set('X-RateLimit-Limit', maxRequests.toString())
+      response.headers.set('X-RateLimit-Remaining', Math.max(0, maxRequests - count).toString())
+      response.headers.set('X-RateLimit-Reset', resetTime.toString())
+    } catch (error) {
+      // Ignore errors when adding headers
+    }
+  } else {
+    // Fallback to in-memory store
+    const entry = store[key]
+    if (entry) {
+      response.headers.set('X-RateLimit-Limit', maxRequests.toString())
+      response.headers.set('X-RateLimit-Remaining', Math.max(0, maxRequests - entry.count).toString())
+      response.headers.set('X-RateLimit-Reset', entry.resetTime.toString())
+    }
   }
 
   return response

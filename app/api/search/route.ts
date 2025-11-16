@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { generateEmbedding } from '@/lib/openai/client'
 import { handleError, ErrorCodes, ApplicationError } from '@/lib/utils/error-handler'
 import { logger } from '@/lib/utils/logger'
+import { withQueryPerformance, measureDuration } from '@/lib/utils/query-performance'
 // Search results are cached via HTTP headers only due to dynamic nature
 
 export async function GET(request: NextRequest) {
@@ -34,39 +35,74 @@ export async function GET(request: NextRequest) {
 
     // Keyword search
     if (searchType === 'keyword' || searchType === 'hybrid') {
-      const { data: keywordResults, error: keywordError } = await supabase
-        .from('prompts')
-        .select('*')
-        .eq('user_id', user.id)
-        .or(`title.ilike.%${sanitizedQuery}%,content.ilike.%${sanitizedQuery}%,description.ilike.%${sanitizedQuery}%`)
-        .order('created_at', { ascending: false })
-        .limit(20)
+      const { result: keywordResult } = await measureDuration('keyword search', async () => {
+        return await withQueryPerformance(
+          'GET /api/search (keyword)',
+          'select',
+          'prompts',
+          async () => {
+            const { data, error } = await supabase
+              .from('prompts')
+              .select('id, title, description, tags, use_case, framework, created_at, updated_at, similarity')
+              .eq('user_id', user.id)
+              .or(`title.ilike.%${sanitizedQuery}%,content.ilike.%${sanitizedQuery}%,description.ilike.%${sanitizedQuery}%`)
+              .order('created_at', { ascending: false })
+              .limit(20)
 
-      if (!keywordError && keywordResults) {
-        results = keywordResults
+            if (error) {
+              throw error
+            }
+            return data
+          }
+        )
+      })
+
+      if (keywordResult) {
+        results = keywordResult
       }
     }
 
     // Semantic search
     if (searchType === 'semantic' || searchType === 'hybrid') {
       try {
-        const queryEmbedding = await generateEmbedding(sanitizedQuery)
-
-        const { data: semanticResults, error: semanticError } = await supabase.rpc(
-          'match_prompts',
-          {
-            query_embedding: queryEmbedding,
-            match_threshold: 0.5,
-            match_count: 20,
-            user_filter: user.id,
-          }
+        const { result: embedding, duration: embeddingDuration } = await measureDuration(
+          'generate embedding',
+          () => generateEmbedding(sanitizedQuery)
         )
 
-        if (!semanticError && semanticResults) {
+        if (embeddingDuration > 1000) {
+          logger.warn('Slow embedding generation', { duration: embeddingDuration })
+        }
+
+        const { result: semanticResult } = await measureDuration('semantic search', async () => {
+          return await withQueryPerformance(
+            'GET /api/search (semantic)',
+            'rpc',
+            'prompts',
+            async () => {
+              const { data, error } = await supabase.rpc(
+                'match_prompts',
+                {
+                  query_embedding: embedding,
+                  match_threshold: 0.5,
+                  match_count: 20,
+                  user_filter: user.id,
+                }
+              )
+
+              if (error) {
+                throw error
+              }
+              return data
+            }
+          )
+        })
+
+        if (semanticResult) {
           if (searchType === 'hybrid') {
             // Merge and deduplicate results
             const existingIds = new Set(results.map((r) => (r as { id: string }).id))
-            const newResults = semanticResults.filter(
+            const newResults = semanticResult.filter(
               (r: Record<string, unknown>) => !existingIds.has((r.id as string) || '')
             )
             results = [...results, ...newResults]
@@ -82,23 +118,34 @@ export async function GET(request: NextRequest) {
               return bDate - aDate
             })
           } else {
-            results = semanticResults
+            results = semanticResult
           }
         }
       } catch (error) {
         logger.error('Semantic search error:', error)
         // Fall back to keyword search if semantic fails
         if (searchType === 'semantic') {
-          const { data: keywordResults } = await supabase
-            .from('prompts')
-            .select('*')
-            .eq('user_id', user.id)
-            .or(`title.ilike.%${sanitizedQuery}%,content.ilike.%${sanitizedQuery}%`)
-            .order('created_at', { ascending: false })
-            .limit(20)
+          const { result: keywordResult } = await measureDuration('keyword fallback', async () => {
+            return await withQueryPerformance(
+              'GET /api/search (fallback)',
+              'select',
+              'prompts',
+              async () => {
+                const { data } = await supabase
+                  .from('prompts')
+                  .select('id, title, description, tags, use_case, framework, created_at, updated_at')
+                  .eq('user_id', user.id)
+                  .or(`title.ilike.%${sanitizedQuery}%,content.ilike.%${sanitizedQuery}%`)
+                  .order('created_at', { ascending: false })
+                  .limit(20)
 
-          if (keywordResults) {
-            results = keywordResults
+                return data
+              }
+            )
+          })
+
+          if (keywordResult) {
+            results = keywordResult
           }
         }
       }

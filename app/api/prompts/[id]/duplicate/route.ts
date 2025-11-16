@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { handleError, ErrorCodes, ApplicationError } from '@/lib/utils/error-handler'
+import { logger } from '@/lib/utils/logger'
+import { withQueryPerformance } from '@/lib/utils/query-performance'
 
 export async function POST(
   request: Request,
@@ -15,63 +18,82 @@ export async function POST(
     } = await supabase.auth.getUser()
 
     if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      throw new ApplicationError('Unauthorized', ErrorCodes.UNAUTHORIZED, 401)
     }
 
     const { id } = await params
 
-    // Fetch the original prompt
-    const { data: original, error: fetchError } = await supabase
-      .from('prompts')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .single()
+    // Fetch the original prompt with specific fields
+    const original = await withQueryPerformance(
+      'POST /api/prompts/[id]/duplicate (fetch)',
+      'select',
+      'prompts',
+      async () => {
+        const { data, error } = await supabase
+          .from('prompts')
+          .select('id, title, content, description, use_case, framework, enhancement_technique, tags, variables, type, category')
+          .eq('id', id)
+          .eq('user_id', user.id)
+          .single()
 
-    if (fetchError || !original) {
-      return NextResponse.json({ error: 'Prompt not found' }, { status: 404 })
-    }
+        if (error || !data) {
+          throw new ApplicationError('Prompt not found', ErrorCodes.NOT_FOUND, 404)
+        }
+        return data
+      }
+    )
 
     // Create duplicate with modified title
     const duplicateTitle = `${original.title} (Copy)`
 
-    const { data: duplicate, error: createError } = await supabase
-      .from('prompts')
-      .insert({
-        user_id: user.id,
-        title: duplicateTitle,
-        content: original.content,
-        description: original.description,
-        use_case: original.use_case,
-        framework: original.framework,
-        enhancement_technique: original.enhancement_technique,
-        type: original.type,
-        category: original.category,
-        tags: original.tags,
-        variables: original.variables,
-        // Reset usage stats for duplicate
-        usage_count: 0,
-        is_favorite: false,
-        archived: false,
-        last_used_at: null,
-      })
-      .select()
-      .single()
+    const duplicate = await withQueryPerformance(
+      'POST /api/prompts/[id]/duplicate (create)',
+      'insert',
+      'prompts',
+      async () => {
+        const { data, error } = await supabase
+          .from('prompts')
+          .insert({
+            user_id: user.id,
+            title: duplicateTitle,
+            content: original.content,
+            description: original.description,
+            use_case: original.use_case,
+            framework: original.framework,
+            enhancement_technique: original.enhancement_technique,
+            type: original.type,
+            category: original.category,
+            tags: original.tags,
+            variables: original.variables,
+            // Reset usage stats for duplicate
+            usage_count: 0,
+            is_favorite: false,
+            archived: false,
+            last_used_at: null,
+          })
+          .select('id, title, content, description, tags, use_case, framework, enhancement_technique, created_at')
+          .single()
 
-    if (createError) {
-      console.error('Error creating duplicate:', createError)
-      return NextResponse.json(
-        { error: createError.message },
-        { status: 500 }
-      )
-    }
+        if (error) {
+          logger.error('Error creating duplicate:', error)
+          throw new ApplicationError(
+            error.message || 'Failed to create duplicate',
+            ErrorCodes.DATABASE_ERROR,
+            500,
+            error
+          )
+        }
+        return data
+      }
+    )
 
     return NextResponse.json(duplicate)
-  } catch (error) {
-    console.error('Error in duplicate route:', error)
+  } catch (error: unknown) {
+    const appError = handleError(error)
+    logger.error('POST /api/prompts/[id]/duplicate error', appError)
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: appError.message, code: appError.code },
+      { status: appError.statusCode || 500 }
     )
   }
 }
