@@ -25,12 +25,12 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         <div className="relative">
           <textarea
             className={cn(
-              'peer min-h-[100px] w-full rounded-lg border bg-white px-4 py-2.5 text-sm',
+              'peer min-h-[160px] w-full rounded-lg border bg-white px-4 py-3 text-sm',
               'transition-all duration-200',
               'placeholder:text-transparent',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 hover:border-slate-400',
+              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 hover:border-slate-300 hover:shadow-sm',
               'disabled:cursor-not-allowed disabled:opacity-50',
-              'resize-none',
+              'resize-y',
               error
                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
                 : 'border-slate-300 focus:border-blue-500',

@@ -129,8 +129,9 @@ export function PromptBuilder() {
                     className={cn(
                       'relative flex h-20 w-20 items-center justify-center rounded-full transition-all duration-200 shadow-md',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                      'hover:scale-105',
                       isActive
-                        ? 'bg-blue-500 text-white shadow-lg scale-105'
+                        ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/50 scale-105 ring-2 ring-blue-300'
                         : isCompleted
                           ? 'bg-green-500 text-white shadow-md'
                           : 'bg-white border-2 border-slate-200 text-slate-400 dark:bg-slate-800 dark:border-slate-700'
@@ -206,11 +207,11 @@ export function PromptBuilder() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
+            <div className="mb-12">
+              <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">
                 {STEPS[currentStepIndex].label}
               </h2>
-              <p className="text-lg text-slate-600 dark:text-slate-400">
+              <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
                 {STEPS[currentStepIndex].description}
               </p>
             </div>

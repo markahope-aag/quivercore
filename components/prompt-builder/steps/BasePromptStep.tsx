@@ -49,9 +49,10 @@ export function BasePromptStep() {
   return (
     <div className="space-y-8">
       {/* Section Header */}
-      <div className="mb-8 border-b border-slate-200 pb-6 dark:border-slate-800">
-        <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-2">Prompt Configuration</h3>
-        <p className="text-base text-slate-600 dark:text-slate-400">
+      <div className="mb-12 border-b border-slate-200 pb-6 dark:border-slate-800">
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">Base Prompt</h2>
+        <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Prompt Configuration</h3>
+        <p className="text-base text-slate-600 dark:text-slate-400 leading-relaxed">
           Define the foundation of your prompt by selecting a domain and framework, then providing your core instructions.
         </p>
       </div>
@@ -75,7 +76,7 @@ export function BasePromptStep() {
             ))}
           </SelectContent>
         </Select>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           Choose the domain that best describes your use case
         </p>
       </div>
@@ -105,7 +106,7 @@ export function BasePromptStep() {
             {state.errors.framework}
           </p>
         )}
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           Select the prompt engineering pattern to use
         </p>
       </div>
@@ -118,18 +119,18 @@ export function BasePromptStep() {
           value={state.baseConfig.basePrompt}
           onChange={handleBasePromptChange}
           error={state.errors.basePrompt}
-          placeholder="Enter your core prompt instructions here..."
-          className="min-h-[200px] rounded-lg"
+          placeholder="Enter your core prompt instructions here. Be specific and clear about what you want the AI to do..."
+          className="min-h-[160px] rounded-lg"
         />
         <div className="flex items-center justify-between">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Provide the main instructions for your prompt
           </p>
           <span
-            className={`text-sm font-medium ${
+            className={`text-xs text-slate-400 dark:text-slate-500 ${
               state.baseConfig.basePrompt.length > 45000
-                ? 'text-red-600 dark:text-red-400'
-                : 'text-slate-600 dark:text-slate-400'
+                ? 'text-red-500 dark:text-red-400'
+                : ''
             }`}
           >
             {state.baseConfig.basePrompt.length.toLocaleString()} / 50,000
@@ -144,10 +145,10 @@ export function BasePromptStep() {
           label="Target Outcome (Optional)"
           value={state.baseConfig.targetOutcome}
           onChange={handleTargetOutcomeChange}
-          placeholder="Describe the desired outcome or response format..."
-          className="min-h-[120px] rounded-lg"
+          placeholder="Describe the desired outcome or response format. For example: 'A structured JSON object with...' or 'A markdown document with sections for...'"
+          className="min-h-[160px] rounded-lg"
         />
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           Optional: Describe what you want the AI to produce
         </p>
       </div>

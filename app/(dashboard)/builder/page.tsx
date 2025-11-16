@@ -21,7 +21,7 @@ export default function BuilderPage() {
         {/* Header */}
         <div className="mb-8 rounded-xl bg-gradient-to-r from-slate-50 to-blue-50 px-8 py-12 dark:from-slate-900 dark:to-blue-950/30">
           <div className="flex items-center gap-3 mb-3">
-            <Sparkles className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+            <Sparkles className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
               QuiverCore
             </h1>
