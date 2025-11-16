@@ -198,6 +198,12 @@ export function PreviewExecuteStep() {
       // Format the full prompt content (system + user)
       const fullPrompt = `${state.generatedPrompt.systemPrompt}\n\n---\n\n${state.generatedPrompt.finalPrompt}`
 
+      // Convert variables to database format
+      const variables = state.baseConfig.variables?.reduce((acc, v) => {
+        acc[v.name] = { description: v.description || '' }
+        return acc
+      }, {} as Record<string, any>) || null
+
       const response = await fetch('/api/prompts', {
         method: 'POST',
         headers: {
@@ -215,6 +221,7 @@ export function PreviewExecuteStep() {
                 ? enabledAdvancedEnhancements.join(', ')
                 : null),
           tags: tags.length > 0 ? tags : null,
+          variables: variables,
         }),
       })
 
@@ -492,6 +499,14 @@ export function PreviewExecuteStep() {
             <dt className="font-medium text-gray-500 dark:text-gray-400">Advanced Enhancements:</dt>
             <dd className="text-gray-900 dark:text-white">
               {enabledAdvancedEnhancements.length > 0 ? enabledAdvancedEnhancements.join(', ') : 'None'}
+            </dd>
+          </div>
+          <div>
+            <dt className="font-medium text-gray-500 dark:text-gray-400">Variables:</dt>
+            <dd className="text-gray-900 dark:text-white">
+              {state.baseConfig.variables && state.baseConfig.variables.length > 0
+                ? `${state.baseConfig.variables.length} defined (${state.baseConfig.variables.map(v => v.name).join(', ')})`
+                : 'None'}
             </dd>
           </div>
           <div>

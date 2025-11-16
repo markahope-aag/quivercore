@@ -144,12 +144,18 @@ export interface VSEnhancement {
   antiTypicalityEnabled: boolean
 }
 
+export interface PromptVariable {
+  name: string
+  description?: string
+}
+
 export interface BasePromptConfig {
   domain: DomainCategory | ''
   framework: FrameworkType | ''
   basePrompt: string
   targetOutcome: string
   frameworkConfig: FrameworkConfig
+  variables?: PromptVariable[]
 }
 
 // ============================================================================

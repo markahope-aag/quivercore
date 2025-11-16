@@ -18,7 +18,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card-v2'
 import { Badge } from '@/components/ui/badge-v2'
 import { Button } from '@/components/ui/button-v2'
-import { Info, HelpCircle, Sparkles, CheckCircle, X, ChevronDown, ChevronUp, Wand2, XCircle } from 'lucide-react'
+import { Info, HelpCircle, Sparkles, CheckCircle, X, ChevronDown, ChevronUp, Wand2, XCircle, Plus, Trash2, Tag } from 'lucide-react'
 import { StepHeader } from './StepHeader'
 import { FrameworkGuideModal } from '../FrameworkGuideModal'
 import { cn } from '@/lib/utils'
@@ -39,6 +39,8 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
   const [isDraftGenerated, setIsDraftGenerated] = useState(false)
   const [hasModifiedDraft, setHasModifiedDraft] = useState(false)
   const [originalDraft, setOriginalDraft] = useState<string>('')
+  const [newVariableName, setNewVariableName] = useState('')
+  const [newVariableDesc, setNewVariableDesc] = useState('')
 
   // Get recommended frameworks based on domain and target outcome
   const recommendedFrameworks = getRecommendedFrameworks(
@@ -158,6 +160,51 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
     setIsDraftGenerated(false)
     setHasModifiedDraft(false)
     setOriginalDraft('')
+  }
+
+  // Variable management handlers
+  const handleAddVariable = () => {
+    if (!newVariableName.trim()) return
+
+    const variables = state.baseConfig.variables || []
+    const exists = variables.some(v => v.name === newVariableName.trim())
+
+    if (exists) {
+      setError('variables', 'Variable with this name already exists')
+      return
+    }
+
+    updateBaseConfig({
+      variables: [...variables, { name: newVariableName.trim(), description: newVariableDesc.trim() || undefined }]
+    })
+    setNewVariableName('')
+    setNewVariableDesc('')
+    clearErrors()
+  }
+
+  const handleRemoveVariable = (name: string) => {
+    const variables = state.baseConfig.variables || []
+    updateBaseConfig({
+      variables: variables.filter(v => v.name !== name)
+    })
+  }
+
+  const insertVariableTag = (variableName: string) => {
+    const tag = `{{${variableName}}}`
+    const textarea = document.getElementById('basePrompt') as HTMLTextAreaElement
+    if (textarea) {
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const text = state.baseConfig.basePrompt
+      const newText = text.substring(0, start) + tag + text.substring(end)
+      updateBaseConfig({ basePrompt: newText })
+
+      // Set cursor position after inserted tag
+      setTimeout(() => {
+        textarea.focus()
+        textarea.setSelectionRange(start + tag.length, start + tag.length)
+      }, 0)
+    }
   }
 
   const validateStep = (): boolean => {
@@ -597,6 +644,130 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
               </span>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Variables Section (Optional) */}
+      <div className="space-y-4 rounded-lg border-2 border-slate-300 bg-white p-5 shadow-sm dark:border-slate-600 dark:bg-slate-800">
+        <div>
+          <h3 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <Tag className="h-5 w-5" />
+            Variables <span className="text-slate-400 font-normal text-sm">(Optional)</span>
+          </h3>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Add reusable variables to make this prompt adaptable. Variables use the <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">{'{{name}}'}</code> format.
+          </p>
+        </div>
+
+        {/* Existing Variables List */}
+        {state.baseConfig.variables && state.baseConfig.variables.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
+              Defined Variables ({state.baseConfig.variables.length}):
+            </p>
+            <div className="space-y-2">
+              {state.baseConfig.variables.map((variable) => (
+                <div
+                  key={variable.name}
+                  className="flex items-start justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <code className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                        {'{{' + variable.name + '}}'}
+                      </code>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => insertVariableTag(variable.name)}
+                        className="h-6 px-2 text-xs text-slate-600 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
+                      >
+                        Insert
+                      </Button>
+                    </div>
+                    {variable.description && (
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                        {variable.description}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveVariable(variable.name)}
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Add New Variable Form */}
+        <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-600">
+          <p className="text-xs font-medium text-slate-700 dark:text-slate-300">Add New Variable:</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="variableName" className="text-xs text-slate-600 dark:text-slate-400 mb-1 block">
+                Variable Name *
+              </label>
+              <Input
+                id="variableName"
+                value={newVariableName}
+                onChange={(e) => setNewVariableName(e.target.value)}
+                placeholder="e.g., name, topic, company"
+                className="h-9 text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    handleAddVariable()
+                  }
+                }}
+              />
+            </div>
+            <div>
+              <label htmlFor="variableDesc" className="text-xs text-slate-600 dark:text-slate-400 mb-1 block">
+                Description (Optional)
+              </label>
+              <Input
+                id="variableDesc"
+                value={newVariableDesc}
+                onChange={(e) => setNewVariableDesc(e.target.value)}
+                placeholder="e.g., Customer's first name"
+                className="h-9 text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    handleAddVariable()
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleAddVariable}
+              disabled={!newVariableName.trim()}
+              className="text-xs"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Add Variable
+            </Button>
+          </div>
+          {state.errors.variables && (
+            <p className="text-xs text-red-600 dark:text-red-400">{state.errors.variables}</p>
+          )}
+        </div>
+
+        {/* Helper Info */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded p-3">
+          <p className="text-xs text-blue-700 dark:text-blue-300">
+            <strong>Tip:</strong> Variables let you create reusable prompts. When you use this prompt later, you'll be asked to fill in values for each variable.
+          </p>
         </div>
       </div>
 
