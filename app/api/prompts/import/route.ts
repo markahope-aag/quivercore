@@ -1,7 +1,6 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import type { Database } from '@/lib/types/supabase'
 import { PromptSource } from '@/lib/types/database'
 
 interface ImportPromptData {
@@ -23,7 +22,33 @@ interface ImportRequest {
 
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return NextResponse.json(
+        { error: 'Server configuration error. Missing Supabase credentials.' },
+        { status: 500 }
+      )
+    }
+
+    const cookieStore = await cookies()
+
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing user sessions.
+          }
+        },
+      },
+    })
 
     // Check authentication
     const {
