@@ -78,8 +78,18 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
     }
   }
 
+  // Reset draft state helper
+  const resetDraftState = () => {
+    if (isDraftGenerated) {
+      setIsDraftGenerated(false)
+      setHasModifiedDraft(false)
+      setOriginalDraft('')
+    }
+  }
+
   const handleTargetOutcomeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     updateBaseConfig({ targetOutcome: e.target.value })
+    resetDraftState()
   }
 
   // Check if draft generation is available
@@ -210,6 +220,7 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
             onValueChange={(value) => {
               updateBaseConfig({ domain: value as DomainCategory })
               clearErrors()
+              resetDraftState()
             }}
           >
             <SelectTrigger className="w-full h-11 bg-slate-50 border-slate-300 hover:border-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
@@ -280,6 +291,7 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
             onValueChange={(value) => {
               updateBaseConfig({ framework: value as FrameworkType })
               clearErrors()
+              resetDraftState()
             }}
           >
             <SelectTrigger
