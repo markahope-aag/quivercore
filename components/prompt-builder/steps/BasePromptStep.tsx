@@ -524,7 +524,7 @@ export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
           error={state.errors.basePrompt}
           placeholder={placeholderText}
           className={cn(
-            'min-h-[140px] border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200',
+            'min-h-[240px] border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200',
             isDraftGenerated && !hasModifiedDraft
               ? 'bg-purple-50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-700'
               : 'bg-slate-50 dark:bg-slate-900/50',
