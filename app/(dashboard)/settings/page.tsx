@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Settings as SettingsIcon, User, Bell, Lock, Database, Trash2, Save } from 'lucide-react'
+import { Settings as SettingsIcon, User, Bell, Key, Database, Trash2, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { ApiKeysSection } from '@/components/settings/api-keys-section'
 
 export default function SettingsPage() {
   const [user, setUser] = useState<any>(null)
@@ -88,30 +89,19 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* API Settings */}
+        {/* API Keys */}
         <Card className="border-2 border-slate-200 dark:border-slate-700">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Lock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              <CardTitle>API Configuration</CardTitle>
+              <Key className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <CardTitle>API Keys</CardTitle>
             </div>
             <CardDescription>
-              Configure your Claude API key for prompt execution
+              Configure your AI provider API keys for prompt testing
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="api-key">Claude API Key</Label>
-              <Input
-                id="api-key"
-                type="password"
-                placeholder="sk-ant-..."
-                className="bg-white dark:bg-slate-800 font-mono"
-              />
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Your API key is stored locally and never sent to our servers
-              </p>
-            </div>
+          <CardContent>
+            <ApiKeysSection />
           </CardContent>
         </Card>
 

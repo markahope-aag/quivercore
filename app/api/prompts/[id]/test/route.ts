@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createOpenAIClient } from '@/lib/openai/client'
+import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 import { substituteVariables } from '@/lib/utils/prompt'
 import { handleError, ErrorCodes, ApplicationError } from '@/lib/utils/error-handler'
 import { logger } from '@/lib/utils/logger'
+import { decrypt } from '@/lib/utils/encryption'
 
 export async function POST(
   request: NextRequest,
@@ -25,7 +27,53 @@ export async function POST(
     }
 
     const body = await request.json()
-    const { variables, model = 'gpt-3.5-turbo' } = body
+    const { variables, model = 'gpt-3.5-turbo', session_api_key } = body
+
+    // Determine which provider is needed based on model
+    const isAnthropicModel = model.startsWith('claude-')
+    const provider = isAnthropicModel ? 'anthropic' : 'openai'
+
+    // Get API key - either from session or database
+    let apiKey: string | null = null
+
+    if (session_api_key) {
+      // Use session-provided key (not saved)
+      apiKey = session_api_key
+    } else {
+      // Try to get saved key from database
+      const { data: keyData, error: keyError } = await supabase
+        .from('user_api_keys')
+        .select('encrypted_key')
+        .eq('user_id', user.id)
+        .eq('provider', provider)
+        .single()
+
+      if (keyError && keyError.code !== 'PGRST116') {
+        logger.error('Failed to fetch API key', keyError)
+        throw new ApplicationError('Failed to fetch API key', ErrorCodes.DATABASE_ERROR, 500, keyError)
+      }
+
+      if (keyData) {
+        try {
+          apiKey = decrypt(keyData.encrypted_key)
+        } catch (error) {
+          logger.error('Failed to decrypt API key', error)
+          throw new ApplicationError(
+            'Failed to decrypt API key. Please re-save your API key in settings.',
+            ErrorCodes.INTERNAL_ERROR,
+            500
+          )
+        }
+      }
+    }
+
+    if (!apiKey) {
+      throw new ApplicationError(
+        `No ${provider} API key found. Please add your API key in Settings or provide it when testing.`,
+        ErrorCodes.VALIDATION_ERROR,
+        400
+      )
+    }
 
     // Get prompt
     const { data: prompt, error: promptError } = await supabase
@@ -51,20 +99,42 @@ export async function POST(
     // Substitute variables
     const finalPrompt = substituteVariables(prompt.content, variables || {})
 
-    // Call OpenAI API
-    const openai = createOpenAIClient()
-    const completion = await openai.chat.completions.create({
-      model,
-      messages: [
-        {
-          role: 'user',
-          content: finalPrompt,
-        },
-      ],
-      temperature: 0.7,
-    })
+    let response: string
 
-    const response = completion.choices[0]?.message?.content || ''
+    // Call appropriate API based on provider
+    if (provider === 'anthropic') {
+      const anthropic = new Anthropic({ apiKey })
+
+      const completion = await anthropic.messages.create({
+        model,
+        max_tokens: 4096,
+        messages: [
+          {
+            role: 'user',
+            content: finalPrompt,
+          },
+        ],
+      })
+
+      response = completion.content[0].type === 'text'
+        ? completion.content[0].text
+        : ''
+    } else {
+      const openai = new OpenAI({ apiKey })
+
+      const completion = await openai.chat.completions.create({
+        model,
+        messages: [
+          {
+            role: 'user',
+            content: finalPrompt,
+          },
+        ],
+        temperature: 0.7,
+      })
+
+      response = completion.choices[0]?.message?.content || ''
+    }
 
     // Save test result
     await supabase.from('prompt_tests').insert({
@@ -84,10 +154,18 @@ export async function POST(
   } catch (error: unknown) {
     const appError = handleError(error)
     logger.error('POST /api/prompts/[id]/test error', appError)
+
+    // Provide helpful error messages for API key issues
+    let errorMessage = appError.message
+    if (appError.message.includes('API key')) {
+      errorMessage = appError.message
+    } else if (error instanceof Error && error.message.includes('401')) {
+      errorMessage = 'Invalid API key. Please check your API key and try again.'
+    }
+
     return NextResponse.json(
-      { error: appError.message, code: appError.code },
+      { error: errorMessage, code: appError.code },
       { status: appError.statusCode || 500 }
     )
   }
 }
-

@@ -2,17 +2,14 @@
 
 /**
  * Test Panel Component
- * 
+ *
  * Functional testing interface - focused solely on execution:
  * - Template variables input
  * - Model selection
- * - Execute/test functionality
- * 
- * NOTE: Metadata (difficulty, ratings, reviews, guidance) belongs on the
- * template detail/browse page, not in this functional testing panel.
+ * - Execute/test functionality with user-provided API keys
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button-v2'
 import { Input } from '@/components/ui/input-v2'
 import {
@@ -24,7 +21,9 @@ import {
 } from '@/components/ui/select-v2'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card-v2'
 import { Prompt } from '@/lib/types/database'
-import { TestTube, Loader2 } from 'lucide-react'
+import { TestTube, Loader2, Key, X, Eye, EyeOff, Settings as SettingsIcon } from 'lucide-react'
+import { toast } from 'sonner'
+import Link from 'next/link'
 
 interface TestPanelProps {
   prompt: Prompt
@@ -41,8 +40,49 @@ export function TestPanel({ prompt }: TestPanelProps) {
   const [response, setResponse] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hasApiKey, setHasApiKey] = useState(false)
+  const [checkingApiKey, setCheckingApiKey] = useState(true)
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false)
+  const [sessionApiKey, setSessionApiKey] = useState('')
+  const [showSessionApiKey, setShowSessionApiKey] = useState(false)
+
+  useEffect(() => {
+    checkForApiKeys()
+  }, [])
+
+  // Check if user has saved API keys
+  const checkForApiKeys = async () => {
+    try {
+      const response = await fetch('/api/user/api-keys')
+      if (response.ok) {
+        const data = await response.json()
+        const provider = model.startsWith('claude-') ? 'anthropic' : 'openai'
+        setHasApiKey(data.keys.some((k: any) => k.provider === provider))
+      }
+    } catch (error) {
+      console.error('Failed to check API keys:', error)
+    } finally {
+      setCheckingApiKey(false)
+    }
+  }
+
+  // Re-check when model changes
+  useEffect(() => {
+    if (!checkingApiKey) {
+      checkForApiKeys()
+    }
+  }, [model])
 
   const handleTest = async () => {
+    // Check if we need an API key
+    const provider = model.startsWith('claude-') ? 'anthropic' : 'openai'
+
+    if (!hasApiKey && !sessionApiKey) {
+      setShowApiKeyInput(true)
+      setError(`Please provide your ${provider === 'openai' ? 'OpenAI' : 'Anthropic'} API key to test with this model.`)
+      return
+    }
+
     setIsLoading(true)
     setError(null)
     setResponse(null)
@@ -51,7 +91,11 @@ export function TestPanel({ prompt }: TestPanelProps) {
       const res = await fetch(`/api/prompts/${prompt.id}/test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ variables, model }),
+        body: JSON.stringify({
+          variables,
+          model,
+          session_api_key: sessionApiKey || undefined,
+        }),
       })
 
       if (!res.ok) {
@@ -61,15 +105,90 @@ export function TestPanel({ prompt }: TestPanelProps) {
 
       const data = await res.json()
       setResponse(data.response)
+      toast.success('Prompt tested successfully')
     } catch (err: any) {
       setError(err.message || 'An error occurred')
+      toast.error(err.message || 'Failed to test prompt')
     } finally {
       setIsLoading(false)
     }
   }
 
+  const provider = model.startsWith('claude-') ? 'anthropic' : 'openai'
+  const providerName = provider === 'openai' ? 'OpenAI' : 'Anthropic'
+
   return (
     <div className="space-y-6">
+      {/* API Key Status/Input */}
+      {!hasApiKey && (
+        <Card className="border-2 border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/20">
+          <CardContent className="pt-6">
+            <div className="flex gap-3">
+              <Key className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium text-yellow-900 dark:text-yellow-100 mb-2">
+                  {providerName} API Key Required
+                </p>
+                <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
+                  To test prompts, you need to provide your own API key. You can either:
+                </p>
+                <div className="flex gap-2">
+                  <Link href="/settings">
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <SettingsIcon className="h-4 w-4" />
+                      Save in Settings
+                    </Button>
+                  </Link>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+                    className="gap-2"
+                  >
+                    <Key className="h-4 w-4" />
+                    {showApiKeyInput ? 'Hide' : 'Enter'} for This Session
+                  </Button>
+                </div>
+
+                {showApiKeyInput && (
+                  <div className="mt-4 space-y-3 p-4 rounded-lg bg-white dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700">
+                    <div className="space-y-2">
+                      <label htmlFor="session-api-key" className="text-sm font-medium text-yellow-900 dark:text-yellow-100">
+                        {providerName} API Key (This Session Only)
+                      </label>
+                      <div className="relative">
+                        <Input
+                          id="session-api-key"
+                          type={showSessionApiKey ? 'text' : 'password'}
+                          value={sessionApiKey}
+                          onChange={(e) => setSessionApiKey(e.target.value)}
+                          placeholder={provider === 'openai' ? 'sk-...' : 'sk-ant-...'}
+                          className="pr-10 font-mono text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowSessionApiKey(!showSessionApiKey)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        >
+                          {showSessionApiKey ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                      <p className="text-xs text-yellow-700 dark:text-yellow-400">
+                        This key will only be used for this test and won't be saved
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Template Variables */}
       {prompt.variables && Object.keys(prompt.variables).length > 0 && (
         <div className="space-y-4">
@@ -113,9 +232,9 @@ export function TestPanel({ prompt }: TestPanelProps) {
       </div>
 
       {/* Execute Button */}
-      <Button 
-        onClick={handleTest} 
-        disabled={isLoading} 
+      <Button
+        onClick={handleTest}
+        disabled={isLoading || checkingApiKey}
         variant="default"
         className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md hover:from-blue-700 hover:to-blue-600 hover:shadow-lg"
       >
@@ -157,4 +276,3 @@ export function TestPanel({ prompt }: TestPanelProps) {
     </div>
   )
 }
-
