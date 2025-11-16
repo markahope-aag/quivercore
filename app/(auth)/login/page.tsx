@@ -25,13 +25,32 @@ function LoginForm() {
   useEffect(() => {
     if (errorParam) {
       setError(decodeURIComponent(errorParam))
+      // Clear code from URL if there's an error to prevent loop
+      if (code) {
+        const url = new URL(window.location.href)
+        url.searchParams.delete('code')
+        window.history.replaceState({}, '', url.toString())
+      }
     }
-  }, [errorParam])
+  }, [errorParam, code])
   
   useEffect(() => {
     // Only redirect if we have a code and no error parameter, and haven't already redirected
     if (code && !errorParam && !redirecting) {
+      // Check if we've already processed this code (prevent infinite loop)
+      const processedCode = sessionStorage.getItem(`oauth_code_${code}`)
+      if (processedCode) {
+        // Already processed this code, don't redirect again
+        const url = new URL(window.location.href)
+        url.searchParams.delete('code')
+        window.history.replaceState({}, '', url.toString())
+        return
+      }
+      
+      // Mark this code as being processed
+      sessionStorage.setItem(`oauth_code_${code}`, 'true')
       setRedirecting(true)
+      
       // Redirect immediately to the callback route with the code
       // Use window.location for immediate redirect (doesn't wait for React)
       window.location.href = `/auth/callback?code=${code}`
