@@ -10,8 +10,17 @@ import {
 } from '@/lib/constants/prompt-builder'
 import { VSDistributionType } from '@/lib/types/prompt-builder'
 import { isVSCompatibleWithFramework } from '@/lib/utils/vs-enhancement'
+import { StepHeader } from './StepHeader'
 
-export function VSEnhancementStep() {
+interface VSEnhancementStepProps {
+  onNext?: () => void
+  onPrevious?: () => void
+  canProceed?: boolean
+  canGoBack?: boolean
+  isLastStep?: boolean
+}
+
+export function VSEnhancementStep({ onNext, canProceed = true }: VSEnhancementStepProps) {
   const { state, updateVSEnhancement } = usePromptBuilder()
   const vs = state.vsEnhancement
 
@@ -87,15 +96,12 @@ export function VSEnhancementStep() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Verbalized Sampling Enhancement
-        </h2>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Optionally enhance your prompt with Verbalized Sampling (VS) to generate diverse,
-          probability-weighted responses.
-        </p>
-      </div>
+      <StepHeader
+        title="Verbalized Sampling Enhancement"
+        description="Optionally enhance your prompt with Verbalized Sampling (VS) to generate diverse, probability-weighted responses."
+        onNext={onNext}
+        canProceed={canProceed}
+      />
 
       {/* VS Compatibility Warning */}
       {!compatibility.compatible && compatibility.warning && (
@@ -128,20 +134,20 @@ export function VSEnhancementStep() {
       )}
 
       {/* Enable VS Toggle */}
-      <div className="flex items-center justify-between rounded-lg border border-gray-300 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800">
-        <div>
-          <h3 className="text-base font-medium text-gray-900 dark:text-white">
+      <div className="flex items-center justify-between rounded-lg border-2 border-slate-300 bg-white p-5 shadow-sm dark:border-slate-600 dark:bg-slate-800">
+        <div className="flex-1">
+          <h3 className="text-base font-semibold text-slate-900 dark:text-white">
             Enable Verbalized Sampling
           </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             Generate multiple diverse responses with probability estimates
           </p>
         </div>
         <button
           type="button"
           onClick={handleEnableToggle}
-          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-            vs.enabled ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+            vs.enabled ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'
           }`}
         >
           <span
@@ -155,14 +161,16 @@ export function VSEnhancementStep() {
       {vs.enabled && (
         <>
           {/* Number of Responses */}
-          <div>
-            <label
-              htmlFor="responseCount"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Number of Responses
-            </label>
-            <div className="mt-1 flex gap-3">
+          <div className="space-y-3 rounded-lg border-2 border-slate-300 bg-white p-5 shadow-sm dark:border-slate-600 dark:bg-slate-800">
+            <div>
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                Number of Responses
+              </h3>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                How many diverse responses to generate (max 20)
+              </p>
+            </div>
+            <div className="flex gap-3">
               <select
                 id="responseCount"
                 value={
@@ -171,7 +179,7 @@ export function VSEnhancementStep() {
                     : 'custom'
                 }
                 onChange={handleResponseCountChange}
-                className="block flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white sm:text-sm"
+                className="block flex-1 h-11 rounded-lg bg-slate-50 border-slate-300 shadow-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-slate-700 dark:border-slate-600 dark:text-white transition-all duration-200"
               >
                 {RESPONSE_COUNT_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -188,13 +196,10 @@ export function VSEnhancementStep() {
                   max="20"
                   value={vs.numberOfResponses}
                   onChange={handleCustomCountChange}
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white sm:text-sm"
+                  className="block w-24 h-11 rounded-lg bg-slate-50 border-slate-300 shadow-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-slate-700 dark:border-slate-600 dark:text-white transition-all duration-200"
                 />
               )}
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              How many diverse responses to generate (max 20)
-            </p>
           </div>
 
           {/* Distribution Type */}

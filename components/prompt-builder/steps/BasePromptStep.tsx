@@ -14,8 +14,17 @@ import {
 } from '@/components/ui/select-v2'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card-v2'
 import { Info } from 'lucide-react'
+import { StepHeader } from './StepHeader'
 
-export function BasePromptStep() {
+interface BasePromptStepProps {
+  onNext?: () => void
+  onPrevious?: () => void
+  canProceed?: boolean
+  canGoBack?: boolean
+  isLastStep?: boolean
+}
+
+export function BasePromptStep({ onNext, canProceed }: BasePromptStepProps) {
   const { state, updateBaseConfig, setError, clearErrors } = usePromptBuilder()
 
 
@@ -47,125 +56,171 @@ export function BasePromptStep() {
   }
 
   return (
-    <div className="space-y-10">
-      {/* Section Header */}
-      <div className="mb-12 border-b border-slate-200 pb-6 dark:border-slate-800">
-        <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Prompt Configuration</h3>
-        <p className="text-base text-slate-600 dark:text-slate-400 leading-relaxed">
-          Define the foundation of your prompt by selecting a domain and framework, then providing your core instructions.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <StepHeader
+        title="Prompt Configuration"
+        description="Define the foundation of your prompt by selecting a domain and framework, then providing your core instructions."
+        onNext={onNext}
+        canProceed={canProceed}
+      />
 
-      {/* Target Outcome - MOVED FIRST */}
-      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="mb-4">
-          <label className="text-sm font-semibold text-slate-900 dark:text-white">
-            Target Outcome <span className="text-slate-400 font-normal">(Optional)</span>
-          </label>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Start by defining what you want to achieve - this helps guide the rest of your prompt creation
+      {/* Intent Section - Target Outcome */}
+      <div className="space-y-3 rounded-lg border-2 border-slate-300 bg-white p-5 shadow-sm dark:border-slate-600 dark:bg-slate-800">
+        <div>
+          <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+            Target Outcome <span className="text-slate-400 font-normal text-sm">(Optional)</span>
+          </h3>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Be specific about your desired output - this guides the entire prompt creation process
           </p>
         </div>
         <Textarea
           id="targetOutcome"
-          label="What do you want to achieve?"
+          label=""
           value={state.baseConfig.targetOutcome}
           onChange={handleTargetOutcomeChange}
-          placeholder="Describe the desired outcome or response format. For example: 'A structured JSON object with...' or 'A markdown document with sections for...'"
-          className="min-h-[160px] rounded-lg"
+          placeholder="e.g., Generate 5 creative marketing campaign concepts for a sustainable coffee brand"
+          className="min-h-[120px] bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
         />
-      </div>
-
-      {/* Domain Category */}
-      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="mb-4">
-          <label className="text-sm font-semibold text-slate-900 dark:text-white">
-            Domain Category <span className="text-slate-400 font-normal">(Optional)</span>
-          </label>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Choose the domain that best describes your use case
-          </p>
-        </div>
-        <Select
-          value={state.baseConfig.domain || undefined}
-          onValueChange={(value) => {
-            updateBaseConfig({ domain: value as DomainCategory })
-            clearErrors()
-          }}
-        >
-          <SelectTrigger className="w-full h-12 rounded-lg">
-            <SelectValue placeholder="Select a domain (optional)" />
-          </SelectTrigger>
-          <SelectContent>
-            {DOMAIN_CATEGORIES.map((category) => (
-              <SelectItem key={category.value} value={category.value}>
-                {category.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Framework Selection */}
-      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="mb-4">
-          <label className="text-sm font-semibold text-slate-900 dark:text-white">
-            Framework <span className="text-red-500">*</span>
-          </label>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Select the prompt engineering pattern to use
-          </p>
-        </div>
-        <Select
-          value={state.baseConfig.framework || undefined}
-          onValueChange={(value) => {
-            updateBaseConfig({ framework: value as FrameworkType })
-            clearErrors()
-          }}
-        >
-          <SelectTrigger className="w-full h-12 rounded-lg" aria-invalid={!!state.errors.framework}>
-            <SelectValue placeholder="Select a framework *" />
-          </SelectTrigger>
-          <SelectContent>
-            {FRAMEWORK_OPTIONS.map((framework) => (
-              <SelectItem key={framework.value} value={framework.value}>
-                {framework.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {state.errors.framework && (
-          <p className="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">
-            {state.errors.framework}
-          </p>
+        {state.baseConfig.targetOutcome.trim() && (
+          <div className="flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Target outcome defined</span>
+          </div>
         )}
       </div>
 
-      {/* Base Prompt */}
-      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="mb-4">
-          <label className="text-sm font-semibold text-slate-900 dark:text-white">
-            Base Prompt <span className="text-red-500">*</span>
+      {/* Context Section - Domain + Framework */}
+      <div className="space-y-4 rounded-lg border-2 border-slate-300 bg-white p-5 shadow-sm dark:border-slate-600 dark:bg-slate-800">
+        <div className="border-b border-slate-300 pb-3 dark:border-slate-600">
+          <h3 className="text-base font-semibold text-slate-900 dark:text-white">Context</h3>
+        </div>
+
+        {/* Domain Category */}
+        <div className="space-y-2">
+          <label htmlFor="domain" className="text-sm font-medium text-slate-900 dark:text-white">
+            Domain Category <span className="text-slate-400 font-normal text-xs">(Optional)</span>
           </label>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Provide the main instructions for your prompt
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Choose the domain that best describes your use case
+          </p>
+          <Select
+            value={state.baseConfig.domain || undefined}
+            onValueChange={(value) => {
+              updateBaseConfig({ domain: value as DomainCategory })
+              clearErrors()
+            }}
+          >
+            <SelectTrigger className="w-full h-11 bg-slate-50 border-slate-300 hover:border-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
+              <SelectValue placeholder="Select a domain (optional)" />
+            </SelectTrigger>
+            <SelectContent className="bg-white shadow-lg border-blue-300">
+              {DOMAIN_CATEGORIES.map((category) => (
+                <SelectItem key={category.value} value={category.value} className="hover:bg-blue-50">
+                  {category.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Framework Selection */}
+        <div className="space-y-2">
+          <label htmlFor="framework" className="text-sm font-medium text-slate-900 dark:text-white">
+            Framework <span className="text-red-500">*</span>
+          </label>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Select the prompt engineering pattern to use
+          </p>
+          <Select
+            value={state.baseConfig.framework || undefined}
+            onValueChange={(value) => {
+              updateBaseConfig({ framework: value as FrameworkType })
+              clearErrors()
+            }}
+          >
+            <SelectTrigger
+              className={`w-full h-11 bg-slate-50 border-slate-300 hover:border-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 ${
+                state.errors.framework ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''
+              }`}
+              aria-invalid={!!state.errors.framework}
+            >
+              <SelectValue placeholder="Select a framework *" />
+            </SelectTrigger>
+            <SelectContent className="bg-white shadow-lg border-blue-300">
+              {FRAMEWORK_OPTIONS.map((framework) => (
+                <SelectItem key={framework.value} value={framework.value} className="hover:bg-blue-50">
+                  {framework.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {state.errors.framework && (
+            <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1.5" role="alert">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {state.errors.framework}
+            </p>
+          )}
+          {state.baseConfig.framework && !state.errors.framework && (
+            <div className="flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Framework selected</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content Section - Base Prompt */}
+      <div className="space-y-3 rounded-lg border-2 border-slate-300 bg-white p-5 shadow-sm dark:border-slate-600 dark:bg-slate-800">
+        <div>
+          <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+            Base Prompt <span className="text-red-500">*</span>
+          </h3>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Provide your core instructions and context. This is the foundation of your prompt - be as detailed as necessary
           </p>
         </div>
         <Textarea
           id="basePrompt"
-          label="Base Prompt"
+          label=""
           value={state.baseConfig.basePrompt}
           onChange={handleBasePromptChange}
           error={state.errors.basePrompt}
-          placeholder="Enter your core prompt instructions here. Be specific and clear about what you want the AI to do..."
-          className="min-h-[160px] rounded-lg"
+          placeholder="e.g., I need marketing campaign ideas that will differentiate our brand from competitors while highlighting our sustainability mission..."
+          className={`min-h-[140px] bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 ${
+            state.errors.basePrompt ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''
+          }`}
         />
-        <div className="flex items-center justify-end mt-2">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            {state.errors.basePrompt && (
+              <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1.5" role="alert">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {state.errors.basePrompt}
+              </p>
+            )}
+            {state.baseConfig.basePrompt.trim() && !state.errors.basePrompt && (
+              <div className="flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Base prompt provided</span>
+              </div>
+            )}
+          </div>
           <span
-            className={`text-xs text-slate-400 dark:text-slate-500 ${
+            className={`text-xs ${
               state.baseConfig.basePrompt.length > 45000
-                ? 'text-red-500 dark:text-red-400'
-                : ''
+                ? 'text-red-600 dark:text-red-400 font-medium'
+                : 'text-slate-500 dark:text-slate-400'
             }`}
           >
             {state.baseConfig.basePrompt.length.toLocaleString()} / 50,000
@@ -173,35 +228,15 @@ export function BasePromptStep() {
         </div>
       </div>
 
-      {/* Helpful Tips */}
-      <Card className="border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100/50 shadow-sm dark:border-blue-700 dark:from-blue-900/30 dark:to-blue-800/20">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            <CardTitle className="text-base text-blue-900 dark:text-blue-300">Tips</CardTitle>
+      {/* Helpful Tips - Compact */}
+      <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+        <div className="flex items-start gap-3">
+          <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+          <div className="space-y-1.5 text-sm text-blue-700 dark:text-blue-300">
+            <p><strong>Tips:</strong> Be specific in your base prompt. Choose a framework that matches your use case. Use the target outcome to guide the AI's response format.</p>
           </div>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2 text-sm text-blue-700 dark:text-blue-400">
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5">•</span>
-              <span>Be specific and clear in your base prompt</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5">•</span>
-              <span>Choose a framework that matches your use case</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5">•</span>
-              <span>Use the target outcome to guide the AI's response format</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5">•</span>
-              <span>Framework-specific configuration will appear in the next step</span>
-            </li>
-          </ul>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

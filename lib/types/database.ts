@@ -17,6 +17,8 @@ export interface Prompt {
   embedding: number[] | null
   usage_count: number
   is_favorite: boolean
+  archived: boolean
+  last_used_at: string | null
   created_at: string
   updated_at: string
 }

@@ -93,15 +93,23 @@ export function PromptBuilder() {
   }
 
   const renderStepContent = () => {
+    const navigationProps = {
+      onNext: handleNext,
+      onPrevious: handlePrevious,
+      canProceed: canProceed(),
+      canGoBack: canGoBack(),
+      isLastStep: currentStepIndex === STEPS.length - 1,
+    }
+
     switch (state.currentStep) {
       case 'base':
-        return <BasePromptStep />
+        return <BasePromptStep {...navigationProps} />
       case 'framework':
-        return <FrameworkConfigStep />
+        return <FrameworkConfigStep {...navigationProps} />
       case 'enhancement':
-        return <VSEnhancementStep />
+        return <VSEnhancementStep {...navigationProps} />
       case 'advanced':
-        return <AdvancedEnhancementsStep />
+        return <AdvancedEnhancementsStep {...navigationProps} />
       case 'preview':
         return <PreviewExecuteStep />
       default:
@@ -220,39 +228,44 @@ export function PromptBuilder() {
 
             {/* Navigation Buttons */}
             <div className="mt-8 flex items-center justify-between border-t border-slate-300 bg-slate-50/50 -mx-8 -mb-8 px-8 py-6 dark:border-slate-700 dark:bg-slate-800/50">
-              <button
-                onClick={handlePrevious}
-                disabled={!canGoBack()}
-                className={cn(
-                  'inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-6 py-2.5 text-sm font-semibold transition-all duration-200 shadow-sm',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
-                  canGoBack()
-                    ? 'text-slate-700 hover:bg-slate-50 hover:border-slate-400 hover:shadow-md active:scale-[0.98] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-                    : 'cursor-not-allowed opacity-50'
-                )}
-              >
-                <ChevronRight className="h-4 w-4 rotate-180" />
-                Previous
-              </button>
+              {canGoBack() ? (
+                <button
+                  onClick={handlePrevious}
+                  className={cn(
+                    'inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-6 py-2.5 text-sm font-semibold transition-all duration-200 shadow-sm',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                    'text-slate-700 hover:bg-slate-50 hover:border-slate-400 hover:shadow-md active:scale-[0.98] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                  )}
+                >
+                  <ChevronRight className="h-4 w-4 rotate-180" />
+                  Previous
+                </button>
+              ) : (
+                <div />
+              )}
 
               <div className="text-sm text-slate-500 dark:text-slate-400">
                 Step {currentStepIndex + 1} of {STEPS.length}
               </div>
 
-              <button
-                onClick={handleNext}
-                disabled={!canProceed() || currentStepIndex === STEPS.length - 1}
-                className={cn(
-                  'inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
-                  canProceed() && currentStepIndex < STEPS.length - 1
-                    ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-sm hover:from-blue-700 hover:to-blue-600 hover:shadow-md'
-                    : 'cursor-not-allowed opacity-50 bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-                )}
-              >
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </button>
+              {currentStepIndex < STEPS.length - 1 ? (
+                <button
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                  className={cn(
+                    'inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold transition-all duration-200',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                    canProceed()
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md hover:from-blue-700 hover:to-blue-600 hover:shadow-lg active:scale-[0.98]'
+                      : 'cursor-not-allowed opacity-50 bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                  )}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              ) : (
+                <div />
+              )}
             </div>
           </motion.div>
         </AnimatePresence>

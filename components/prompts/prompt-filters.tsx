@@ -2,17 +2,17 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input-v2'
+import { Button } from '@/components/ui/button-v2'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { X, Grid3x3, List, Search, Star } from 'lucide-react'
+} from '@/components/ui/select-v2'
+import { Badge } from '@/components/ui/badge-v2'
+import { X, Grid3x3, List, Search, Star, Archive } from 'lucide-react'
 import { Prompt } from '@/lib/types/database'
 import { getUseCases } from '@/lib/constants/use-cases'
 import { getFrameworks } from '@/lib/constants/frameworks'
@@ -84,6 +84,7 @@ export function PromptFilters({ prompts }: PromptFiltersProps = {}) {
   const currentTag = searchParams.get('tag') || ''
   const currentSearch = searchParams.get('q') || ''
   const currentFavorite = searchParams.get('favorite') === 'true'
+  const currentShowArchived = searchParams.get('archived') === 'true'
 
   useEffect(() => {
     setSearchQuery(currentSearch)
@@ -133,7 +134,7 @@ export function PromptFilters({ prompts }: PromptFiltersProps = {}) {
     router.push('/prompts')
   }
 
-  const hasActiveFilters = currentUseCase || currentFramework || currentEnhancementTechnique || currentTag || currentSearch || currentFavorite
+  const hasActiveFilters = currentUseCase || currentFramework || currentEnhancementTechnique || currentTag || currentSearch || currentFavorite || currentShowArchived
 
   return (
     <div className="space-y-4">
@@ -141,38 +142,50 @@ export function PromptFilters({ prompts }: PromptFiltersProps = {}) {
       <div className="flex flex-col sm:flex-row gap-4">
         <form onSubmit={handleSearch} className="flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Search prompts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-12 bg-slate-50 border-2 border-slate-200 hover:border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 dark:bg-slate-800 dark:border-slate-600"
             />
           </div>
         </form>
         <div className="flex gap-2">
           <Button
-            variant={currentFavorite ? 'default' : 'outline'}
+            variant={currentFavorite ? 'default' : 'secondary'}
             size="icon"
             onClick={() => updateFilters({ favorite: currentFavorite ? null : 'true' })}
             title="Show favorites"
+            className={currentFavorite ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md hover:from-blue-700 hover:to-blue-600' : 'border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-800'}
           >
             <Star className={`h-4 w-4 ${currentFavorite ? 'fill-current' : ''}`} />
           </Button>
-          <div className="w-px bg-border" />
           <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            variant={currentShowArchived ? 'default' : 'secondary'}
+            size="icon"
+            onClick={() => updateFilters({ archived: currentShowArchived ? null : 'true' })}
+            title={currentShowArchived ? 'Hide archived' : 'Show archived'}
+            className={currentShowArchived ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md hover:from-blue-700 hover:to-blue-600' : 'border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-800'}
+          >
+            <Archive className="h-4 w-4" />
+          </Button>
+          <div className="w-px bg-slate-200 dark:bg-slate-600" />
+          <Button
+            variant={viewMode === 'grid' ? 'default' : 'secondary'}
             size="icon"
             onClick={() => handleViewModeChange('grid')}
             title="Grid view"
+            className={viewMode === 'grid' ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md hover:from-blue-700 hover:to-blue-600' : 'border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-800'}
           >
             <Grid3x3 className="h-4 w-4" />
           </Button>
           <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
+            variant={viewMode === 'list' ? 'default' : 'secondary'}
             size="icon"
             onClick={() => handleViewModeChange('list')}
             title="List view"
+            className={viewMode === 'list' ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md hover:from-blue-700 hover:to-blue-600' : 'border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-800'}
           >
             <List className="h-4 w-4" />
           </Button>
@@ -182,13 +195,13 @@ export function PromptFilters({ prompts }: PromptFiltersProps = {}) {
       {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <Select value={currentUseCase || '__all__'} onValueChange={(value) => updateFilters({ use_case: value === '__all__' ? null : value })}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-[200px] h-12 bg-slate-50 border-2 border-slate-200 hover:border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 dark:bg-slate-800 dark:border-slate-600">
             <SelectValue placeholder="All Use Cases" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">All Use Cases</SelectItem>
+          <SelectContent className="bg-white shadow-lg border-blue-300 dark:bg-slate-800 dark:border-slate-600">
+            <SelectItem value="__all__" className="hover:bg-blue-50 dark:hover:bg-blue-950">All Use Cases</SelectItem>
             {useCases.map((useCase) => (
-              <SelectItem key={useCase} value={useCase}>
+              <SelectItem key={useCase} value={useCase} className="hover:bg-blue-50 dark:hover:bg-blue-950">
                 {useCase}
               </SelectItem>
             ))}
@@ -196,13 +209,13 @@ export function PromptFilters({ prompts }: PromptFiltersProps = {}) {
         </Select>
 
         <Select value={currentFramework || '__all__'} onValueChange={(value) => updateFilters({ framework: value === '__all__' ? null : value })}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-[200px] h-12 bg-slate-50 border-2 border-slate-200 hover:border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 dark:bg-slate-800 dark:border-slate-600">
             <SelectValue placeholder="All Frameworks" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">All Frameworks</SelectItem>
+          <SelectContent className="bg-white shadow-lg border-blue-300 dark:bg-slate-800 dark:border-slate-600">
+            <SelectItem value="__all__" className="hover:bg-blue-50 dark:hover:bg-blue-950">All Frameworks</SelectItem>
             {frameworks.map((framework) => (
-              <SelectItem key={framework} value={framework}>
+              <SelectItem key={framework} value={framework} className="hover:bg-blue-50 dark:hover:bg-blue-950">
                 {framework}
               </SelectItem>
             ))}
@@ -210,13 +223,13 @@ export function PromptFilters({ prompts }: PromptFiltersProps = {}) {
         </Select>
 
         <Select value={currentEnhancementTechnique || '__all__'} onValueChange={(value) => updateFilters({ enhancement_technique: value === '__all__' ? null : value })}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-[200px] h-12 bg-slate-50 border-2 border-slate-200 hover:border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 dark:bg-slate-800 dark:border-slate-600">
             <SelectValue placeholder="All Techniques" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">All Techniques</SelectItem>
+          <SelectContent className="bg-white shadow-lg border-blue-300 dark:bg-slate-800 dark:border-slate-600">
+            <SelectItem value="__all__" className="hover:bg-blue-50 dark:hover:bg-blue-950">All Techniques</SelectItem>
             {enhancementTechniques.map((technique) => (
-              <SelectItem key={technique} value={technique}>
+              <SelectItem key={technique} value={technique} className="hover:bg-blue-50 dark:hover:bg-blue-950">
                 {technique}
               </SelectItem>
             ))}
@@ -224,7 +237,7 @@ export function PromptFilters({ prompts }: PromptFiltersProps = {}) {
         </Select>
 
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
+          <Button variant="secondary" size="sm" onClick={clearFilters} className="border-2 border-slate-200 hover:bg-slate-50">
             <X className="mr-2 h-4 w-4" />
             Clear Filters
           </Button>

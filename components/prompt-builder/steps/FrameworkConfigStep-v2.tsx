@@ -19,8 +19,9 @@ import {
 } from '@/components/ui/select-v2'
 import { Button } from '@/components/ui/button-v2'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card-v2'
-import { X, Plus, Trash2 } from 'lucide-react'
+import { X, Plus, Trash2, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { StepHeader } from './StepHeader'
 
 const REASONING_STRUCTURE_OPTIONS: { value: ReasoningStructure; label: string }[] = [
   { value: 'step-by-step', label: 'Step-by-Step' },
@@ -30,7 +31,15 @@ const REASONING_STRUCTURE_OPTIONS: { value: ReasoningStructure; label: string }[
   { value: 'custom', label: 'Custom Structure' },
 ]
 
-export function FrameworkConfigStep() {
+interface FrameworkConfigStepProps {
+  onNext?: () => void
+  onPrevious?: () => void
+  canProceed?: boolean
+  canGoBack?: boolean
+  isLastStep?: boolean
+}
+
+export function FrameworkConfigStep({ onNext, canProceed = true }: FrameworkConfigStepProps) {
   const { state, updateBaseConfig } = usePromptBuilder()
   const framework = state.baseConfig.framework
   const config = state.baseConfig.frameworkConfig
@@ -110,26 +119,48 @@ export function FrameworkConfigStep() {
 
   if (!framework) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 text-center dark:border-slate-800 dark:bg-slate-900">
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          Please select a framework in the Base Prompt step first.
-        </p>
+      <div className="space-y-6">
+        <StepHeader
+          title="Framework Configuration"
+          description="Configure framework-specific options for your prompt."
+          onNext={onNext}
+          canProceed={canProceed}
+        />
+        <div className="rounded-lg border-2 border-slate-300 bg-white p-6 text-center shadow-sm dark:border-slate-600 dark:bg-slate-800">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Please select a framework in the Base Prompt step first.
+          </p>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
+      <StepHeader
+        title="Framework Configuration"
+        description="Configure framework-specific options for your prompt."
+        onNext={onNext}
+        canProceed={canProceed}
+      />
       {/* Role-Based */}
       {framework === FrameworkType.ROLE_BASED && (
-        <div>
+        <div className="space-y-3 rounded-lg border-2 border-slate-300 bg-white p-5 shadow-sm dark:border-slate-600 dark:bg-slate-800">
+          <div>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+              Role / Expertise
+            </h3>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              Define the role or expertise the AI should assume
+            </p>
+          </div>
           <Input
             id="role"
-            label="Role / Expertise"
+            label=""
             value={config.roleBasedRole || ''}
             onChange={handleRoleChange}
             placeholder="e.g., an expert software architect, a professional copywriter"
-            helperText="Define the role or expertise the AI should assume"
+            className="bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
           />
         </div>
       )}

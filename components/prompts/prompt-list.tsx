@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { PromptCard } from './prompt-card'
 import { PromptListItem } from './prompt-list-item'
 import { Prompt } from '@/lib/types/database'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card-v2'
+import { Button } from '@/components/ui/button-v2'
 import { Plus } from 'lucide-react'
 
 interface PromptListProps {
@@ -23,20 +23,20 @@ export function PromptList({ initialPrompts, viewMode = 'grid' }: PromptListProp
 
   if (prompts.length === 0) {
     return (
-      <Card>
+      <Card className="border-2 border-slate-200 bg-white shadow-sm dark:border-slate-600 dark:bg-slate-800">
         <CardContent className="py-16 text-center">
           <div className="space-y-4">
-            <div className="mx-auto w-24 h-24 rounded-full bg-muted flex items-center justify-center">
-              <Plus className="w-12 h-12 text-muted-foreground" />
+            <div className="mx-auto w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+              <Plus className="w-12 h-12 text-slate-400 dark:text-slate-500" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-semibold">No prompts yet</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-white">No prompts yet</h3>
+              <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto">
                 Get started by creating your first prompt. Organize AI prompts, email templates, and code snippets all in one place.
               </p>
             </div>
-            <Button asChild className="mt-4">
-              <Link href="/prompts/new">
+            <Button asChild variant="default" className="mt-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md hover:from-blue-700 hover:to-blue-600 hover:shadow-lg">
+              <Link href="/builder">
                 <Plus className="mr-2 h-4 w-4" />
                 Create Your First Prompt
               </Link>

@@ -31,9 +31,12 @@ import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 
 const navigation = [
-  { name: 'Prompts', href: '/prompts', icon: FileText },
-  { name: 'Builder', href: '/builder', icon: Sparkles },
-  { name: 'Pricing', href: '/pricing', icon: CreditCard },
+  { name: 'Prompt Builder', href: '/builder', icon: Sparkles },
+  { name: 'Prompt Library', href: '/prompts', icon: FileText },
+]
+
+const bottomNavigation = [
+  { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
 export function Sidebar() {
@@ -69,36 +72,70 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-3 py-4">
-        {navigation.map((item) => {
-          const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
-                'hover:scale-[1.02]',
-                isActive
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400'
-                  : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-              )}
-              aria-current={isActive ? 'page' : undefined}
-            >
-              <item.icon
+      <div className="flex flex-1 flex-col">
+        <nav className="flex-1 space-y-1 px-3 py-4">
+          {navigation.map((item) => {
+            const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
                 className={cn(
-                  'h-5 w-5 transition-colors',
+                  'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                  'hover:scale-[1.02]',
                   isActive
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
                 )}
-              />
-              {item.name}
-            </Link>
-          )
-        })}
-      </nav>
+                aria-current={isActive ? 'page' : undefined}
+              >
+                <item.icon
+                  className={cn(
+                    'h-5 w-5 transition-colors',
+                    isActive
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                  )}
+                />
+                {item.name}
+              </Link>
+            )
+          })}
+        </nav>
+
+        {/* Bottom Navigation */}
+        <nav className="space-y-1 border-t border-slate-200 px-3 py-4 dark:border-slate-800">
+          {bottomNavigation.map((item) => {
+            const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={cn(
+                  'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                  'hover:scale-[1.02]',
+                  isActive
+                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+                )}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                <item.icon
+                  className={cn(
+                    'h-5 w-5 transition-colors',
+                    isActive
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                  )}
+                />
+                {item.name}
+              </Link>
+            )
+          })}
+        </nav>
+      </div>
 
       {/* User Menu */}
       <div className="border-t border-slate-200 p-4 dark:border-slate-800">
@@ -124,10 +161,6 @@ export function Sidebar() {
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
               Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>

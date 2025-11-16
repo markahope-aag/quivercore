@@ -4,8 +4,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, memo } from 'react'
 import { Star, Edit, Trash2, Copy, TestTube } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card-v2'
+import { Button } from '@/components/ui/button-v2'
+import { Badge } from '@/components/ui/badge-v2'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,15 +73,15 @@ export const PromptListItem = memo(function PromptListItem({ prompt }: PromptLis
   }
 
   return (
-    <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+    <Card className="flex items-center gap-4 p-4 border-2 border-slate-200 bg-white shadow-sm hover:shadow-md transition-all dark:border-slate-600 dark:bg-slate-800">
       <Button
         variant="ghost"
         size="icon"
         onClick={handleToggleFavorite}
-        className="flex-shrink-0"
+        className="flex-shrink-0 hover:bg-slate-50 dark:hover:bg-slate-700"
       >
         <Star
-          className={`h-4 w-4 ${isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
+          className={`h-4 w-4 ${isFavorite ? 'fill-yellow-500 text-yellow-500' : 'text-slate-400'}`}
         />
       </Button>
 
@@ -91,28 +92,28 @@ export const PromptListItem = memo(function PromptListItem({ prompt }: PromptLis
               <h3 className="font-semibold line-clamp-1">{sanitizeForDisplay(prompt.title)}</h3>
             </Link>
             {prompt.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+              <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mt-1">
                 {sanitizeForDisplay(prompt.description)}
               </p>
             )}
             <div className="flex flex-wrap gap-2 mt-2">
               {prompt.use_case && (
-                <Badge variant="default" className="text-xs bg-blue-500">
+                <Badge variant="secondary" className="text-xs border-2 border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300">
                   {sanitizeForDisplay(prompt.use_case)}
                 </Badge>
               )}
               {prompt.framework && (
-                <Badge variant="default" className="text-xs bg-purple-500">
+                <Badge variant="default" className="text-xs bg-blue-50 text-blue-700 border-2 border-blue-200 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/30">
                   {sanitizeForDisplay(prompt.framework)}
                 </Badge>
               )}
               {prompt.enhancement_technique && (
-                <Badge variant="default" className="text-xs bg-green-600">
+                <Badge variant="secondary" className="text-xs border-2 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-300">
                   {sanitizeForDisplay(prompt.enhancement_technique)}
                 </Badge>
               )}
               {prompt.tags?.slice(0, 3).map((tag) => (
-                <Badge key={tag} variant="outline" className="text-xs">
+                <Badge key={tag} variant="secondary" className="text-xs border-2 border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-700">
                   {sanitizeForDisplay(tag)}
                 </Badge>
               ))}
@@ -122,14 +123,14 @@ export const PromptListItem = memo(function PromptListItem({ prompt }: PromptLis
       </div>
 
       <div className="flex items-center gap-4 flex-shrink-0">
-        <div className="text-right text-sm text-muted-foreground">
+        <div className="text-right text-sm text-slate-600 dark:text-slate-400">
           <div>Used {prompt.usage_count} time{prompt.usage_count !== 1 ? 's' : ''}</div>
           <div>{format(new Date(prompt.created_at), 'MMM d, yyyy')}</div>
         </div>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="secondary" size="icon" className="border-2 border-slate-200 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700">
               ⋮
             </Button>
           </DropdownMenuTrigger>
@@ -157,7 +158,7 @@ export const PromptListItem = memo(function PromptListItem({ prompt }: PromptLis
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </div>
+    </Card>
   )
 })
 
