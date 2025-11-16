@@ -19,10 +19,13 @@ export default function BuilderPage() {
         className="space-y-8"
       >
         {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
-            AI Prompt Builder
-          </h1>
+        <div className="mb-8 rounded-xl bg-gradient-to-r from-slate-50 to-blue-50 px-8 py-12 dark:from-slate-900 dark:to-blue-950/30">
+          <div className="flex items-center gap-3 mb-3">
+            <Sparkles className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+              QuiverCore
+            </h1>
+          </div>
           <p className="text-lg text-slate-600 dark:text-slate-400">
             Create enhanced prompts with Verbalized Sampling and framework-based patterns
           </p>

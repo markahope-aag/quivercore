@@ -47,16 +47,16 @@ export function BasePromptStep() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Section Header */}
-      <div className="mb-6 border-b border-slate-200 pb-4 dark:border-slate-800">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Prompt Configuration</h3>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+      <div className="mb-8 border-b border-slate-200 pb-6 dark:border-slate-800">
+        <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-2">Prompt Configuration</h3>
+        <p className="text-base text-slate-600 dark:text-slate-400">
           Define the foundation of your prompt by selecting a domain and framework, then providing your core instructions.
         </p>
       </div>
       {/* Domain Category */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+      <div className="space-y-3">
         <Select
           value={state.baseConfig.domain || undefined}
           onValueChange={(value) => {
@@ -64,7 +64,7 @@ export function BasePromptStep() {
             clearErrors()
           }}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full h-12 rounded-lg">
             <SelectValue placeholder="Select a domain (optional)" />
           </SelectTrigger>
           <SelectContent>
@@ -75,13 +75,13 @@ export function BasePromptStep() {
             ))}
           </SelectContent>
         </Select>
-        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           Choose the domain that best describes your use case
         </p>
       </div>
 
       {/* Framework Selection */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+      <div className="space-y-3">
         <Select
           value={state.baseConfig.framework || undefined}
           onValueChange={(value) => {
@@ -89,7 +89,7 @@ export function BasePromptStep() {
             clearErrors()
           }}
         >
-          <SelectTrigger className="w-full" aria-invalid={!!state.errors.framework}>
+          <SelectTrigger className="w-full h-12 rounded-lg" aria-invalid={!!state.errors.framework}>
             <SelectValue placeholder="Select a framework *" />
           </SelectTrigger>
           <SelectContent>
@@ -101,17 +101,17 @@ export function BasePromptStep() {
           </SelectContent>
         </Select>
         {state.errors.framework && (
-          <p className="mt-2 text-xs text-red-600 dark:text-red-400" role="alert">
+          <p className="text-sm text-red-600 dark:text-red-400" role="alert">
             {state.errors.framework}
           </p>
         )}
-        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           Select the prompt engineering pattern to use
         </p>
       </div>
 
       {/* Base Prompt */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+      <div className="space-y-3">
         <Textarea
           id="basePrompt"
           label="Base Prompt"
@@ -119,17 +119,17 @@ export function BasePromptStep() {
           onChange={handleBasePromptChange}
           error={state.errors.basePrompt}
           placeholder="Enter your core prompt instructions here..."
-          className="min-h-[200px]"
+          className="min-h-[200px] rounded-lg"
         />
-        <div className="mt-2 flex items-center justify-between">
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             Provide the main instructions for your prompt
           </p>
           <span
-            className={`text-xs font-medium ${
+            className={`text-sm font-medium ${
               state.baseConfig.basePrompt.length > 45000
                 ? 'text-red-600 dark:text-red-400'
-                : 'text-slate-500 dark:text-slate-400'
+                : 'text-slate-600 dark:text-slate-400'
             }`}
           >
             {state.baseConfig.basePrompt.length.toLocaleString()} / 50,000
@@ -138,16 +138,16 @@ export function BasePromptStep() {
       </div>
 
       {/* Target Outcome */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+      <div className="space-y-3">
         <Textarea
           id="targetOutcome"
           label="Target Outcome (Optional)"
           value={state.baseConfig.targetOutcome}
           onChange={handleTargetOutcomeChange}
           placeholder="Describe the desired outcome or response format..."
-          className="min-h-[120px]"
+          className="min-h-[120px] rounded-lg"
         />
-        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           Optional: Describe what you want the AI to produce
         </p>
       </div>

@@ -110,9 +110,9 @@ export function PromptBuilder() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Progress Indicator */}
-      <Card className="border-slate-200 bg-gradient-to-br from-white to-slate-50 p-6 shadow-md dark:border-slate-800 dark:from-slate-900 dark:to-slate-950">
+      <Card className="border-slate-200 bg-white p-8 shadow-xl rounded-xl dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center justify-between">
           {STEPS.map((step, index) => {
             const Icon = step.icon
@@ -138,14 +138,12 @@ export function PromptBuilder() {
                     aria-label={`Go to ${step.label} step`}
                   >
                     {isCompleted ? (
-                      <Check className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                      <Check className="h-8 w-8" />
                     ) : (
                       <Icon
                         className={cn(
-                          'h-6 w-6',
-                          isActive
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : 'text-slate-400 dark:text-slate-500'
+                          'h-8 w-8',
+                          isActive ? '' : ''
                         )}
                       />
                     )}
@@ -181,12 +179,12 @@ export function PromptBuilder() {
 
                 {/* Connector Line */}
                 {index < STEPS.length - 1 && (
-                  <div className="mx-4 flex-1 h-0.5 relative -mt-6">
+                  <div className="mx-6 flex-1 h-1 relative -mt-10">
                     <div
                       className={cn(
-                        'absolute inset-0 transition-all duration-300',
+                        'absolute inset-0 rounded-full transition-all duration-300',
                         isCompleted
-                          ? 'bg-emerald-500'
+                          ? 'bg-green-500'
                           : 'bg-slate-200 dark:bg-slate-700'
                       )}
                     />
@@ -199,7 +197,7 @@ export function PromptBuilder() {
       </Card>
 
       {/* Step Content */}
-      <Card className="border-slate-200 bg-white p-8 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+      <Card className="border-slate-200 bg-white p-8 shadow-xl rounded-xl dark:border-slate-800 dark:bg-slate-900">
         <AnimatePresence mode="wait">
           <motion.div
             key={state.currentStep}
@@ -208,11 +206,11 @@ export function PromptBuilder() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">
+            <div className="mb-8">
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
                 {STEPS[currentStepIndex].label}
               </h2>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-lg text-slate-600 dark:text-slate-400">
                 {STEPS[currentStepIndex].description}
               </p>
             </div>

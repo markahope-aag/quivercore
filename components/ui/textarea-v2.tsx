@@ -28,7 +28,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
               'peer min-h-[100px] w-full rounded-lg border bg-white px-4 py-2.5 text-sm',
               'transition-all duration-200',
               'placeholder:text-transparent',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0',
+              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 hover:border-slate-400',
               'disabled:cursor-not-allowed disabled:opacity-50',
               'resize-none',
               error

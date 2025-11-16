@@ -31,11 +31,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
           <input
             type={type}
-            className={cn(
-              'peer h-11 w-full rounded-lg border bg-white px-4 py-2.5 text-sm',
+                  className={cn(
+                    'peer h-12 w-full rounded-lg border bg-white px-4 py-3 text-sm',
               'transition-all duration-200',
               'placeholder:text-transparent',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0',
+                    'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 hover:border-slate-400',
               'disabled:cursor-not-allowed disabled:opacity-50',
               'aria-invalid:border-red-500 aria-invalid:focus:ring-red-500',
               leftIcon && 'pl-10',
