@@ -45,7 +45,7 @@ export async function sendWelcomeEmail(to: string, data: WelcomeEmailData) {
     })
 
     if (result.success) {
-      logger.info('Welcome email sent', { to, emailId: result.id })
+      logger.info('Welcome email sent', { to, emailId: result.messageId })
     } else {
       logger.error('Welcome email failed', { to, error: result.error })
     }
@@ -77,7 +77,7 @@ export async function sendPaymentFailedAttempt1(to: string, data: PaymentFailedE
     })
 
     if (result.success) {
-      logger.info('Payment failed (attempt 1) email sent', { to, emailId: result.id })
+      logger.info('Payment failed (attempt 1) email sent', { to, emailId: result.messageId })
     } else {
       logger.error('Payment failed (attempt 1) email failed', { to, error: result.error })
     }
@@ -107,7 +107,7 @@ export async function sendPaymentFailedAttempt2(to: string, data: PaymentFailedE
     })
 
     if (result.success) {
-      logger.info('Payment failed (attempt 2) email sent', { to, emailId: result.id })
+      logger.info('Payment failed (attempt 2) email sent', { to, emailId: result.messageId })
     }
 
     return result
@@ -135,7 +135,7 @@ export async function sendPaymentFailedAttempt3(to: string, data: PaymentFailedE
     })
 
     if (result.success) {
-      logger.info('Payment failed (attempt 3 - FINAL) email sent', { to, emailId: result.id })
+      logger.info('Payment failed (attempt 3 - FINAL) email sent', { to, emailId: result.messageId })
     }
 
     return result
@@ -165,7 +165,7 @@ export async function sendTrialEndingEmail(to: string, data: TrialEndingEmailDat
     })
 
     if (result.success) {
-      logger.info('Trial ending email sent', { to, emailId: result.id, daysLeft: data.daysLeft })
+      logger.info('Trial ending email sent', { to, emailId: result.messageId, daysLeft: data.daysLeft })
     } else {
       logger.error('Trial ending email failed', { to, error: result.error })
     }
@@ -204,7 +204,7 @@ export async function sendAdminNotification(subject: string, html: string, text?
     })
 
     if (result.success) {
-      logger.info('Admin notification sent', { subject, emailId: result.id })
+      logger.info('Admin notification sent', { subject, emailId: result.messageId })
     }
 
     return result

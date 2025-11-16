@@ -15,6 +15,7 @@ import {
 } from '@/lib/utils/enhancement-tests'
 import type { AdvancedEnhancements } from '@/lib/types/enhancements'
 import type { VSEnhancement } from '@/lib/types/prompt-builder'
+import { logger } from '@/lib/utils/logger'
 
 export function EnhancementTestRunner() {
   const [testPrompt, setTestPrompt] = useState('')
@@ -30,80 +31,98 @@ export function EnhancementTestRunner() {
   } | null>(null)
   const [isRunning, setIsRunning] = useState(false)
   const [currentTest, setCurrentTest] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleRunAllTests = () => {
+  const handleRunAllTests = async () => {
     setIsRunning(true)
     setCurrentTest('Running all tests...')
+    setError(null)
+    setTestResults(null)
     
-    // Use setTimeout to allow UI to update
-    setTimeout(() => {
-      try {
-        const results = runAllTests()
-        setTestResults(results)
-      } catch (error: any) {
-        console.error('Test execution error:', error)
-      } finally {
-        setIsRunning(false)
-        setCurrentTest(null)
-      }
-    }, 100)
+    // Use requestAnimationFrame to ensure UI updates before running tests
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    
+    try {
+      const results = runAllTests()
+      // Add a small delay to ensure loading state is visible
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      setTestResults(results)
+    } catch (error: any) {
+      logger.error('Test execution error in Run All Tests', error)
+      setError(error?.message || 'Failed to run tests. Please check the console for details.')
+    } finally {
+      setIsRunning(false)
+      setCurrentTest(null)
+    }
   }
 
-  const handleRunIndividualTests = () => {
+  const handleRunIndividualTests = async () => {
     setIsRunning(true)
     setCurrentTest('Running individual tests...')
+    setError(null)
+    setTestResults(null)
     
-    setTimeout(() => {
-      try {
-        const individual = runAllIndividualTests()
-        const combinations: TestResult[] = []
-        setTestResults({
-          individual,
-          combinations,
-          summary: {
-            total: individual.length,
-            passed: individual.filter((t) => t.passed).length,
-            failed: individual.filter((t) => !t.passed).length,
-            warnings: individual.reduce((sum, t) => sum + t.warnings.length, 0),
-          },
-        })
-      } catch (error: any) {
-        console.error('Test execution error:', error)
-      } finally {
-        setIsRunning(false)
-        setCurrentTest(null)
-      }
-    }, 100)
+    // Use requestAnimationFrame to ensure UI updates before running tests
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    
+    try {
+      const individual = runAllIndividualTests()
+      const combinations: TestResult[] = []
+      // Add a small delay to ensure loading state is visible
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      setTestResults({
+        individual,
+        combinations,
+        summary: {
+          total: individual.length,
+          passed: individual.filter((t) => t.passed).length,
+          failed: individual.filter((t) => !t.passed).length,
+          warnings: individual.reduce((sum, t) => sum + t.warnings.length, 0),
+        },
+      })
+    } catch (error: any) {
+      logger.error('Test execution error in Individual Tests', error)
+      setError(error?.message || 'Failed to run individual tests. Please check the console for details.')
+    } finally {
+      setIsRunning(false)
+      setCurrentTest(null)
+    }
   }
 
-  const handleRunCombinationTests = () => {
+  const handleRunCombinationTests = async () => {
     setIsRunning(true)
     setCurrentTest('Running combination tests...')
+    setError(null)
+    setTestResults(null)
     
-    setTimeout(() => {
-      try {
-        const combinations = runAllCombinationTests()
-        const individual: TestResult[] = []
-        setTestResults({
-          individual,
-          combinations,
-          summary: {
-            total: combinations.length,
-            passed: combinations.filter((t) => t.passed).length,
-            failed: combinations.filter((t) => !t.passed).length,
-            warnings: combinations.reduce((sum, t) => sum + t.warnings.length, 0),
-          },
-        })
-      } catch (error: any) {
-        console.error('Test execution error:', error)
-      } finally {
-        setIsRunning(false)
-        setCurrentTest(null)
-      }
-    }, 100)
+    // Use requestAnimationFrame to ensure UI updates before running tests
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    
+    try {
+      const combinations = runAllCombinationTests()
+      const individual: TestResult[] = []
+      // Add a small delay to ensure loading state is visible
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      setTestResults({
+        individual,
+        combinations,
+        summary: {
+          total: combinations.length,
+          passed: combinations.filter((t) => t.passed).length,
+          failed: combinations.filter((t) => !t.passed).length,
+          warnings: combinations.reduce((sum, t) => sum + t.warnings.length, 0),
+        },
+      })
+    } catch (error: any) {
+      logger.error('Test execution error in Combination Tests', error)
+      setError(error?.message || 'Failed to run combination tests. Please check the console for details.')
+    } finally {
+      setIsRunning(false)
+      setCurrentTest(null)
+    }
   }
 
-  const handleTestCurrentFlow = () => {
+  const handleTestCurrentFlow = async () => {
     if (!testPrompt) {
       alert('Please enter a test prompt first')
       return
@@ -111,45 +130,51 @@ export function EnhancementTestRunner() {
 
     setIsRunning(true)
     setCurrentTest('Testing current flow...')
+    setError(null)
+    setTestResults(null)
 
-    setTimeout(() => {
-      try {
-        const flowResult = testCompleteFlow(
-          testPrompt,
-          {} as AdvancedEnhancements,
-          {} as VSEnhancement
-        )
+    // Use requestAnimationFrame to ensure UI updates before running tests
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
 
-        // Convert flow result to test results format for display
-        const testResult: TestResult = {
-          testName: 'Complete Flow Test',
-          passed: flowResult.success,
-          errors: flowResult.steps.filter((s) => !s.success).map((s) => s.message),
-          warnings: flowResult.quality?.issues || [],
-          generatedPrompt: flowResult.finalPrompt,
-          metadata: {
-            quality: flowResult.quality,
-            steps: flowResult.steps,
-          },
-        }
+    try {
+      const flowResult = testCompleteFlow(
+        testPrompt,
+        {} as AdvancedEnhancements,
+        {} as VSEnhancement
+      )
 
-        setTestResults({
-          individual: [testResult],
-          combinations: [],
-          summary: {
-            total: 1,
-            passed: flowResult.success ? 1 : 0,
-            failed: flowResult.success ? 0 : 1,
-            warnings: flowResult.quality?.issues.length || 0,
-          },
-        })
-      } catch (error: any) {
-        console.error('Flow test error:', error)
-      } finally {
-        setIsRunning(false)
-        setCurrentTest(null)
+      // Convert flow result to test results format for display
+      const testResult: TestResult = {
+        testName: 'Complete Flow Test',
+        passed: flowResult.success,
+        errors: flowResult.steps.filter((s) => !s.success).map((s) => s.message),
+        warnings: flowResult.quality?.issues || [],
+        generatedPrompt: flowResult.finalPrompt,
+        metadata: {
+          quality: flowResult.quality,
+          steps: flowResult.steps,
+        },
       }
-    }, 100)
+
+      // Add a small delay to ensure loading state is visible
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      setTestResults({
+        individual: [testResult],
+        combinations: [],
+        summary: {
+          total: 1,
+          passed: flowResult.success ? 1 : 0,
+          failed: flowResult.success ? 0 : 1,
+          warnings: flowResult.quality?.issues.length || 0,
+        },
+      })
+    } catch (error: any) {
+      logger.error('Flow test error', error)
+      setError(error?.message || 'Failed to test current flow. Please check the console for details.')
+    } finally {
+      setIsRunning(false)
+      setCurrentTest(null)
+    }
   }
 
   return (
@@ -172,6 +197,54 @@ export function EnhancementTestRunner() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Loading Indicator */}
+      {isRunning && (
+        <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20 shadow-lg">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-6 w-6 text-blue-600 dark:text-blue-400 animate-spin flex-shrink-0" />
+              <div className="flex-1">
+                <h4 className="font-semibold text-lg text-blue-900 dark:text-blue-100">
+                  {currentTest || 'Running tests...'}
+                </h4>
+                <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                  Please wait while tests are executing. This may take a few moments.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4">
+              <div className="h-3 bg-blue-200 dark:bg-blue-800 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-blue-600 dark:bg-blue-400 rounded-full transition-all duration-300 ease-in-out" 
+                  style={{ 
+                    width: '60%',
+                    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                  }}
+                ></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error Display */}
+      {error && !isRunning && (
+        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-red-900 dark:text-red-100">Error Running Tests</h4>
+                <p className="mt-1 text-sm text-red-700 dark:text-red-300">{error}</p>
+                <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                  Check the browser console (F12) for more details.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Test Controls */}
       <Card>
@@ -238,10 +311,16 @@ export function EnhancementTestRunner() {
       </Card>
 
       {/* Test Results Summary */}
-      {testResults && (
-        <Card>
+      {testResults && !isRunning && (
+        <Card className="border-2 border-blue-200 dark:border-blue-800">
           <CardHeader>
-            <CardTitle>Test Results Summary</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              Test Results Summary
+            </CardTitle>
+            <CardDescription>
+              {testResults.summary.total} tests completed
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-4 gap-4">
@@ -250,19 +329,19 @@ export function EnhancementTestRunner() {
                 <div className="text-sm text-muted-foreground">Total Tests</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {testResults.summary.passed}
                 </div>
                 <div className="text-sm text-muted-foreground">Passed</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-red-600">
+                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                   {testResults.summary.failed}
                 </div>
                 <div className="text-sm text-muted-foreground">Failed</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-yellow-600">
+                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                   {testResults.summary.warnings}
                 </div>
                 <div className="text-sm text-muted-foreground">Warnings</div>
@@ -273,16 +352,18 @@ export function EnhancementTestRunner() {
       )}
 
       {/* Individual Test Results */}
-      {testResults && testResults.individual.length > 0 && (
+      {testResults && !isRunning && testResults.individual.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Individual Enhancement Tests</CardTitle>
+            <CardTitle>
+              Individual Enhancement Tests ({testResults.individual.length})
+            </CardTitle>
             <CardDescription>Tests for each enhancement category</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {testResults.individual.map((result, index) => (
-                <TestResultCard key={index} result={result} />
+                <TestResultCard key={`individual-${index}`} result={result} />
               ))}
             </div>
           </CardContent>
@@ -290,21 +371,24 @@ export function EnhancementTestRunner() {
       )}
 
       {/* Combination Test Results */}
-      {testResults && testResults.combinations.length > 0 && (
+      {testResults && !isRunning && testResults.combinations.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Combination Tests</CardTitle>
+            <CardTitle>
+              Combination Tests ({testResults.combinations.length})
+            </CardTitle>
             <CardDescription>Tests for multiple enhancements combined</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {testResults.combinations.map((result, index) => (
-                <TestResultCard key={index} result={result} />
+                <TestResultCard key={`combination-${index}`} result={result} />
               ))}
             </div>
           </CardContent>
         </Card>
       )}
+
     </div>
   )
 }

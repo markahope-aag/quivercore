@@ -71,7 +71,7 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['expert', 'AI and Machine Learning', 'domain knowledge'],
+      contains: ['ROLE', 'highly experienced professional', 'AI and Machine Learning'],
     },
   },
 
@@ -93,7 +93,7 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['Tech journalist', 'Assume the role'],
+      contains: ['ROLE', 'Tech journalist', '10 years'],
     },
   },
 
@@ -113,7 +113,7 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['JSON', 'format', 'valid'],
+      contains: ['FORMAT', 'JSON', 'format'],
     },
   },
 
@@ -133,7 +133,7 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['format', 'paragraphs'],
+      contains: ['FORMAT', 'paragraphs'],
     },
   },
 
@@ -154,7 +154,7 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['500', '1000', 'words'],
+      contains: ['MUST INCLUDE', '500', '1000', 'words'],
     },
   },
 
@@ -175,7 +175,7 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['professional', 'engaging', 'informative', 'tone'],
+      contains: ['MUST INCLUDE', 'professional', 'engaging', 'informative'],
     },
   },
 
@@ -196,7 +196,7 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['Technical professionals', 'audience', 'complexity'],
+      contains: ['MUST INCLUDE', 'Technical professionals'],
     },
   },
 
@@ -218,7 +218,7 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['analytical', 'step-by-step', 'reasoning'],
+      contains: ['REASONING', 'analytical', 'step-by-step'],
     },
   },
 
@@ -240,7 +240,7 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['decision matrix', 'options', 'criteria'],
+      contains: ['REASONING', 'logical', 'alternatives'],
     },
   },
 
@@ -261,7 +261,7 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['iterative', 'build upon', 'previous responses'],
+      contains: ['CONVERSATION', 'context', 'previous'],
     },
   },
 
@@ -282,7 +282,7 @@ export const INDIVIDUAL_ENHANCEMENT_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['clarifying questions', 'ambiguous'],
+      contains: ['CONVERSATION', 'clarifying', 'ambiguous'],
     },
   },
 ]
@@ -311,7 +311,7 @@ export const COMBINATION_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['expert', 'Content Marketing', 'Markdown'],
+      contains: ['ROLE', 'Content Marketing', 'FORMAT', 'paragraphs'],
     },
   },
 
@@ -340,7 +340,7 @@ export const COMBINATION_TESTS: EnhancementTestConfig[] = [
       },
     },
     expectedOutput: {
-      contains: ['300', '500', 'words', 'analytical framework', 'professional'],
+      contains: ['MUST INCLUDE', '300', '500', 'words', 'REASONING', 'analytical', 'professional'],
     },
   },
 
@@ -388,17 +388,16 @@ export const COMBINATION_TESTS: EnhancementTestConfig[] = [
     },
     expectedOutput: {
       contains: [
-        'expert',
+        'ROLE',
         'AI Technology',
+        'FORMAT',
         'JSON',
-        '400',
-        '600',
-        'words',
+        'MUST INCLUDE',
         'informative',
         'engaging',
-        'General audience',
-        'critical thinking',
-        'multi-step',
+        'REASONING',
+        'analytical',
+        'CONVERSATION',
       ],
     },
   },

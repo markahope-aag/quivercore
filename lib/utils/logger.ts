@@ -16,6 +16,7 @@ class Logger {
   private isDevelopment = process.env.NODE_ENV === 'development'
   private logs: LogEntry[] = []
   private maxLogs = 100 // Keep last 100 logs in memory
+  private logLevel: LogLevel = this.isDevelopment ? 'debug' : 'error' // Only log errors in production
 
   private log(level: LogLevel, message: string, data?: unknown): void {
     const entry: LogEntry = {
@@ -25,14 +26,18 @@ class Logger {
       timestamp: new Date().toISOString(),
     }
 
-    // Store in memory (for debugging)
-    this.logs.push(entry)
-    if (this.logs.length > this.maxLogs) {
-      this.logs.shift()
+    // Store errors in memory (for debugging and error tracking)
+    if (level === 'error') {
+      this.logs.push(entry)
+      if (this.logs.length > this.maxLogs) {
+        this.logs.shift()
+      }
     }
 
-    // Only log to console in development
-    if (this.isDevelopment) {
+    // Only log errors in production, all levels in development
+    const shouldLog = this.isDevelopment || level === 'error'
+    
+    if (shouldLog) {
       const prefix = `[${level.toUpperCase()}]`
       switch (level) {
         case 'error':
@@ -49,7 +54,7 @@ class Logger {
       }
     }
 
-    // In production, send to error monitoring service (Sentry, etc.)
+    // In production, send errors to error monitoring service (Sentry, etc.)
     if (!this.isDevelopment && level === 'error') {
       // TODO: Integrate with error monitoring service
       // Example: Sentry.captureException(new Error(message), { extra: data })
@@ -76,6 +81,7 @@ class Logger {
 
   /**
    * Get recent logs (for debugging)
+   * Only returns error logs in production
    */
   getLogs(level?: LogLevel): LogEntry[] {
     if (level) {
@@ -85,10 +91,24 @@ class Logger {
   }
 
   /**
+   * Get only error logs
+   */
+  getErrors(): LogEntry[] {
+    return this.logs.filter((log) => log.level === 'error')
+  }
+
+  /**
    * Clear logs
    */
   clear(): void {
     this.logs = []
+  }
+
+  /**
+   * Set log level (for runtime configuration)
+   */
+  setLogLevel(level: LogLevel): void {
+    this.logLevel = level
   }
 }
 
