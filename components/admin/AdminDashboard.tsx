@@ -1,10 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card-v2'
-import { Button } from '@/components/ui/button-v2'
-import { Users, FileText, TrendingUp, Database, Activity, FlaskConical } from 'lucide-react'
+import { Users, FileText, TrendingUp, Database, Activity } from 'lucide-react'
 
 interface SystemStats {
   totalUsers: number
@@ -81,24 +79,6 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Quick Links */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Admin Tools</CardTitle>
-          <CardDescription>Quick access to admin functions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild variant="outline">
-              <Link href="/admin/testing">
-                <FlaskConical className="mr-2 h-4 w-4" />
-                Enhancement Testing
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* System Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

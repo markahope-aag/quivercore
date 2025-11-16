@@ -5,7 +5,7 @@ import { requireAdmin } from '@/lib/utils/admin'
 export async function GET() {
   try {
     // Check admin access
-    await requireAdmin()
+    await requireAdmin() // Check admin access
 
     const supabase = await createClient()
 
