@@ -203,7 +203,7 @@ export function PromptDetail({ prompt }: PromptDetailProps) {
         </CardHeader>
         <CardContent>
           <div className="prose prose-sm dark:prose-invert max-w-none">
-            <pre className="whitespace-pre-wrap font-mono text-sm bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 max-h-[600px] overflow-y-auto">
+            <pre className="whitespace-pre-wrap font-mono text-sm bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 max-h-[450px] overflow-y-auto">
               {sanitizeForDisplay(prompt.content)}
             </pre>
           </div>
