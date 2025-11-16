@@ -127,13 +127,13 @@ export function PromptBuilder() {
                   <button
                     onClick={() => setStep(step.id)}
                     className={cn(
-                      'relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-200',
+                      'relative flex h-20 w-20 items-center justify-center rounded-full transition-all duration-200 shadow-md',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
                       isActive
-                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-950'
+                        ? 'bg-blue-500 text-white shadow-lg scale-105'
                         : isCompleted
-                          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950'
-                          : 'border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-800'
+                          ? 'bg-green-500 text-white shadow-md'
+                          : 'bg-white border-2 border-slate-200 text-slate-400 dark:bg-slate-800 dark:border-slate-700'
                     )}
                     aria-label={`Go to ${step.label} step`}
                   >
