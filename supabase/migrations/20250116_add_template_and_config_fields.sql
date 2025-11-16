@@ -20,7 +20,10 @@ CREATE INDEX IF NOT EXISTS idx_prompts_builder_config ON prompts USING GIN(build
 COMMENT ON COLUMN prompts.is_template IS 'Indicates whether this is a reusable template (true) or a specific prompt (false)';
 COMMENT ON COLUMN prompts.builder_config IS 'Complete builder configuration (BasePromptConfig, VSEnhancement, AdvancedEnhancements) for reconstruction';
 
--- 6. Update the match_prompts function to include new fields
+-- 6. Drop existing match_prompts function before recreating with new signature
+DROP FUNCTION IF EXISTS match_prompts(vector, float, int, uuid);
+
+-- 7. Create updated match_prompts function to include new fields
 CREATE OR REPLACE FUNCTION match_prompts(
   query_embedding vector(1536),
   match_threshold float DEFAULT 0.5,
