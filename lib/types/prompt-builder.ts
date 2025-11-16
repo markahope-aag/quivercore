@@ -51,7 +51,9 @@ export enum VSDistributionType {
 
 export enum ReasoningStructure {
   STEP_BY_STEP = 'step-by-step',
+  PROBLEM_SOLUTION = 'problem-solution',
   PROS_CONS = 'pros-cons',
+  COMPARE_CONTRAST = 'compare-contrast',
   FIRST_PRINCIPLES = 'first-principles',
   CUSTOM = 'custom',
 }
@@ -285,6 +287,7 @@ export type PromptBuilderAction =
   | { type: 'GENERATE_PROMPT'; payload: GeneratedPrompt }
   | { type: 'ADD_EXECUTION_RESULT'; payload: ExecutionResult }
   | { type: 'SET_EXECUTING'; payload: boolean }
+  | { type: 'SET_MODEL'; payload: string }
   | { type: 'SAVE_TEMPLATE'; payload: PromptTemplate }
   | { type: 'LOAD_TEMPLATE'; payload: PromptTemplate }
   | { type: 'DELETE_TEMPLATE'; payload: string }

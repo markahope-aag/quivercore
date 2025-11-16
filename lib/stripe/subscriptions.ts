@@ -25,7 +25,7 @@ export async function createCheckoutSession(
   priceId: string,
   successUrl: string,
   cancelUrl: string
-): Promise<{ sessionId: string; clientSecret: string }> {
+): Promise<{ sessionId: string; clientSecret: string; url: string }> {
   const stripe = getStripeServer()
   const supabase = await createClient()
 

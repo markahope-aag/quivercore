@@ -109,7 +109,7 @@ export function PromptBuilder() {
       case 'enhancement':
         return <VSEnhancementStep {...navigationProps} />
       case 'advanced':
-        return <AdvancedEnhancementsStep {...navigationProps} />
+        return <AdvancedEnhancementsStep />
       case 'preview':
         return <PreviewExecuteStep />
       default:

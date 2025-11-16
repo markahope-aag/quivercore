@@ -76,6 +76,7 @@ export async function getFreePlan(): Promise<SubscriptionPlan> {
       price_yearly: null,
       stripe_price_id_monthly: null,
       stripe_price_id_yearly: null,
+      stripe_price_id_overage: null,
       features: {
         monthly_prompts: 10,
         overage_rate: null,

@@ -1,13 +1,12 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = await createClient()
 
     // Get the current user
     const {
@@ -19,9 +18,11 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
+
     // Increment usage_count and update last_used_at
     const { data, error } = await supabase.rpc('increment_prompt_usage', {
-      prompt_id: params.id,
+      prompt_id: id,
       user_id: user.id,
     })
 
@@ -32,7 +33,7 @@ export async function POST(
       const { data: prompt, error: fetchError } = await supabase
         .from('prompts')
         .select('usage_count')
-        .eq('id', params.id)
+        .eq('id', id)
         .eq('user_id', user.id)
         .single()
 
@@ -50,7 +51,7 @@ export async function POST(
           last_used_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
-        .eq('id', params.id)
+        .eq('id', id)
         .eq('user_id', user.id)
         .select()
         .single()

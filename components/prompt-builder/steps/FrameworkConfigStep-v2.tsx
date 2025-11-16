@@ -24,11 +24,11 @@ import { cn } from '@/lib/utils'
 import { StepHeader } from './StepHeader'
 
 const REASONING_STRUCTURE_OPTIONS: { value: ReasoningStructure; label: string }[] = [
-  { value: 'step-by-step', label: 'Step-by-Step' },
-  { value: 'problem-solution', label: 'Problem-Solution' },
-  { value: 'pros-cons', label: 'Pros and Cons' },
-  { value: 'compare-contrast', label: 'Compare and Contrast' },
-  { value: 'custom', label: 'Custom Structure' },
+  { value: ReasoningStructure.STEP_BY_STEP, label: 'Step-by-Step' },
+  { value: ReasoningStructure.PROBLEM_SOLUTION, label: 'Problem-Solution' },
+  { value: ReasoningStructure.PROS_CONS, label: 'Pros and Cons' },
+  { value: ReasoningStructure.COMPARE_CONTRAST, label: 'Compare and Contrast' },
+  { value: ReasoningStructure.CUSTOM, label: 'Custom Structure' },
 ]
 
 interface FrameworkConfigStepProps {

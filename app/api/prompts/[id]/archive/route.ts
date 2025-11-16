@@ -1,13 +1,12 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = await createClient()
 
     // Get the current user
     const {
@@ -19,13 +18,14 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const { archived } = await request.json()
 
     // Update the prompt's archived status
     const { data, error } = await supabase
       .from('prompts')
       .update({ archived, updated_at: new Date().toISOString() })
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id) // Ensure user owns this prompt
       .select()
       .single()

@@ -169,7 +169,6 @@ export function templateMetadataRowToMetadata(row: TemplateMetadataRow): {
       exampleOutputs: row.example_outputs || [],
     },
     social: {
-      comments: [], // Will be populated separately
       variations: row.variations || [],
       relatedTemplates: row.related_templates || [],
     },

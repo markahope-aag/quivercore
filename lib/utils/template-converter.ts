@@ -35,7 +35,7 @@ export function convertOldTemplateToNew(oldTemplate: OldTemplate): NewTemplate {
     },
     recommendations: {
       vsSettings: oldTemplate.vsEnhancement.enabled
-        ? `${oldTemplate.vsEnhancement.pattern} - ${oldTemplate.vsEnhancement.distributionType}`
+        ? `${oldTemplate.vsEnhancement.distributionType} distribution`
         : 'Not recommended',
       compatibleFrameworks: oldTemplate.config.framework ? [oldTemplate.config.framework] : [],
       advancedEnhancements: [],
