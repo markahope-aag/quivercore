@@ -23,6 +23,7 @@ const navItems = [
   { href: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { href: '/admin/analytics', label: 'Analytics', icon: TrendingUp },
   { href: '/admin/errors', label: 'Errors', icon: AlertCircle },
+  { href: '/admin/emails', label: 'Emails', icon: Mail },
   { href: '/admin/promo-codes', label: 'Promo Codes', icon: Tag },
   { href: '/admin/feature-flags', label: 'Feature Flags', icon: Zap },
   { href: '/admin/testing', label: 'Testing', icon: FlaskConical },
