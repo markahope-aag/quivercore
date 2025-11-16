@@ -17,16 +17,28 @@ function SignupForm() {
 
   // Handle OAuth callback code if redirected to signup page instead of callback route
   const code = searchParams.get('code')
+  const errorParam = searchParams.get('error')
+  const [redirecting, setRedirecting] = useState(false)
+  
+  // Set error from URL parameter if present
   useEffect(() => {
-    if (code) {
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam))
+    }
+  }, [errorParam])
+  
+  useEffect(() => {
+    // Only redirect if we have a code and no error parameter, and haven't already redirected
+    if (code && !errorParam && !redirecting) {
+      setRedirecting(true)
       // Redirect immediately to the callback route with the code
       // Use window.location for immediate redirect (doesn't wait for React)
       window.location.href = `/auth/callback?code=${code}`
     }
-  }, [code])
+  }, [code, errorParam, redirecting])
 
-  // Show loading state while redirecting
-  if (code) {
+  // Show loading state while redirecting (but not if there's an error)
+  if (code && !errorParam && redirecting) {
     return (
       <div className="relative flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <div className="text-center">
