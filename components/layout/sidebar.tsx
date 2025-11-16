@@ -17,6 +17,7 @@ import {
   Settings,
   LogOut,
   User,
+  Shield,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -43,12 +44,24 @@ export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const [user, setUser] = React.useState<any>(null)
+  const [isAdmin, setIsAdmin] = React.useState(false)
 
   React.useEffect(() => {
     async function getUser() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+
+      // Check if user is admin
+      if (user) {
+        const { data } = await supabase
+          .from('admin_users')
+          .select('id')
+          .eq('user_id', user.id)
+          .single()
+
+        setIsAdmin(!!data)
+      }
     }
     getUser()
   }, [])
@@ -109,6 +122,33 @@ export function Sidebar() {
               </Link>
             )
           })}
+
+          {/* Admin Link - Only show for admin users */}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className={cn(
+                'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2',
+                'hover:scale-[1.02]',
+                pathname === '/admin' || pathname?.startsWith('/admin/')
+                  ? 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400'
+                  : 'text-slate-700 hover:bg-red-50 hover:text-red-700 dark:text-slate-300 dark:hover:bg-red-950 dark:hover:text-red-400'
+              )}
+              aria-current={pathname === '/admin' || pathname?.startsWith('/admin/') ? 'page' : undefined}
+            >
+              <Shield
+                className={cn(
+                  'h-5 w-5 transition-colors',
+                  pathname === '/admin' || pathname?.startsWith('/admin/')
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400'
+                )}
+              />
+              Admin Panel
+              <Badge variant="destructive" className="ml-auto text-xs">ADMIN</Badge>
+            </Link>
+          )}
         </nav>
 
         {/* Bottom Navigation */}
