@@ -20,13 +20,14 @@ export function PricingPageContent() {
           throw new Error('Failed to fetch plans')
         }
         const data = await response.json()
-        // Filter out free plan, remove duplicates, and sort by price
+        // Only show the 3 paid plans: explorer, researcher, strategist
         const allPlans = data.plans || []
+        const allowedPlans = ['explorer', 'researcher', 'strategist']
         const seen = new Set<string>()
         const paidPlans = allPlans
           .filter((plan: SubscriptionPlan) => {
-            // Filter out free plan
-            if (plan.name === 'free') return false
+            // Only include the 3 paid plans
+            if (!allowedPlans.includes(plan.name)) return false
             // Remove duplicates by name
             if (seen.has(plan.name)) return false
             seen.add(plan.name)
