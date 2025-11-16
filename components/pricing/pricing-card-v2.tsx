@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge'
 import { Check, Loader2, Sparkles, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils/cn'
+import { cn } from '@/lib/utils'
 
 interface PricingCardProps {
   plan: SubscriptionPlan
