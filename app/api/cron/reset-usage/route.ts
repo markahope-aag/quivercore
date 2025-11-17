@@ -60,8 +60,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: result.success,
       usersReset: result.usersReset,
+      annualSkipped: result.annualSkipped,
       errors: result.errors,
       timestamp: new Date().toISOString(),
+      message: `Reset ${result.usersReset} monthly subscriptions, skipped ${result.annualSkipped} annual subscriptions`,
     })
   } catch (error: unknown) {
     logger.error('Cron job error - reset usage', error)

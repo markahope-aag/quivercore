@@ -214,43 +214,49 @@ export async function hasAvailablePrompts(
 /**
  * Reset usage for all users on the 1st of the month
  * Called by cron job or manually
+ *
+ * IMPORTANT: Only resets MONTHLY plans. Annual plans reset on their anniversary date.
  */
 export async function resetMonthlyUsage(): Promise<{
   success: boolean
   usersReset: number
+  annualSkipped: number
   errors: number
 }> {
   const supabase = await createClient()
   const monthYear = getCurrentMonthYear()
   const resetDate = getFirstOfCurrentMonth()
 
-  // Get all active subscriptions
+  // Get all active subscriptions with plan details
   const { data: subscriptions } = await supabase
     .from('user_subscriptions')
-    .select('user_id, plan_id')
+    .select('user_id, plan_id, subscription_plans(billing_period, prompt_limit, storage_limit)')
     .eq('status', 'active')
 
   if (!subscriptions || subscriptions.length === 0) {
-    return { success: true, usersReset: 0, errors: 0 }
+    return { success: true, usersReset: 0, annualSkipped: 0, errors: 0 }
   }
 
   let usersReset = 0
+  let annualSkipped = 0
   let errors = 0
 
-  // Reset usage for each user
+  // Reset usage for each user with MONTHLY plan only
   for (const subscription of subscriptions) {
-    // Get plan details
-    const { data: plan } = await supabase
-      .from('subscription_plans')
-      .select('*')
-      .eq('id', subscription.plan_id)
-      .single()
+    const plan = (subscription as any).subscription_plans
 
     if (!plan) {
       errors++
       continue
     }
 
+    // Skip annual plans - they reset on their anniversary date
+    if (plan.billing_period === 'annual' || plan.billing_period === 'yearly') {
+      annualSkipped++
+      continue
+    }
+
+    // Only reset monthly plans
     // Upsert usage tracking for new month
     const { error } = await supabase.from('monthly_usage_tracking').upsert(
       {
@@ -280,6 +286,7 @@ export async function resetMonthlyUsage(): Promise<{
   return {
     success: errors === 0,
     usersReset,
+    annualSkipped,
     errors,
   }
 }
