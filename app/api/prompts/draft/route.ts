@@ -5,6 +5,8 @@ import { logger } from '@/lib/utils/logger'
 import { sanitizeInput } from '@/lib/utils/sanitize'
 import { executeWithRetry } from '@/lib/utils/retry'
 import Anthropic from '@anthropic-ai/sdk'
+import { getUserPlanTier } from '@/lib/utils/subscriptions'
+import { hasAvailablePrompts, incrementPromptUsage } from '@/lib/usage/usage-tracking'
 
 /**
  * API route for generating prompt drafts using AI
@@ -35,6 +37,18 @@ export async function POST(request: NextRequest) {
     if (!targetOutcome) {
       throw new ApplicationError('Target outcome is required', ErrorCodes.VALIDATION_ERROR, 400)
     }
+
+    // Check user's plan tier and AI draft generation limits
+    const planTier = await getUserPlanTier(user.id)
+    const { remaining } = await hasAvailablePrompts(user.id, planTier, 1)
+
+    // Note: Draft generation counts toward monthly prompt usage
+    // We allow generation even if at limit (overage will be tracked)
+    logger.debug('Draft generation usage check', {
+      userId: user.id,
+      planTier,
+      remaining,
+    })
 
     // Get API key from environment
     const apiKey = process.env.ANTHROPIC_API_KEY
@@ -122,6 +136,9 @@ Generate only the prompt text, no explanations or meta-commentary.`
         model: message.model,
         draftLength: textContent.length,
       })
+
+      // Increment prompt usage after successful draft generation
+      await incrementPromptUsage(user.id, planTier, 1)
 
       return NextResponse.json({
         draft: textContent.trim(),

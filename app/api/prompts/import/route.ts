@@ -2,6 +2,9 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { PromptSource } from '@/lib/types/database'
+import { getUserPlanTier } from '@/lib/utils/subscriptions'
+import { hasAvailableStorage, incrementStorageUsage } from '@/lib/usage/usage-tracking'
+import { PLAN_STORAGE_LIMITS } from '@/lib/constants/billing-config'
 
 interface ImportPromptData {
   title: string
@@ -145,6 +148,29 @@ export async function POST(request: Request) {
       )
     }
 
+    // Check user's plan tier and storage limits
+    const planTier = await getUserPlanTier(user.id)
+    const storageLimit = PLAN_STORAGE_LIMITS[planTier]
+
+    // Check if importing these prompts would exceed storage limit
+    const { available, currentCount } = await hasAvailableStorage(user.id, planTier, prompts.length)
+
+    if (!available) {
+      return NextResponse.json(
+        {
+          error: 'Storage limit exceeded',
+          code: 'STORAGE_LIMIT_EXCEEDED',
+          current: currentCount,
+          limit: storageLimit,
+          attempting: prompts.length,
+          planTier,
+          message: `Cannot import ${prompts.length} prompts. You have ${currentCount}/${storageLimit} prompts stored. This import would exceed your ${planTier} plan limit.`,
+          upgradeRequired: true,
+        },
+        { status: 402 } // 402 Payment Required
+      )
+    }
+
     // Prepare prompts for insertion
     const promptsToInsert = prompts.map((prompt) => ({
       user_id: user.id,
@@ -169,6 +195,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabase.from('prompts').insert(promptsToInsert).select()
 
     if (error) {
+      // Don't increment storage usage if insertion failed
       console.error('Database error:', error)
 
       // Provide more specific database error messages
@@ -211,6 +238,9 @@ export async function POST(request: Request) {
         { status: 500 }
       )
     }
+
+    // Increment storage usage by the number of prompts imported
+    await incrementStorageUsage(user.id, planTier, data.length)
 
     return NextResponse.json({
       success: true,

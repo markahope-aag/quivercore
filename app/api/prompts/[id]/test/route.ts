@@ -8,6 +8,8 @@ import { substituteVariables } from '@/lib/utils/prompt'
 import { handleError, ErrorCodes, ApplicationError } from '@/lib/utils/error-handler'
 import { logger } from '@/lib/utils/logger'
 import { decrypt } from '@/lib/utils/encryption'
+import { getUserPlanTier } from '@/lib/utils/subscriptions'
+import { hasAvailablePrompts, incrementPromptUsage } from '@/lib/usage/usage-tracking'
 
 export async function POST(
   request: NextRequest,
@@ -30,6 +32,18 @@ export async function POST(
 
     const body = await request.json()
     const { variables, model = 'gpt-3.5-turbo', session_api_key } = body
+
+    // Check user's plan tier and test execution limits
+    const planTier = await getUserPlanTier(user.id)
+    const { remaining } = await hasAvailablePrompts(user.id, planTier, 1)
+
+    // Note: Test executions count toward monthly prompt usage
+    // We allow testing even if at limit (overage will be tracked)
+    logger.debug('Test execution usage check', {
+      userId: user.id,
+      planTier,
+      remaining,
+    })
 
     // Determine which provider is needed based on model
     let provider: string
@@ -181,6 +195,9 @@ export async function POST(
       .from('prompts')
       .update({ usage_count: (prompt.usage_count || 0) + 1 })
       .eq('id', id)
+
+    // Increment prompt usage after successful test execution
+    await incrementPromptUsage(user.id, planTier, 1)
 
     return NextResponse.json({ response })
   } catch (error: unknown) {

@@ -5,6 +5,9 @@ import { logger } from '@/lib/utils/logger'
 import { sanitizeInput } from '@/lib/utils/sanitize'
 import { executeWithRetry } from '@/lib/utils/retry'
 import Anthropic from '@anthropic-ai/sdk'
+import { getUserPlanTier } from '@/lib/utils/subscriptions'
+import { hasAvailablePrompts, incrementPromptUsage } from '@/lib/usage/usage-tracking'
+import { getOverageRate } from '@/lib/constants/overage-pricing'
 // Rate limiting is handled by Next.js middleware, not needed here
 
 /**
@@ -32,6 +35,18 @@ export async function POST(request: NextRequest) {
     if (!promptText || promptText.trim().length === 0) {
       throw new ApplicationError('Prompt text is required', ErrorCodes.VALIDATION_ERROR, 400)
     }
+
+    // Check user's plan tier and prompt execution limits
+    const planTier = await getUserPlanTier(user.id)
+    const { remaining } = await hasAvailablePrompts(user.id, planTier, 1)
+
+    // Note: We allow execution even if at limit, as this counts toward monthly overage
+    // The overage will be tracked and billed at end of month
+    logger.debug('Prompt execution usage check', {
+      userId: user.id,
+      planTier,
+      remaining,
+    })
 
     // Get API key from environment (server-side only)
     const apiKey = process.env.ANTHROPIC_API_KEY
@@ -109,6 +124,9 @@ export async function POST(request: NextRequest) {
         stopReason: message.stop_reason,
         tokensUsed: message.usage,
       })
+
+      // Increment prompt usage after successful execution
+      await incrementPromptUsage(user.id, planTier, 1)
 
       return NextResponse.json({
         response: textContent,
