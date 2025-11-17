@@ -25,7 +25,7 @@ export default function NewPromptPage() {
             <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
           )}
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {isTemplate ? 'Create New Template' : 'Create New Prompt'}
+            {isTemplate ? 'Create New Template' : 'Create New Asset'}
           </h1>
         </div>
         <p className="text-lg text-slate-600 dark:text-slate-400">

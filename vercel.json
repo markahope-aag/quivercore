@@ -1,4 +1,14 @@
 {
+  "crons": [
+    {
+      "path": "/api/cron/reset-usage",
+      "schedule": "0 0 1 * *"
+    },
+    {
+      "path": "/api/cron/bill-overages",
+      "schedule": "0 2 1 * *"
+    }
+  ],
   "headers": [
     {
       "source": "/api/(.*)",

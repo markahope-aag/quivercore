@@ -1,14 +1,17 @@
 /**
  * Stripe subscription management
- * 
+ *
  * Functions for creating, updating, and managing Stripe subscriptions.
- * 
+ * Uses calendar-month billing: all monthly plans bill on the 1st of each month
+ * with prorated first month charges.
+ *
  * @module lib/stripe/subscriptions
  */
 
 import { getStripeServer } from './client'
 import { createClient } from '@/lib/supabase/server'
 import { getOrCreateStripeCustomer } from './customers'
+import { getFirstOfNextMonth, BILLING_CONFIG } from '@/lib/constants/billing-config'
 import type Stripe from 'stripe'
 
 /**
@@ -50,6 +53,24 @@ export async function createCheckoutSession(
     .or(`stripe_price_id_yearly.eq.${priceId}`)
     .single()
 
+  // Determine if this is a monthly or annual plan
+  const isMonthlyPlan = plan?.stripe_price_id_monthly === priceId
+
+  // Build subscription data with calendar-month billing for monthly plans
+  const subscriptionData: Stripe.Checkout.SessionCreateParams.SubscriptionData = {
+    metadata: {
+      supabase_user_id: userId,
+      plan_id: plan?.id || '',
+      billing_type: isMonthlyPlan ? 'calendar_month' : 'anniversary',
+    },
+  }
+
+  // For monthly plans, anchor billing to 1st of next month with proration
+  if (isMonthlyPlan) {
+    subscriptionData.billing_cycle_anchor = getFirstOfNextMonth()
+    subscriptionData.proration_behavior = BILLING_CONFIG.prorationBehavior
+  }
+
   // Create checkout session
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
@@ -66,12 +87,7 @@ export async function createCheckoutSession(
       supabase_user_id: userId,
       plan_id: plan?.id || '',
     },
-    subscription_data: {
-      metadata: {
-        supabase_user_id: userId,
-        plan_id: plan?.id || '',
-      },
-    },
+    subscription_data: subscriptionData,
   })
 
   return {

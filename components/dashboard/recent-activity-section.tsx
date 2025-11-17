@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card-v2'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card-v2'
 import { Button } from '@/components/ui/button-v2'
 import { Clock, Plus, Edit, Zap } from 'lucide-react'
 import Link from 'next/link'
@@ -24,7 +24,6 @@ export function RecentActivitySection({ activities }: RecentActivitySectionProps
       <Card>
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>Your recent prompt activity will appear here</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -41,7 +40,6 @@ export function RecentActivitySection({ activities }: RecentActivitySectionProps
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your latest prompt activity</CardDescription>
           </div>
           <Link href="/prompts">
             <Button variant="ghost" size="sm">

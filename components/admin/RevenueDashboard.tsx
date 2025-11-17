@@ -2,7 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card-v2'
-import { DollarSign, TrendingUp, TrendingDown, CreditCard, Users } from 'lucide-react'
+import { DollarSign, TrendingUp, TrendingDown, CreditCard, Users, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import {
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts'
+
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
 
 interface RevenueData {
   mrr: number
@@ -69,6 +84,20 @@ export function RevenueDashboard() {
   const previousMonthRevenue = monthlyRevenueArray.length > 1 ? monthlyRevenueArray[monthlyRevenueArray.length - 2][1] : 0
   const revenueGrowth = previousMonthRevenue > 0 ? ((lastMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100 : 0
 
+  // Prepare chart data
+  const revenueChartData = monthlyRevenueArray
+    .slice(-12)
+    .map(([month, amount]) => ({
+      month: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      revenue: amount / 100, // Convert cents to dollars
+    }))
+
+  const planDistributionData = Object.entries(data.revenueByPlan).map(([plan, planData]) => ({
+    name: plan,
+    value: planData.mrr / 100, // Convert cents to dollars
+    count: planData.count,
+  }))
+
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
@@ -80,7 +109,17 @@ export function RevenueDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(data.mrr)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="flex items-center text-xs text-muted-foreground mt-1">
+              {revenueGrowth >= 0 ? (
+                <ArrowUpRight className="h-3 w-3 text-green-600 mr-1" />
+              ) : (
+                <ArrowDownRight className="h-3 w-3 text-red-600 mr-1" />
+              )}
+              <span className={revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}>
+                {Math.abs(revenueGrowth).toFixed(1)}% from last month
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
               {data.activeSubscriptions} active subscriptions
             </p>
           </CardContent>
@@ -132,11 +171,105 @@ export function RevenueDashboard() {
         </Card>
       </div>
 
-      {/* Revenue by Plan */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue Trend Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Revenue Trend</CardTitle>
+            <CardDescription>Monthly revenue over the last 12 months</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={revenueChartData}>
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-700" />
+                <XAxis
+                  dataKey="month"
+                  className="text-xs"
+                  stroke="#64748b"
+                  tick={{ fill: '#64748b' }}
+                />
+                <YAxis
+                  className="text-xs"
+                  stroke="#64748b"
+                  tick={{ fill: '#64748b' }}
+                  tickFormatter={(value) => `$${value.toLocaleString()}`}
+                />
+                <Tooltip
+                  formatter={(value: number) => formatCurrency(value * 100)}
+                  contentStyle={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#3b82f6"
+                  fillOpacity={1}
+                  fill="url(#colorRevenue)"
+                  name="Revenue"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Revenue by Plan Pie Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Revenue by Plan</CardTitle>
+            <CardDescription>Distribution of revenue across subscription tiers</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {planDistributionData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={planDistributionData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {planDistributionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(value * 100)}
+                    contentStyle={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                No revenue data available
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Revenue by Plan Details */}
       <Card>
         <CardHeader>
-          <CardTitle>Revenue by Plan</CardTitle>
-          <CardDescription>Monthly recurring revenue breakdown</CardDescription>
+          <CardTitle>Revenue by Plan Details</CardTitle>
+          <CardDescription>Monthly recurring revenue breakdown by subscription tier</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -166,65 +299,6 @@ export function RevenueDashboard() {
         </CardContent>
       </Card>
 
-      {/* Revenue Trend */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Revenue Trend</CardTitle>
-          <CardDescription>Last 12 months</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {monthlyRevenueArray.slice(-12).map(([month, revenue]) => {
-              const maxRevenue = Math.max(...Object.values(data.revenueByMonth))
-              const percentage = maxRevenue > 0 ? (revenue / maxRevenue) * 100 : 0
-
-              return (
-                <div key={month} className="space-y-1">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{month}</span>
-                    <span className="font-medium">{formatCurrency(revenue)}</span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                    <div
-                      className="h-full bg-blue-600 transition-all"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </div>
-              )
-            })}
-            {monthlyRevenueArray.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">No revenue data available</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Growth Metrics */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Growth Metrics</CardTitle>
-          <CardDescription>Month-over-month comparison</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div>
-              <p className="text-sm text-muted-foreground">Last Month</p>
-              <p className="text-2xl font-bold">{formatCurrency(lastMonthRevenue)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Previous Month</p>
-              <p className="text-2xl font-bold">{formatCurrency(previousMonthRevenue)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Growth Rate</p>
-              <p className={`text-2xl font-bold ${revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {revenueGrowth >= 0 ? '+' : ''}{revenueGrowth.toFixed(1)}%
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

@@ -158,13 +158,13 @@ export function HeroSection() {
         <Link href="/prompts/new">
           <Button size="lg" className="gap-2">
             <Plus className="h-5 w-5" />
-            Create New Prompt
+            Create New Asset
           </Button>
         </Link>
         <Link href="/builder">
           <Button size="lg" variant="outline" className="gap-2">
             <Sparkles className="h-5 w-5" />
-            Open Prompt Builder
+            Open Builder
           </Button>
         </Link>
         <Link href="/prompts?template=true">

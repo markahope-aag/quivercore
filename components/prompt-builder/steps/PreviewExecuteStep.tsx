@@ -7,6 +7,8 @@ import { parseVSResponse } from '@/lib/utils/api-client'
 import type { ExportFormat } from '@/lib/utils/export'
 import type { AdvancedEnhancements } from '@/lib/types/enhancements'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useLimitReachedModal } from '@/hooks/use-limit-reached-modal'
+import { LimitReachedModal } from '@/components/modals/limit-reached-modal'
 
 // Helper function to get list of enabled advanced enhancements
 function getEnabledAdvancedEnhancements(enhancements: AdvancedEnhancements): string[] {
@@ -104,6 +106,7 @@ function formatAdvancedEnhancementDetails(enhancements: AdvancedEnhancements): s
 
 export function PreviewExecuteStep() {
   const { state, generatePrompt, executePrompt, saveTemplate, setError, setModel } = usePromptBuilder()
+  const { isOpen, limitData, openModal, closeModal, handlePayOverage, handleUpgrade } = useLimitReachedModal()
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [showSaveToLibraryDialog, setShowSaveToLibraryDialog] = useState(false)
   const [templateName, setTemplateName] = useState('')
@@ -235,6 +238,28 @@ export function PreviewExecuteStep() {
       })
 
       if (!response.ok) {
+        // Handle limit reached error (402 Payment Required)
+        if (response.status === 402) {
+          const errorData = await response.json()
+
+          // Close the save dialog
+          setShowSaveToLibraryDialog(false)
+
+          // Open the limit reached modal with overage options
+          openModal({
+            currentUsage: errorData.current || 0,
+            limit: errorData.limit || 0,
+            planTier: errorData.planTier || 'explorer',
+            overageRate: errorData.overageOptions?.overageRate || 0.75,
+            overageAmount: errorData.overageOptions?.overageAmount || 0.75,
+            promptCount: errorData.overageOptions?.promptCount || 1,
+            nextTier: errorData.upgradeOptions?.nextTier || null,
+            nextTierLimit: errorData.upgradeOptions?.nextTierLimit || null,
+          })
+
+          return
+        }
+
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
         throw new Error(errorData.error || `HTTP error: ${response.status}`)
       }
@@ -859,6 +884,20 @@ export function PreviewExecuteStep() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Limit Reached Modal */}
+      {limitData && (
+        <LimitReachedModal
+          isOpen={isOpen}
+          onClose={closeModal}
+          currentUsage={limitData.currentUsage}
+          limit={limitData.limit}
+          planTier={limitData.planTier}
+          overageRate={limitData.overageRate}
+          onPayOverage={handlePayOverage}
+          onUpgrade={handleUpgrade}
+        />
       )}
     </div>
   )

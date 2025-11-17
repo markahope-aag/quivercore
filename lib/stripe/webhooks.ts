@@ -8,6 +8,7 @@
 
 import { getStripeServer, getStripeWebhookSecret } from './client'
 import { createClient } from '@/lib/supabase/server'
+import { handleOverageInvoicePaid } from './overage-billing'
 import type Stripe from 'stripe'
 
 /**
@@ -148,24 +149,24 @@ export async function handleSubscriptionDeleted(
 }
 
 /**
- * Handle invoice paid event
- * 
+ * Handle invoice payment succeeded event
+ * Records billing history and resets usage limits if it's a new billing period
+ *
  * @param invoice - Stripe invoice object
  */
-export async function handleInvoicePaid(
+export async function handleInvoicePaymentSucceeded(
   invoice: Stripe.Invoice
 ): Promise<void> {
   const supabase = await createClient()
 
   // Get subscription ID (can be string or expanded object)
-  // Type assertion needed because Stripe Invoice type may not expose subscription directly
   const subscriptionId =
     typeof (invoice as any).subscription === 'string'
       ? (invoice as any).subscription
       : (invoice as any).subscription?.id
 
   if (!subscriptionId) {
-    return // Not a subscription invoice
+    return // Not a subscription invoice (could be one-time payment)
   }
 
   const customerId =
@@ -180,7 +181,7 @@ export async function handleInvoicePaid(
   // Get user subscription
   const { data: userSubscription } = await supabase
     .from('user_subscriptions')
-    .select('id, user_id')
+    .select('id, user_id, plan_id')
     .eq('stripe_subscription_id', subscriptionId)
     .single()
 
@@ -188,21 +189,62 @@ export async function handleInvoicePaid(
     return
   }
 
+  // Get plan details to determine limits
+  const { data: plan } = await supabase
+    .from('subscription_plans')
+    .select('*')
+    .eq('id', userSubscription.plan_id)
+    .single()
+
   // Record billing history
-  const { error } = await supabase.from('billing_history').insert({
+  const { error: billingError } = await supabase.from('billing_history').insert({
     user_id: userSubscription.user_id,
     subscription_id: userSubscription.id,
     stripe_invoice_id: invoice.id,
     amount: invoice.amount_paid,
     currency: invoice.currency,
-    status: invoice.status === 'paid' ? 'paid' : 'pending',
+    status: 'paid',
     invoice_url: invoice.hosted_invoice_url || null,
-    paid_at: invoice.status === 'paid' ? new Date().toISOString() : null,
+    paid_at: new Date().toISOString(),
   })
 
-  if (error) {
-    console.error('Error recording billing history:', error)
+  if (billingError) {
+    console.error('Error recording billing history:', billingError)
   }
+
+  // Reset usage limits for the new billing period
+  // This happens on successful payment at the start of a new period
+  const now = new Date()
+  const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+
+  const { error: usageError } = await supabase.from('monthly_usage_tracking').upsert({
+    user_id: userSubscription.user_id,
+    month_year: monthYear,
+    prompts_used: 0,
+    prompts_limit: plan?.prompt_limit || 50,
+    storage_used: 0,
+    storage_limit: plan?.storage_limit || 100,
+    overage_prompts: 0,
+    overage_charges: 0,
+    reset_date: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(),
+  }, {
+    onConflict: 'user_id,month_year',
+  })
+
+  if (usageError) {
+    console.error('Error resetting usage limits:', usageError)
+  }
+}
+
+/**
+ * Handle invoice paid event (legacy - redirects to payment succeeded)
+ *
+ * @param invoice - Stripe invoice object
+ */
+export async function handleInvoicePaid(
+  invoice: Stripe.Invoice
+): Promise<void> {
+  return handleInvoicePaymentSucceeded(invoice)
 }
 
 /**
@@ -234,6 +276,13 @@ export async function processWebhookEvent(
 
     case 'invoice.paid':
       await handleInvoicePaid(event.data.object as Stripe.Invoice)
+      break
+
+    case 'invoice.payment_succeeded':
+      const successInvoice = event.data.object as Stripe.Invoice
+      await handleInvoicePaymentSucceeded(successInvoice)
+      // Also handle overage invoices
+      await handleOverageInvoicePaid(successInvoice)
       break
 
     case 'invoice.payment_failed':

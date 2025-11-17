@@ -44,7 +44,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
           Welcome back! 👋
         </h1>
         <p className="mt-2 text-slate-600 dark:text-slate-400">
-          Here's what's happening with your prompts today.
+          Here's what's happening.
         </p>
       </div>
 
@@ -100,9 +100,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Plan</p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mt-1">
                   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {stats?.subscription?.subscription_plans?.display_name || 'Free'}
                   </p>
@@ -110,8 +110,13 @@ export function HeroSection({ stats }: HeroSectionProps) {
                     <Badge variant="outline" className="text-xs">Trial</Badge>
                   )}
                 </div>
+                <Link href="/pricing" className="mt-2 block">
+                  <Button variant="outline" size="sm" className="text-xs h-7">
+                    Upgrade
+                  </Button>
+                </Link>
               </div>
-              <Crown className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+              <Crown className="h-8 w-8 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
             </div>
           </CardContent>
         </Card>
@@ -126,7 +131,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
             onClick={() => setShowNewPromptMenu(!showNewPromptMenu)}
           >
             <Plus className="h-5 w-5" />
-            Create New Prompt
+            Create New Asset
             <ChevronDown className="h-4 w-4" />
           </Button>
 
@@ -183,13 +188,13 @@ export function HeroSection({ stats }: HeroSectionProps) {
         <Link href="/builder">
           <Button size="lg" variant="outline" className="gap-2">
             <Sparkles className="h-5 w-5" />
-            Open Prompt Builder
+            Open Builder
           </Button>
         </Link>
         <Link href="/prompts">
           <Button size="lg" variant="outline" className="gap-2">
             <FileText className="h-5 w-5" />
-            My Prompts
+            My Assets
           </Button>
         </Link>
       </div>

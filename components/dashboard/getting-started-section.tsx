@@ -23,7 +23,7 @@ export function GettingStartedSection() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                Choose Your Domain
+                Choose Your Use-Case
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                 Select from Marketing, Technical Writing, Creative Content, and more.
@@ -63,7 +63,7 @@ export function GettingStartedSection() {
         <div className="flex flex-wrap gap-3 pt-2">
           <Link href="/builder">
             <Button className="gap-2">
-              Create Your First Prompt
+              Create Your First Asset
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>

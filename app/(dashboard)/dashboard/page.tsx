@@ -29,6 +29,7 @@ import { MostUsedPromptsSection } from '@/components/dashboard/most-used-prompts
 import { NewsAndUpdatesSection } from '@/components/dashboard/news-updates-section'
 import { GettingStartedSection } from '@/components/dashboard/getting-started-section'
 import { SuggestedTemplatesSection } from '@/components/dashboard/suggested-templates-section'
+import { UsageLimitsSection } from '@/components/dashboard/usage-limits-section'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -120,6 +121,9 @@ export default function DashboardPage() {
         <div className="space-y-6">
           {/* Quick Access */}
           <QuickAccessSection />
+
+          {/* Usage Limits */}
+          <UsageLimitsSection />
 
           {/* Usage Stats */}
           <UsageStatsSection stats={stats} />

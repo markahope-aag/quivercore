@@ -96,7 +96,7 @@ export function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Prompts</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Assets</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -137,7 +137,7 @@ export function AdminDashboard() {
       {/* Prompt Analytics */}
       <Card>
         <CardHeader>
-          <CardTitle>Prompt Analytics</CardTitle>
+          <CardTitle>Analytics</CardTitle>
           <CardDescription>Distribution of prompts across domains and frameworks</CardDescription>
         </CardHeader>
         <CardContent>

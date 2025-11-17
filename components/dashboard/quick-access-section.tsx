@@ -1,19 +1,19 @@
 'use client'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card-v2'
-import { Sparkles, FileText, Search, Layout, Settings, Book } from 'lucide-react'
+import { Sparkles, FileText, Search, Settings } from 'lucide-react'
 import Link from 'next/link'
 
 const quickAccessItems = [
   {
-    name: 'Prompt Builder',
+    name: 'Builder',
     description: 'Create prompts with advanced frameworks',
     icon: Sparkles,
     href: '/builder',
     color: 'text-purple-600 dark:text-purple-400',
   },
   {
-    name: 'Prompt Library',
+    name: 'Library',
     description: 'Browse and manage your prompts',
     icon: FileText,
     href: '/prompts',
@@ -25,13 +25,6 @@ const quickAccessItems = [
     icon: Search,
     href: '/search',
     color: 'text-green-600 dark:text-green-400',
-  },
-  {
-    name: 'Templates',
-    description: 'Browse template library',
-    icon: Layout,
-    href: '/prompts?is_template=true',
-    color: 'text-orange-600 dark:text-orange-400',
   },
   {
     name: 'Settings',

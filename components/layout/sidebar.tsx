@@ -31,11 +31,14 @@ import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
+import { UsageDisplay } from '@/components/dashboard/usage-display'
+import { OverageBanner } from '@/components/dashboard/overage-banner'
+import { getOverageRate } from '@/lib/constants/overage-pricing'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Prompt Builder', href: '/builder', icon: Sparkles },
-  { name: 'Prompt Library', href: '/prompts', icon: FileText },
+  { name: 'Builder', href: '/builder', icon: Sparkles },
+  { name: 'Library', href: '/prompts', icon: FileText },
 ]
 
 const bottomNavigation = [
@@ -49,6 +52,15 @@ export function Sidebar() {
   const [user, setUser] = React.useState<any>(null)
   const [isAdmin, setIsAdmin] = React.useState(false)
   const [planName, setPlanName] = React.useState<string>('Free')
+  const [usage, setUsage] = React.useState<{
+    current: number
+    limit: number
+    planTier: 'explorer' | 'researcher' | 'strategist' | 'free'
+  }>({ current: 0, limit: 50, planTier: 'free' })
+  const [overage, setOverage] = React.useState<{
+    prompts: number
+    charges: number
+  }>({ prompts: 0, charges: 0 })
 
   React.useEffect(() => {
     async function getUser() {
@@ -69,7 +81,7 @@ export function Sidebar() {
         // Fetch user's subscription plan
         const { data: subscription } = await supabase
           .from('user_subscriptions')
-          .select('plan_id, status')
+          .select('plan_id, status, subscription_plans(name)')
           .eq('user_id', user.id)
           .eq('status', 'active')
           .single()
@@ -85,8 +97,35 @@ export function Sidebar() {
             'enterprise': 'Enterprise',
           }
           setPlanName(planNames[subscription.plan_id] || 'Pro')
+
+          // Get plan tier for usage display
+          const planTierName = (subscription as any).subscription_plans?.name?.toLowerCase() as 'explorer' | 'researcher' | 'strategist'
+
+          // Fetch usage data
+          const now = new Date()
+          const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+
+          const { data: usageData } = await supabase
+            .from('monthly_usage_tracking')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('month_year', monthYear)
+            .single()
+
+          if (usageData) {
+            setUsage({
+              current: usageData.prompts_used || 0,
+              limit: usageData.prompts_limit || 50,
+              planTier: planTierName || 'free',
+            })
+            setOverage({
+              prompts: usageData.overage_prompts || 0,
+              charges: usageData.overage_charges || 0,
+            })
+          }
         } else {
           setPlanName('Free')
+          setUsage({ current: 0, limit: 50, planTier: 'free' })
         }
       }
     }
@@ -114,7 +153,7 @@ export function Sidebar() {
               </svg>
             </div>
           </div>
-          <span className="text-lg font-semibold text-slate-900 dark:text-white">QuiverCore</span>
+          <span className="text-2xl font-bold text-slate-900 dark:text-white">QuiverCore</span>
         </Link>
       </div>
 
@@ -209,6 +248,24 @@ export function Sidebar() {
             )
           })}
         </nav>
+      </div>
+
+      {/* Usage Display */}
+      <div className="px-3 pb-4 space-y-3">
+        <UsageDisplay
+          current={usage.current}
+          limit={usage.limit}
+          planTier={usage.planTier}
+          compact={true}
+        />
+        {overage.prompts > 0 && (
+          <OverageBanner
+            overagePrompts={overage.prompts}
+            overageCharges={overage.charges}
+            overageRate={getOverageRate(usage.planTier)}
+            compact={true}
+          />
+        )}
       </div>
 
       {/* User Menu */}

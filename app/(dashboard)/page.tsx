@@ -197,7 +197,7 @@ export default function DashboardPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Prompts</p>
+                    <p className="text-sm font-medium text-muted-foreground">Total Assets</p>
                     <p className="text-2xl font-bold mt-1">{stats.totalPrompts}</p>
                   </div>
                   <FileText className="h-8 w-8 text-blue-600" />
@@ -258,13 +258,13 @@ export default function DashboardPage() {
           <Button asChild size="lg">
             <Link href="/prompts/new">
               <Plus className="mr-2 h-5 w-5" />
-              Create New Prompt
+              Create New Asset
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg">
             <Link href="/builder">
               <Sparkles className="mr-2 h-5 w-5" />
-              Open Prompt Builder
+              Open Builder
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg">
@@ -293,7 +293,7 @@ export default function DashboardPage() {
                   1
                 </div>
                 <div>
-                  <h4 className="font-semibold">Choose Your Domain</h4>
+                  <h4 className="font-semibold">Choose Your Use-Case</h4>
                   <p className="text-sm text-muted-foreground">
                     Select from Marketing, Technical Writing, Creative Content, and more.
                   </p>
@@ -323,7 +323,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex gap-3 mt-6">
                 <Button asChild>
-                  <Link href="/builder">Create Your First Prompt</Link>
+                  <Link href="/builder">Create Your First Asset</Link>
                 </Button>
                 <Button asChild variant="outline">
                   <Link href="/prompts?template=true">Browse Templates</Link>

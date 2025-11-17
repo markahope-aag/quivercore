@@ -59,15 +59,15 @@ export function AdminNav() {
   }
 
   return (
-    <nav className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4">
+    <nav className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm px-6 py-4">
       <div className="space-y-3">
-        {/* Primary Navigation Row */}
-        <div className="flex flex-wrap gap-2">
+        {/* Primary Navigation - 5 Column Grid */}
+        <div className="grid grid-cols-5 gap-2">
           {renderNavItems(primaryNavItems)}
         </div>
 
-        {/* Secondary Navigation Row */}
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+        {/* Secondary Navigation - 5 Column Grid */}
+        <div className="grid grid-cols-5 gap-2">
           {renderNavItems(secondaryNavItems)}
         </div>
       </div>

@@ -121,57 +121,81 @@ export function PricingCard({ plan, index, currentPlanName }: PricingCardProps) 
     }
   }
 
+  const getCuratedTemplates = () => {
+    switch (plan.name) {
+      case 'explorer':
+        return '30 curated templates'
+      case 'researcher':
+        return '40+ templates + 2 new/month'
+      case 'strategist':
+        return '50+ templates + custom'
+      default:
+        return '30 templates'
+    }
+  }
+
+  const getAnalyticsLevel = () => {
+    switch (plan.name) {
+      case 'explorer':
+        return 'Basic usage analytics'
+      case 'researcher':
+        return 'Advanced analytics + insights'
+      case 'strategist':
+        return 'Full analytics + ROI tracking'
+      default:
+        return 'Basic analytics'
+    }
+  }
+
+  const getOnboarding = () => {
+    switch (plan.name) {
+      case 'explorer':
+        return 'Self-service'
+      case 'researcher':
+        return 'Guided + best practices'
+      case 'strategist':
+        return 'White-glove + success manager'
+      default:
+        return 'Self-service'
+    }
+  }
+
   const features = [
     {
-      label: 'Prompt Storage',
+      label: 'Your Prompt Storage',
       value: getStorageLimit(),
     },
     {
       label: 'AI Prompt Builder',
-      value: plan.features?.monthly_prompts === -1 ? 'Unlimited uses' : `${plan.features?.monthly_prompts || 0} uses/month`,
-    },
-    {
-      label: 'In-App Testing',
-      value: 'With your API keys',
+      value: plan.features?.monthly_prompts === -1 ? '500 prompts/month' : `${plan.features?.monthly_prompts || 0} prompts/month`,
     },
     {
       label: 'Verbalized Sampling',
-      value: plan.features?.verbalized_sampling?.enabled
-        ? `${plan.features.verbalized_sampling.patterns?.length || 0} pattern${(plan.features.verbalized_sampling.patterns?.length || 0) !== 1 ? 's' : ''}`
-        : 'Not included',
+      value: 'All 3 patterns',
+    },
+    {
+      label: 'Frameworks Available',
+      value: 'All 10 frameworks',
     },
     {
       label: 'Advanced Enhancements',
-      value: plan.features?.advanced_enhancements ? 'Included' : 'Not included',
+      value: 'All enhancements included',
     },
     {
-      label: 'Framework Library',
-      value: plan.features?.framework_library?.included
-        ? plan.features.framework_library.count === -1
-          ? 'Unlimited'
-          : `${plan.features.framework_library.count || 0} frameworks`
-        : 'Not included',
+      label: 'Curated Templates',
+      value: getCuratedTemplates(),
     },
     {
-      label: 'Template Library',
-      value:
-        plan.features?.template_library?.access === 'none' || !plan.features?.template_library?.access
-          ? 'Not included'
-          : plan.features.template_library.access === 'unlimited'
-            ? 'Unlimited access'
-            : `${plan.features.template_library.access} access`,
-    },
-    {
-      label: 'Export Options',
-      value: `${plan.features?.export_options?.length || 0} format${(plan.features?.export_options?.length || 0) !== 1 ? 's' : ''}`,
-    },
-    {
-      label: 'Analytics',
-      value: plan.features?.analytics_dashboard === 'none' || !plan.features?.analytics_dashboard ? 'Not included' : plan.features.analytics_dashboard,
+      label: 'Analytics Dashboard',
+      value: getAnalyticsLevel(),
     },
     {
       label: 'Support',
-      value: plan.features?.support || 'Not specified',
+      value: plan.features?.support || 'Community',
+    },
+    {
+      label: 'Onboarding',
+      value: getOnboarding(),
     },
   ]
 
