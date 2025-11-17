@@ -336,3 +336,24 @@ export async function getAllPlans(): Promise<SubscriptionPlan[]> {
   return data as SubscriptionPlan[]
 }
 
+/**
+ * Get user's plan tier name
+ * 
+ * @param userId - User ID to check
+ * @returns Plan tier name ('explorer', 'researcher', 'strategist', or 'free')
+ */
+export async function getUserPlanTier(
+  userId: string
+): Promise<'explorer' | 'researcher' | 'strategist' | 'free'> {
+  const subscription = await getUserEffectiveSubscription(userId)
+  const planName = subscription.plan.name
+
+  // Map plan names to tier names
+  if (planName === 'explorer' || planName === 'researcher' || planName === 'strategist') {
+    return planName
+  }
+
+  // Default to 'free' for any other plan or no subscription
+  return 'free'
+}
+

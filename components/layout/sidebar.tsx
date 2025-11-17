@@ -19,6 +19,7 @@ import {
   User,
   Shield,
   Zap,
+  Receipt,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -43,6 +44,7 @@ const navigation = [
 
 const bottomNavigation = [
   { name: 'Plans', href: '/pricing', icon: Zap },
+  { name: 'Billing', href: '/dashboard/billing', icon: Receipt },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 

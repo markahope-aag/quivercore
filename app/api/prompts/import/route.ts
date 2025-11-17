@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 import { PromptSource } from '@/lib/types/database'
 import { getUserPlanTier } from '@/lib/utils/subscriptions'
 import { hasAvailableStorage, incrementStorageUsage } from '@/lib/usage/usage-tracking'
-import { PLAN_STORAGE_LIMITS } from '@/lib/constants/billing-config'
+import { PLAN_LIMITS } from '@/lib/constants/billing-config'
 
 interface ImportPromptData {
   title: string
@@ -150,7 +150,8 @@ export async function POST(request: Request) {
 
     // Check user's plan tier and storage limits
     const planTier = await getUserPlanTier(user.id)
-    const storageLimit = PLAN_STORAGE_LIMITS[planTier]
+    // Handle free plan (not in PLAN_LIMITS) - default to 10 prompts
+    const storageLimit = planTier === 'free' ? 10 : (PLAN_LIMITS[planTier]?.storage || 0)
 
     // Check if importing these prompts would exceed storage limit
     const { available, currentCount } = await hasAvailableStorage(user.id, planTier, prompts.length)
