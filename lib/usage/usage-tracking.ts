@@ -46,7 +46,9 @@ export async function getOrCreateUsageTracking(
 ): Promise<UsageStats | null> {
   const supabase = await createClient()
   const monthYear = getCurrentMonthYear()
-  const limits = PLAN_LIMITS[planTier]
+  // Handle free plan - use explorer limits as default
+  const effectiveTier = planTier === 'free' ? 'explorer' : planTier
+  const limits = PLAN_LIMITS[effectiveTier]
 
   // Try to get existing usage record
   const { data: existing } = await supabase
@@ -288,6 +290,109 @@ export async function resetMonthlyUsage(): Promise<{
     usersReset,
     annualSkipped,
     errors,
+  }
+}
+
+/**
+ * Reset usage for annual plans on their anniversary date
+ * Called by daily cron job to check for anniversaries
+ *
+ * IMPORTANT: Only resets ANNUAL plans on their exact anniversary date.
+ * Monthly plans are handled by resetMonthlyUsage() on the 1st.
+ */
+export async function resetAnnualAnniversaries(): Promise<{
+  success: boolean
+  usersReset: number
+  errors: number
+  anniversariesChecked: number
+}> {
+  const supabase = await createClient()
+  const monthYear = getCurrentMonthYear()
+  const today = new Date()
+  today.setHours(0, 0, 0, 0) // Start of today
+
+  // Get all active annual subscriptions
+  const { data: subscriptions, error: queryError } = await supabase
+    .from('user_subscriptions')
+    .select('user_id, plan_id, created_at, subscription_plans(billing_period, prompt_limit, storage_limit)')
+    .eq('status', 'active')
+
+  if (queryError) {
+    console.error('Error fetching subscriptions for anniversary reset:', queryError)
+    return { success: false, usersReset: 0, errors: 1, anniversariesChecked: 0 }
+  }
+
+  if (!subscriptions || subscriptions.length === 0) {
+    return { success: true, usersReset: 0, errors: 0, anniversariesChecked: 0 }
+  }
+
+  let usersReset = 0
+  let errors = 0
+  let anniversariesChecked = 0
+
+  // Check each subscription for anniversary
+  for (const subscription of subscriptions) {
+    // Handle both array and single object responses from Supabase
+    const planData = (subscription as any).subscription_plans
+    const plan = Array.isArray(planData) ? planData[0] : planData
+
+    if (!plan) {
+      errors++
+      continue
+    }
+
+    // Only process annual plans
+    if (plan.billing_period !== 'annual' && plan.billing_period !== 'yearly') {
+      continue
+    }
+
+    anniversariesChecked++
+
+    // Check if today is the anniversary date
+    const subscriptionStart = new Date(subscription.created_at)
+    subscriptionStart.setHours(0, 0, 0, 0)
+
+    // Check if month and day match (anniversary)
+    const isAnniversary =
+      subscriptionStart.getMonth() === today.getMonth() &&
+      subscriptionStart.getDate() === today.getDate() &&
+      subscriptionStart < today // Must be at least 1 year old
+
+    if (!isAnniversary) {
+      continue
+    }
+
+    // Reset usage for this annual plan anniversary
+    const { error } = await supabase.from('monthly_usage_tracking').upsert(
+      {
+        user_id: subscription.user_id,
+        month_year: monthYear,
+        prompts_used: 0,
+        prompts_limit: plan.prompt_limit || 50,
+        storage_used: 0,
+        storage_limit: plan.storage_limit || 100,
+        overage_prompts: 0,
+        overage_charges: 0,
+        reset_date: today.toISOString(),
+      },
+      {
+        onConflict: 'user_id,month_year',
+      }
+    )
+
+    if (error) {
+      console.error('Error resetting anniversary usage for user:', subscription.user_id, error)
+      errors++
+    } else {
+      usersReset++
+    }
+  }
+
+  return {
+    success: errors === 0,
+    usersReset,
+    errors,
+    anniversariesChecked,
   }
 }
 
