@@ -18,7 +18,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-10-29.clover',
 })
 
 interface CreateSubscriptionParams {
@@ -49,7 +49,10 @@ export async function createCalendarSubscription({
   billingPeriod,
   metadata = {},
 }: CreateSubscriptionParams): Promise<SubscriptionResult> {
-  const fullPrice = PLAN_PRICES[billingPeriod][plan]
+  if (plan === 'free') {
+    throw new Error('Cannot create subscription for free plan')
+  }
+  const fullPrice = PLAN_PRICES[billingPeriod][plan as 'explorer' | 'researcher' | 'strategist']
 
   // For monthly plans, anchor to 1st of month with proration
   if (billingPeriod === 'monthly') {
@@ -163,7 +166,8 @@ export async function calculatePlanChangeProration(
   newPriceId: string
 ): Promise<{ proratedAmount: number; nextBillingAmount: number }> {
   // Preview the invoice to see proration
-  const upcomingInvoice = await stripe.invoices.retrieveUpcoming({
+  // Note: Using 'as any' because Stripe SDK types may not include retrieveUpcoming in some versions
+  const upcomingInvoice = await (stripe.invoices as any).retrieveUpcoming({
     subscription: subscriptionId,
     subscription_items: [
       {

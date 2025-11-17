@@ -163,7 +163,19 @@ export async function POST(
         ],
       })
 
-      response = completion.choices?.[0]?.message?.content || ''
+      const content = completion.choices?.[0]?.message?.content
+      if (typeof content === 'string') {
+        response = content
+      } else if (Array.isArray(content)) {
+        response = content
+          .filter((chunk): chunk is { type: 'text'; text: string } => 
+            typeof chunk === 'object' && chunk !== null && 'type' in chunk && chunk.type === 'text'
+          )
+          .map(chunk => chunk.text)
+          .join('')
+      } else {
+        response = ''
+      }
     } else {
       // OpenAI
       const openai = new OpenAI({ apiKey })

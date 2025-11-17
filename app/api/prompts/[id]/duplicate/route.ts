@@ -4,8 +4,9 @@ import { handleError, ErrorCodes, ApplicationError } from '@/lib/utils/error-han
 import { logger } from '@/lib/utils/logger'
 import { withQueryPerformance } from '@/lib/utils/query-performance'
 import { getUserPlanTier } from '@/lib/utils/subscriptions'
-import { hasAvailableStorage, incrementStorageUsage } from '@/lib/usage/usage-tracking'
-import { PLAN_STORAGE_LIMITS } from '@/lib/constants/billing-config'
+import { PLAN_LIMITS } from '@/lib/constants/billing-config'
+import { checkUsageLimit } from '@/lib/utils/usage-checker'
+import { getOrCreateUsageTracking } from '@/lib/usage/usage-tracking'
 
 export async function POST(
   request: Request,
@@ -28,20 +29,24 @@ export async function POST(
 
     // Check user's plan tier and storage limits
     const planTier = await getUserPlanTier(user.id)
-    const storageLimit = PLAN_STORAGE_LIMITS[planTier]
-
+    
     // Check if duplicating would exceed storage limit
-    const { available, currentCount } = await hasAvailableStorage(user.id, planTier, 1)
+    const storageCheck = await checkUsageLimit({
+      userId: user.id,
+      feature: 'storage',
+    })
 
-    if (!available) {
+    if (!storageCheck.allowed || (storageCheck.remaining || 0) < 1) {
+      const storageLimit = planTier === 'free' ? 10 : (PLAN_LIMITS[planTier]?.storage || 0)
       return NextResponse.json(
         {
           error: 'Storage limit exceeded',
           code: 'STORAGE_LIMIT_EXCEEDED',
-          current: currentCount,
-          limit: storageLimit,
+          current: storageCheck.current,
+          limit: storageCheck.limit,
+          remaining: storageCheck.remaining,
           planTier,
-          message: `Cannot duplicate prompt. You have ${currentCount}/${storageLimit} prompts stored. Upgrade your plan to add more prompts.`,
+          message: `Cannot duplicate prompt. You have ${storageCheck.current}/${storageCheck.limit} prompts stored. Upgrade your plan to add more prompts.`,
           upgradeRequired: true,
         },
         { status: 402 } // 402 Payment Required
@@ -112,8 +117,19 @@ export async function POST(
       }
     )
 
-    // Increment storage usage after successful duplication
-    await incrementStorageUsage(user.id, planTier, 1)
+    // Update storage usage in monthly_usage_tracking
+    if (planTier !== 'free') {
+      const usage = await getOrCreateUsageTracking(user.id, planTier as 'explorer' | 'researcher' | 'strategist')
+      if (usage) {
+        await supabase
+          .from('monthly_usage_tracking')
+          .update({
+            storage_used: usage.storageUsed + 1,
+          })
+          .eq('user_id', user.id)
+          .eq('month_year', usage.monthYear)
+      }
+    }
 
     return NextResponse.json(duplicate)
   } catch (error: unknown) {

@@ -42,7 +42,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const planTier: PlanTier = subscription.subscription_plans?.name?.toLowerCase() as PlanTier || 'explorer'
+    const planData = subscription.subscription_plans
+    const plan = Array.isArray(planData) ? planData[0] : planData
+    const planTier: PlanTier = (plan?.name?.toLowerCase() as PlanTier) || 'explorer'
 
     // Record the overage charge
     const { success, chargeAmount } = await recordOverageCharge(user.id, planTier, promptCount)

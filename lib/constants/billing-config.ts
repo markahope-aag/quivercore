@@ -51,7 +51,7 @@ export const PLAN_PRICES = {
   },
 } as const
 
-export type PlanTier = 'explorer' | 'researcher' | 'strategist'
+export type PlanTier = 'explorer' | 'researcher' | 'strategist' | 'free'
 export type BillingPeriod = 'monthly' | 'annual'
 
 /**

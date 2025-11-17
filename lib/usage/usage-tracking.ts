@@ -165,7 +165,12 @@ export async function recordOverageCharge(
     return { success: false, chargeAmount: 0 }
   }
 
-  const overageRate = getOverageRate(planTier)
+  // Free plan has no overage - return 0
+  if (planTier === 'free') {
+    return { success: true, chargeAmount: 0 }
+  }
+
+  const overageRate = getOverageRate(planTier as 'explorer' | 'researcher' | 'strategist')
   const chargeAmount = overageRate * promptCount
 
   // Update overage charges
@@ -232,7 +237,7 @@ export async function resetMonthlyUsage(): Promise<{
   // Get all active subscriptions with plan details
   const { data: subscriptions } = await supabase
     .from('user_subscriptions')
-    .select('user_id, plan_id, subscription_plans(billing_period, prompt_limit, storage_limit)')
+    .select('user_id, plan_id, current_period_start, current_period_end, subscription_plans(features)')
     .eq('status', 'active')
 
   if (!subscriptions || subscriptions.length === 0) {
@@ -245,29 +250,46 @@ export async function resetMonthlyUsage(): Promise<{
 
   // Reset usage for each user with MONTHLY plan only
   for (const subscription of subscriptions) {
-    const plan = (subscription as any).subscription_plans
+    // Handle both array and single object responses from Supabase
+    const planData = (subscription as any).subscription_plans
+    const plan = Array.isArray(planData) ? planData[0] : planData
 
     if (!plan) {
       errors++
       continue
     }
 
-    // Skip annual plans - they reset on their anniversary date
-    if (plan.billing_period === 'annual' || plan.billing_period === 'yearly') {
-      annualSkipped++
-      continue
+    // Determine if this is an annual plan by checking the period duration
+    // Annual plans have ~365 days between periods, monthly have ~30 days
+    const periodStart = subscription.current_period_start ? new Date(subscription.current_period_start) : null
+    const periodEnd = subscription.current_period_end ? new Date(subscription.current_period_end) : null
+    
+    if (periodStart && periodEnd) {
+      const daysInPeriod = Math.round((periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24))
+      const isAnnual = daysInPeriod > 200 // More than 200 days indicates annual
+
+      // Skip annual plans - they reset on their anniversary date
+      if (isAnnual) {
+        annualSkipped++
+        continue
+      }
     }
 
     // Only reset monthly plans
+    // Extract limits from features JSONB
+    const features = plan.features as { monthly_prompts?: number; storage?: number } | null
+    const promptsLimit = features?.monthly_prompts || 50
+    const storageLimit = features?.storage || 100
+
     // Upsert usage tracking for new month
     const { error } = await supabase.from('monthly_usage_tracking').upsert(
       {
         user_id: subscription.user_id,
         month_year: monthYear,
         prompts_used: 0,
-        prompts_limit: plan.prompt_limit || 50,
+        prompts_limit: promptsLimit,
         storage_used: 0,
-        storage_limit: plan.storage_limit || 100,
+        storage_limit: storageLimit,
         overage_prompts: 0,
         overage_charges: 0,
         reset_date: resetDate.toISOString(),
@@ -311,10 +333,10 @@ export async function resetAnnualAnniversaries(): Promise<{
   const today = new Date()
   today.setHours(0, 0, 0, 0) // Start of today
 
-  // Get all active annual subscriptions
+  // Get all active subscriptions with plan details
   const { data: subscriptions, error: queryError } = await supabase
     .from('user_subscriptions')
-    .select('user_id, plan_id, created_at, subscription_plans(billing_period, prompt_limit, storage_limit)')
+    .select('user_id, plan_id, created_at, current_period_start, current_period_end, subscription_plans(features, stripe_price_id_monthly, stripe_price_id_yearly)')
     .eq('status', 'active')
 
   if (queryError) {
@@ -341,8 +363,22 @@ export async function resetAnnualAnniversaries(): Promise<{
       continue
     }
 
+    // Determine if this is an annual plan by checking the period duration
+    // Annual plans have ~365 days between periods, monthly have ~30 days
+    const periodStart = subscription.current_period_start ? new Date(subscription.current_period_start) : null
+    const periodEnd = subscription.current_period_end ? new Date(subscription.current_period_end) : null
+    
+    if (!periodStart || !periodEnd) {
+      // If we can't determine, check if yearly price ID exists (indicates annual plan capability)
+      // But we'll skip for now since we can't be sure
+      continue
+    }
+
+    const daysInPeriod = Math.round((periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24))
+    const isAnnual = daysInPeriod > 200 // More than 200 days indicates annual (allows for some variance)
+
     // Only process annual plans
-    if (plan.billing_period !== 'annual' && plan.billing_period !== 'yearly') {
+    if (!isAnnual) {
       continue
     }
 
@@ -362,15 +398,20 @@ export async function resetAnnualAnniversaries(): Promise<{
       continue
     }
 
+    // Extract limits from features JSONB
+    const features = plan.features as { monthly_prompts?: number; storage?: number } | null
+    const promptsLimit = features?.monthly_prompts || 50
+    const storageLimit = features?.storage || 100
+
     // Reset usage for this annual plan anniversary
     const { error } = await supabase.from('monthly_usage_tracking').upsert(
       {
         user_id: subscription.user_id,
         month_year: monthYear,
         prompts_used: 0,
-        prompts_limit: plan.prompt_limit || 50,
+        prompts_limit: promptsLimit,
         storage_used: 0,
-        storage_limit: plan.storage_limit || 100,
+        storage_limit: storageLimit,
         overage_prompts: 0,
         overage_charges: 0,
         reset_date: today.toISOString(),

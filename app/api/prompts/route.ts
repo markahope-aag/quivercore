@@ -143,7 +143,9 @@ export async function POST(request: NextRequest) {
       .single()
 
     // Default to explorer if no active subscription (free tier)
-    const planTier: PlanTier = subscription?.subscription_plans?.name?.toLowerCase() as PlanTier || 'explorer'
+    const planData = subscription?.subscription_plans
+    const plan = Array.isArray(planData) ? planData[0] : planData
+    const planTier: PlanTier = (plan?.name?.toLowerCase() as PlanTier) || 'explorer'
 
     // CHECK PROMPT USAGE LIMIT BEFORE CREATING
     const { remaining, wouldBeOverage } = await hasAvailablePrompts(user.id, planTier, 1)

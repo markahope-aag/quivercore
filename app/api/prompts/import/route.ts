@@ -3,7 +3,8 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { PromptSource } from '@/lib/types/database'
 import { getUserPlanTier } from '@/lib/utils/subscriptions'
-import { hasAvailableStorage, incrementStorageUsage } from '@/lib/usage/usage-tracking'
+import { checkUsageLimit } from '@/lib/utils/usage-checker'
+import { getOrCreateUsageTracking } from '@/lib/usage/usage-tracking'
 import { PLAN_LIMITS } from '@/lib/constants/billing-config'
 
 interface ImportPromptData {
@@ -150,22 +151,25 @@ export async function POST(request: Request) {
 
     // Check user's plan tier and storage limits
     const planTier = await getUserPlanTier(user.id)
-    // Handle free plan (not in PLAN_LIMITS) - default to 10 prompts
-    const storageLimit = planTier === 'free' ? 10 : (PLAN_LIMITS[planTier]?.storage || 0)
-
+    
     // Check if importing these prompts would exceed storage limit
-    const { available, currentCount } = await hasAvailableStorage(user.id, planTier, prompts.length)
+    const storageCheck = await checkUsageLimit({
+      userId: user.id,
+      feature: 'storage',
+    })
 
-    if (!available) {
+    if (!storageCheck.allowed || (storageCheck.remaining || 0) < prompts.length) {
+      const storageLimit = planTier === 'free' ? 10 : (PLAN_LIMITS[planTier]?.storage || 0)
       return NextResponse.json(
         {
           error: 'Storage limit exceeded',
           code: 'STORAGE_LIMIT_EXCEEDED',
-          current: currentCount,
-          limit: storageLimit,
+          current: storageCheck.current,
+          limit: storageCheck.limit,
+          remaining: storageCheck.remaining,
           attempting: prompts.length,
           planTier,
-          message: `Cannot import ${prompts.length} prompts. You have ${currentCount}/${storageLimit} prompts stored. This import would exceed your ${planTier} plan limit.`,
+          message: `Cannot import ${prompts.length} prompts. You have ${storageCheck.current}/${storageCheck.limit} prompts stored. This import would exceed your ${planTier} plan limit.`,
           upgradeRequired: true,
         },
         { status: 402 } // 402 Payment Required
@@ -240,8 +244,19 @@ export async function POST(request: Request) {
       )
     }
 
-    // Increment storage usage by the number of prompts imported
-    await incrementStorageUsage(user.id, planTier, data.length)
+    // Update storage usage in monthly_usage_tracking
+    if (planTier !== 'free') {
+      const usage = await getOrCreateUsageTracking(user.id, planTier as 'explorer' | 'researcher' | 'strategist')
+      if (usage) {
+        await supabase
+          .from('monthly_usage_tracking')
+          .update({
+            storage_used: usage.storageUsed + data.length,
+          })
+          .eq('user_id', user.id)
+          .eq('month_year', usage.monthYear)
+      }
+    }
 
     return NextResponse.json({
       success: true,

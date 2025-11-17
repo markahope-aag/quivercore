@@ -7,11 +7,15 @@ export const OVERAGE_RATES = {
   explorer: 0.75, // $0.75 per prompt
   researcher: 0.75, // $0.75 per prompt
   strategist: 0.50, // $0.50 per prompt
+  free: 0, // Free plan has no overage (upgrade required)
 } as const
 
 export type PlanTier = keyof typeof OVERAGE_RATES
 
-export function getOverageRate(plan: PlanTier): number {
+export function getOverageRate(plan: PlanTier | 'free'): number {
+  if (plan === 'free') {
+    return 0 // Free plan has no overage
+  }
   return OVERAGE_RATES[plan]
 }
 
